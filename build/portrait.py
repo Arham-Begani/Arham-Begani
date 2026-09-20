@@ -100,11 +100,11 @@ def to_rows(lum: np.ndarray, ramp: str, *, invert: bool, weight: float = 1.0) ->
 STEEP = 6.0     # threshold sharpness; a cell's own fade is 1/(1+STEEP) of the run
 SEED = 11       # fixed, so an unchanged photo regenerates byte-for-byte
 
-# Near-linear, with the deceleration saved for the end. The wipe's old curve
-# (0.22 0.61 0.36 1) front-loads so hard that a dissolve driven by it is
-# finished barely halfway through its own duration; this one spreads the
-# reveal across the run and leaves a thin tail of stragglers.
-EASE = "0.35 0.05 0.35 1"
+# The sweep is linear on purpose. fractalNoise is bell-shaped around 0.5, so
+# the cells that cross first and last are both rare and the dissolve already
+# eases itself: sparse start, dense middle, thin tail. Every curve tried on
+# top of that over-shaped it -- the wipe's own (0.22 0.61 0.36 1) finished the
+# picture at 46% of its duration. Linear lands half at t=50% and 99% at t=84%.
 
 
 def _dissolve(width: float, height: float, cell: float, line: float,
@@ -129,8 +129,8 @@ def _dissolve(width: float, height: float, cell: float, line: float,
     fx = 1.0 / max(0.5, cell * grain)
     fy = 1.0 / max(0.5, line * grain)
     box = f'x="0" y="0" width="{width:.0f}" height="{height:.1f}"'
-    anim = (f'<animate attributeName="intercept" values="0;{end:.1f}" dur="{duration}s" '
-            f'calcMode="spline" keySplines="{EASE}" fill="freeze"/>')
+    anim = (f'<animate attributeName="intercept" values="0;{end:.1f}" '
+            f'dur="{duration}s" fill="freeze"/>')
     func = "".join(
         f'<feFunc{c} type="linear" slope="{-STEEP:.1f}" intercept="{end:.1f}">{anim}</feFunc{c}>'
         for c in "RGB")

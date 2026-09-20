@@ -60,7 +60,7 @@ the photo, these are the knobs, in the order worth trying:
 | `portrait_vignette` | Fades the edges toward the background tone. Useful for a busy backdrop, pointless when the background is part of the artwork — yours is at 0. |
 | `portrait_scatter` | How the picture arrives. The reveal thresholds every character cell against a vertical ramp plus noise, and `scatter` is how much of that threshold is noise: `0` is a soft top-down fade with no grain, `1` is every cell appearing in pure random order with no sense of direction. The default `0.35` keeps about 38% of the height mid-dissolve at any moment — a solid top, a speckled middle, an empty bottom, and no edge anywhere. Past ~0.5 the downward lean washes out. |
 | `portrait_grain` | Size of one noise feature, in character cells. `1.0` means cells appear individually; `2` clumps them into pairs; below ~0.5 the noise starts breaking up glyphs rather than revealing them. |
-| `portrait_duration` | Seconds from first cell to last. The reveal is perceptually finished at about two-thirds of this, with a thin tail of stragglers after. |
+| `portrait_duration` | Seconds from first cell to last. The threshold sweeps linearly, because the noise is bell-shaped and so eases the reveal by itself — half the picture is up at the halfway mark and 99% of it by about 84%, with a thin tail after. |
 | `portrait_ramp` | `even` is the default and was measured, not guessed: every printable ASCII glyph was rasterised, its ink coverage recorded, and the ramp picked so the steps land evenly. `fine` and `classic` are the hand-written ramps. `blocks` and `dots` need Unicode block glyphs, so avoid them if you care about odd machines. |
 
 Change one at a time and run `python generate.py --demo && python preview.py`.
