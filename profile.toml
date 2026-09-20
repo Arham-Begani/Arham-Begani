@@ -13,6 +13,12 @@ portrait_weight   = 1.6         # >1 keeps the black suit from flooding the fram
 portrait_local    = 0.6         # local contrast; separates the face from the backdrop
 portrait_vignette = 0.0         # your background is part of the art, so leave it
 
+# The reveal. Cells appear one at a time in a scattered order that still leans
+# downward, so there is no wipe edge. 0 = a soft top-down fade, 1 = pure random.
+portrait_scatter  = 0.35        # ~38% of the height is mid-dissolve at once
+portrait_grain    = 1.0         # noise feature size, in character cells
+portrait_duration = 2.2         # seconds, start to last straggler
+
 exclude_langs = ["html", "css", "jupyter notebook"]
 colophon = true
 

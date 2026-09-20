@@ -75,6 +75,8 @@ def main() -> int:
             write(f"portrait-{t}",
                   portrait.render(lum, theme, width=cfg.portrait_width, ramp=cfg.portrait_ramp,
                                   polarity=cfg.portrait_polarity, weight=cfg.portrait_weight,
+                                  scatter=cfg.portrait_scatter, grain=cfg.portrait_grain,
+                                  duration=cfg.portrait_duration,
                                   alt=cfg.name or cfg.username),
                   ver, changed)
         write(f"hero-{t}", graphics.hero(s, theme), ver, changed)

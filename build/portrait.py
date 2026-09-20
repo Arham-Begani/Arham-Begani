@@ -1,8 +1,16 @@
-"""A photo, pushed through a character ramp, revealed by a SMIL wipe.
+"""A photo, pushed through a character ramp, revealed by a SMIL dissolve.
 
-The reveal is a clipPath whose rect grows downward, so the picture draws itself
-top of head first. One <animate> element does the whole thing -- no script,
-which matters because GitHub renders README images with scripting disabled.
+The reveal is a mask, not a wipe. Its luminance is a vertical ramp plus one
+noise value per character cell, and a steep threshold sweeps across it: a cell
+appears the moment its own value is crossed. Because the noise scrambles the
+order locally while the ramp still leans downward, the picture thickens into
+existence head-first with no edge anywhere -- where a growing clip rect always
+has one, however you ease it.
+
+`scatter` sets how much of the threshold is noise rather than ramp, so 0 is a
+soft top-down wipe, 1 is every cell appearing in pure random order, and the
+default sits between. One <animate> drives the whole thing -- no script, which
+matters because GitHub renders README images with scripting disabled.
 """
 from __future__ import annotations
 
@@ -11,7 +19,7 @@ from pathlib import Path
 import numpy as np
 from PIL import Image, ImageEnhance, ImageFilter, ImageOps
 
-from .svgkit import Theme, grid_text, hold, svg
+from .svgkit import Theme, grid_text, svg
 
 # Ramps run sparse -> dense. Index 0 must be a space.
 RAMPS = {
@@ -89,6 +97,71 @@ def to_rows(lum: np.ndarray, ramp: str, *, invert: bool, weight: float = 1.0) ->
     return ["".join(ramp[i] for i in row) for row in idx]
 
 
+STEEP = 6.0     # threshold sharpness; a cell's own fade is 1/(1+STEEP) of the run
+SEED = 11       # fixed, so an unchanged photo regenerates byte-for-byte
+
+# Near-linear, with the deceleration saved for the end. The wipe's old curve
+# (0.22 0.61 0.36 1) front-loads so hard that a dissolve driven by it is
+# finished barely halfway through its own duration; this one spreads the
+# reveal across the run and leaves a thin tail of stragglers.
+EASE = "0.35 0.05 0.35 1"
+
+
+def _dissolve(width: float, height: float, cell: float, line: float,
+              *, scatter: float, grain: float, duration: float) -> tuple[str, str]:
+    """The mask that does the reveal, as (defs, mask-id).
+
+    Threshold per pixel is  v = ramp(y) + scatter * noise(x, y),  built to span
+    exactly 0..1 so neither end is lost to the filter's own clamping. Mask
+    luminance is then clamp(intercept - STEEP*v): sweeping intercept from 0 to
+    1+STEEP takes it from all-black to all-white, and each cell crosses on its
+    own schedule.
+
+    The resting intercept is the *finished* one, so a viewer that never runs
+    the animation gets the whole portrait rather than an empty frame.
+    """
+    a = min(1.0, max(0.0, scatter))
+    end = 1.0 + STEEP
+    # Ramp carries what the noise does not, so the two always sum to 1.
+    foot = round(255 * (1.0 - a))
+    # One noise feature per character cell: the grain is the drawing's own
+    # resolution, not the device's, so it reads as cells appearing.
+    fx = 1.0 / max(0.5, cell * grain)
+    fy = 1.0 / max(0.5, line * grain)
+    box = f'x="0" y="0" width="{width:.0f}" height="{height:.1f}"'
+    anim = (f'<animate attributeName="intercept" values="0;{end:.1f}" dur="{duration}s" '
+            f'calcMode="spline" keySplines="{EASE}" fill="freeze"/>')
+    func = "".join(
+        f'<feFunc{c} type="linear" slope="{-STEEP:.1f}" intercept="{end:.1f}">{anim}</feFunc{c}>'
+        for c in "RGB")
+    return (
+        f'<defs>'
+        f'<linearGradient id="pr" x1="0" y1="0" x2="0" y2="{height:.1f}" '
+        f'gradientUnits="userSpaceOnUse">'
+        f'<stop offset="0" stop-color="#000"/>'
+        f'<stop offset="1" stop-color="rgb({foot},{foot},{foot})"/>'
+        f'</linearGradient>'
+        f'<filter id="pf" filterUnits="userSpaceOnUse" {box} '
+        f'color-interpolation-filters="sRGB">'
+        f'<feTurbulence type="fractalNoise" baseFrequency="{fx:.4f} {fy:.4f}" '
+        f'numOctaves="1" seed="{SEED}" result="n"/>'
+        # Read the turbulence's ALPHA into every colour channel. Filter results
+        # are premultiplied, so the colour channels come back scaled by that
+        # noisy alpha; the alpha channel alone is a clean 0..1 noise value.
+        f'<feColorMatrix in="n" type="matrix" result="g" '
+        f'values="0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 1"/>'
+        f'<feComposite in="SourceGraphic" in2="g" operator="arithmetic" '
+        f'k1="0" k2="1" k3="{a:.3f}" k4="0" result="v"/>'
+        f'<feComponentTransfer in="v">{func}</feComponentTransfer>'
+        f'</filter>'
+        f'<mask id="pm" maskUnits="userSpaceOnUse" {box}>'
+        f'<rect {box} fill="url(#pr)" filter="url(#pf)"/>'
+        f'</mask>'
+        f'</defs>',
+        "pm",
+    )
+
+
 def render(
     lum: np.ndarray,
     theme: Theme,
@@ -98,6 +171,8 @@ def render(
     polarity: str = "ink",
     weight: float = 1.0,
     duration: float = 2.2,
+    scatter: float = 0.35,
+    grain: float = 1.0,
     alt: str = "ASCII portrait",
 ) -> str:
     chars = RAMPS.get(ramp, ramp)
@@ -117,25 +192,13 @@ def render(
     invert = {"ink": True, "light": False}.get(polarity, theme.name == "light")
     rows = to_rows(lum, chars, invert=invert, weight=weight)
 
+    defs, mask = _dissolve(width, height, cell, line,
+                           scatter=scatter, grain=grain, duration=duration)
     body = [
-        f'<defs><clipPath id="wipe">'
-        f'<rect x="0" y="0" width="{width}" height="{height:.1f}">'
-        f'{hold("height", "0")}'
-        f'<animate attributeName="height" values="0;{height:.1f}" dur="{duration}s" '
-        f'calcMode="spline" keySplines="0.22 0.61 0.36 1" fill="freeze"/>'
-        f"</rect></clipPath></defs>",
-        '<g clip-path="url(#wipe)">',
+        defs,
+        f'<g mask="url(#{mask})">',
         grid_text(rows, x=0, y=baseline, size=size, line_height=line, cell=cell,
                   fill=theme.ink, opacity=0.92),
         "</g>",
-        # the scan edge, which fades out once the wipe lands
-        # Resting opacity is 0, matching where the animation leaves it: with no
-        # SMIL there is no scan to lead, only a stray rule across the picture.
-        f'<rect x="0" y="-1.5" width="{width}" height="1.5" fill="{theme.accent}" opacity="0">'
-        f'<animate attributeName="y" values="-1.5;{height:.1f}" dur="{duration}s" '
-        f'calcMode="spline" keySplines="0.22 0.61 0.36 1" fill="freeze"/>'
-        f'<animate attributeName="opacity" values="0;0.55;0.55;0" '
-        f'keyTimes="0;0.06;0.9;1" dur="{duration}s" fill="freeze"/>'
-        f"</rect>",
     ]
     return svg(width, height, "".join(body), title=alt)

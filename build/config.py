@@ -39,6 +39,9 @@ class Config:
     portrait_polarity: str = "ink"
     portrait_weight: float = 1.0
     portrait_local: float = 0.6
+    portrait_scatter: float = 0.35
+    portrait_grain: float = 1.0
+    portrait_duration: float = 2.2
     exclude_langs: list[str] = field(default_factory=list)
     colophon: bool = True
 
@@ -66,6 +69,9 @@ def load(path: Path | None = None) -> Config:
         portrait_polarity=p.get("portrait_polarity", "ink"),
         portrait_weight=float(p.get("portrait_weight", 1.0)),
         portrait_local=float(p.get("portrait_local", 0.6)),
+        portrait_scatter=float(p.get("portrait_scatter", 0.35)),
+        portrait_grain=float(p.get("portrait_grain", 1.0)),
+        portrait_duration=float(p.get("portrait_duration", 2.2)),
         exclude_langs=[s.lower() for s in p.get("exclude_langs", [])],
         colophon=bool(p.get("colophon", True)),
     )
