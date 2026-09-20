@@ -10,11 +10,11 @@
 </div>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=c440690e">
-  <img alt="3027 contributions in the last year" src="out/hero-light.svg?v=6767fa23">
+  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=a8cc3e4e">
+  <img alt="3028 contributions in the last year" src="out/hero-light.svg?v=8f59b644">
 </picture>
 
-<p align="center"><a href="https://forze.in">forze.in</a> &nbsp;·&nbsp; <a href="https://linkedin.com/in/arhambegani">linkedin</a></p>
+<p align="center"><a href="https://forze.in">forze.in</a> &nbsp;Â·&nbsp; <a href="https://linkedin.com/in/arhambegani">linkedin</a></p>
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="out/h-about-dark.svg?v=aaef05c0">
@@ -23,7 +23,7 @@
 
 Python and frontend. I'd rather take on something too big than something too safe.
 
-Right now that's **[Forze](https://forze.in)** — an agentic system that turns a founder's concept into shipped work instead of another to-do list.
+Right now that's **[Forze](https://forze.in)** â€” an agentic system that turns a founder's concept into shipped work instead of another to-do list.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="out/h-stack-dark.svg?v=d2320db7">
@@ -40,10 +40,10 @@ Right now that's **[Forze](https://forze.in)** — an agentic system that turns a 
   <img alt="projects" src="out/h-projects-light.svg?v=82b36a2f">
 </picture>
 
-**[Forze](https://github.com/Arham-Begani/Forze)** · typescript  
-An agentic system built to close the execution gap for founders — AI as a proactive workforce rather than a passive assistant, turning raw concepts into work that ships.
+**[Forze](https://github.com/Arham-Begani/Forze)** Â· typescript  
+An agentic system built to close the execution gap for founders â€” AI as a proactive workforce rather than a passive assistant, turning raw concepts into work that ships.
 
-**[Forze_IDE](https://github.com/Arham-Begani/Forze_IDE)** · typescript  
+**[Forze_IDE](https://github.com/Arham-Begani/Forze_IDE)** Â· typescript  
 The editor side of Forze.
 
 <picture>
@@ -52,8 +52,8 @@ The editor side of Forze.
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=2ff7f84d">
-  <img alt="language and repository stats" src="out/stats-light.svg?v=f4878a8a">
+  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=1a571190">
+  <img alt="language and repository stats" src="out/stats-light.svg?v=f5584f7d">
 </picture>
 
 <picture>
@@ -72,7 +72,7 @@ block, the language bars and the year grid are drawn straight from the GitHub
 GraphQL API by a scheduled action, once a day, committing only what changed.
 
 They animate with SMIL from inside the SVG, because GitHub renders README images
-with scripting disabled — and since nothing loads from anyone else's domain,
+with scripting disabled â€” and since nothing loads from anyone else's domain,
 nothing here can rate-limit or go dark. The section headings are SVGs for the
 same reason: GitHub strips CSS from READMEs, so an image is the only way to put
 this page's own typeface on them.

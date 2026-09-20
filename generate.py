@@ -26,12 +26,21 @@ HEADINGS = {
 }
 
 
+# Everything this script writes is committed and then read back by the next
+# run, which may be on the other kind of machine: you regenerate on Windows,
+# the scheduled action regenerates on Linux. Without these, write_text picks
+# up the platform's locale encoding -- cp1252 here, UTF-8 there -- and the
+# "·" in README.md comes back as a byte Linux cannot decode. Pin both ends.
+TEXT = {"encoding": "utf-8"}
+WRITE = {"encoding": "utf-8", "newline": "\n"}
+
+
 def write(name: str, content: str, ver: dict[str, str], changed: list[str]) -> None:
     path = OUT / f"{name}.svg"
     ver[name] = digest(content)
-    if path.exists() and path.read_text() == content:
+    if path.exists() and path.read_text(**TEXT) == content:
         return
-    path.write_text(content)
+    path.write_text(content, **WRITE)
     changed.append(path.name)
 
 
@@ -78,8 +87,8 @@ def main() -> int:
 
     md = readme.build(cfg, s, ver)
     rp = ROOT / "README.md"
-    if not rp.exists() or rp.read_text() != md:
-        rp.write_text(md)
+    if not rp.exists() or rp.read_text(**TEXT) != md:
+        rp.write_text(md, **WRITE)
         changed.append("README.md")
 
     print(f"{s.total} contributions · {s.active_days}/{s.span} active days · "

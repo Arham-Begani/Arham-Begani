@@ -28,7 +28,7 @@ def main() -> None:
             "<body style='margin:0;display:flex;align-items:flex-start'>"
             f"{column('light')}{column('dark')}</body>")
     out = ROOT / "preview.html"
-    out.write_text(html)
+    out.write_text(html, encoding="utf-8", newline="\n")
     print(f"wrote {out}")
     webbrowser.open(out.as_uri())
 
