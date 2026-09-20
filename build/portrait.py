@@ -11,7 +11,7 @@ from pathlib import Path
 import numpy as np
 from PIL import Image, ImageEnhance, ImageFilter, ImageOps
 
-from .svgkit import Theme, grid_text, svg
+from .svgkit import Theme, grid_text, hold, svg
 
 # Ramps run sparse -> dense. Index 0 must be a space.
 RAMPS = {
@@ -118,7 +118,9 @@ def render(
     rows = to_rows(lum, chars, invert=invert, weight=weight)
 
     body = [
-        f'<defs><clipPath id="wipe"><rect x="0" y="0" width="{width}" height="0">'
+        f'<defs><clipPath id="wipe">'
+        f'<rect x="0" y="0" width="{width}" height="{height:.1f}">'
+        f'{hold("height", "0")}'
         f'<animate attributeName="height" values="0;{height:.1f}" dur="{duration}s" '
         f'calcMode="spline" keySplines="0.22 0.61 0.36 1" fill="freeze"/>'
         f"</rect></clipPath></defs>",
@@ -127,7 +129,9 @@ def render(
                   fill=theme.ink, opacity=0.92),
         "</g>",
         # the scan edge, which fades out once the wipe lands
-        f'<rect x="0" y="-1.5" width="{width}" height="1.5" fill="{theme.accent}" opacity="0.55">'
+        # Resting opacity is 0, matching where the animation leaves it: with no
+        # SMIL there is no scan to lead, only a stray rule across the picture.
+        f'<rect x="0" y="-1.5" width="{width}" height="1.5" fill="{theme.accent}" opacity="0">'
         f'<animate attributeName="y" values="-1.5;{height:.1f}" dur="{duration}s" '
         f'calcMode="spline" keySplines="0.22 0.61 0.36 1" fill="freeze"/>'
         f'<animate attributeName="opacity" values="0;0.55;0.55;0" '

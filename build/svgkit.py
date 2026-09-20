@@ -42,6 +42,31 @@ THEMES = (DARK, LIGHT)
 
 # --------------------------------------------------------------------------- font
 
+def _ntos(v: float) -> str:
+    """Path coordinates, rounded to whole font units.
+
+    Outlines are emitted in font units and scaled by size/unitsPerEm at draw
+    time, so one unit is 1/1000 em -- 0.06px at the largest size on this page.
+    A decimal place is therefore 0.006px of detail nobody can see, bought at
+    two bytes per number, and there are tens of thousands of numbers here.
+    """
+    n = round(v)
+    return "0" if n == 0 else f"{n:d}"
+
+
+def hold(attr: str, value: str) -> str:
+    """Pin `attr` to its pre-animation value at t=0.
+
+    The elements on this page are written with their *finished* value in the
+    static attribute, so a renderer that never runs the animation still shows
+    the completed drawing. That covers the window before the SMIL clock starts
+    and any viewer that strips animation. This <set> is what puts them back to
+    the starting value when the clock does run; the delayed <animate> that
+    follows begins later, so it takes priority from its own begin onward.
+    """
+    return f'<set attributeName="{attr}" to="{value}" begin="0s"/>'
+
+
 @lru_cache(maxsize=8)
 def _font(weight: str) -> tuple[TTFont, object, int]:
     path = FONT_DIR / f"JetBrainsMono-{weight}.ttf"
@@ -89,7 +114,7 @@ def text_path(
         name = cmap.get(ord(ch))
         if name is None or ch == " ":
             continue
-        pen = SVGPathPen(glyphs, ntos=lambda v: f"{v:.1f}")
+        pen = SVGPathPen(glyphs, ntos=_ntos)
         # Offset in font units so a single transform covers the whole run.
         tp = TransformPen(pen, (1, 0, 0, 1, (i * step) / scale, 0))
         glyphs[name].draw(tp)

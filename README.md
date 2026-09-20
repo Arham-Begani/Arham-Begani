@@ -3,67 +3,67 @@
 <div align="center">
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/portrait-dark.svg?v=5b2d6aac">
-  <img alt="Arham Begani" src="out/portrait-light.svg?v=c3913fb7" width="460">
+  <source media="(prefers-color-scheme: dark)" srcset="out/portrait-dark.svg?v=b45070af">
+  <img alt="Arham Begani" src="out/portrait-light.svg?v=57449f06" width="460">
 </picture>
 
 </div>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=af84dab0">
-  <img alt="3027 contributions in the last year" src="out/hero-light.svg?v=3f2ea125">
+  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=c440690e">
+  <img alt="3027 contributions in the last year" src="out/hero-light.svg?v=6767fa23">
 </picture>
 
-<p align="center"><a href="https://forze.in">forze.in</a> &nbsp;Â·&nbsp; <a href="https://linkedin.com/in/arhambegani">linkedin</a></p>
+<p align="center"><a href="https://forze.in">forze.in</a> &nbsp;·&nbsp; <a href="https://linkedin.com/in/arhambegani">linkedin</a></p>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/h-about-dark.svg?v=960d6f2f">
-  <img alt="about" src="out/h-about-light.svg?v=88a8b283">
+  <source media="(prefers-color-scheme: dark)" srcset="out/h-about-dark.svg?v=aaef05c0">
+  <img alt="about" src="out/h-about-light.svg?v=4d1e5929">
 </picture>
 
 Python and frontend. I'd rather take on something too big than something too safe.
 
-Right now that's **[Forze](https://forze.in)** â€” an agentic system that turns a founder's concept into shipped work instead of another to-do list.
+Right now that's **[Forze](https://forze.in)** — an agentic system that turns a founder's concept into shipped work instead of another to-do list.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/h-stack-dark.svg?v=48e83c71">
-  <img alt="stack" src="out/h-stack-light.svg?v=df07e714">
+  <source media="(prefers-color-scheme: dark)" srcset="out/h-stack-dark.svg?v=d2320db7">
+  <img alt="stack" src="out/h-stack-light.svg?v=44ec8533">
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/stack-dark.svg?v=b16013d1">
-  <img alt="python, typescript, javascript, react, node, fastapi, postgres, docker, git, linux" src="out/stack-light.svg?v=68a08a00">
+  <source media="(prefers-color-scheme: dark)" srcset="out/stack-dark.svg?v=ad7b59f9">
+  <img alt="python, typescript, javascript, react, node, fastapi, postgres, docker, git, linux" src="out/stack-light.svg?v=3415c0c9">
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/h-projects-dark.svg?v=81cea742">
-  <img alt="projects" src="out/h-projects-light.svg?v=40881f2f">
+  <source media="(prefers-color-scheme: dark)" srcset="out/h-projects-dark.svg?v=89ec4e57">
+  <img alt="projects" src="out/h-projects-light.svg?v=82b36a2f">
 </picture>
 
-**[Forze](https://github.com/Arham-Begani/Forze)** Â· typescript  
-An agentic system built to close the execution gap for founders â€” AI as a proactive workforce rather than a passive assistant, turning raw concepts into work that ships.
+**[Forze](https://github.com/Arham-Begani/Forze)** · typescript  
+An agentic system built to close the execution gap for founders — AI as a proactive workforce rather than a passive assistant, turning raw concepts into work that ships.
 
-**[Forze_IDE](https://github.com/Arham-Begani/Forze_IDE)** Â· typescript  
+**[Forze_IDE](https://github.com/Arham-Begani/Forze_IDE)** · typescript  
 The editor side of Forze.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/h-stats-dark.svg?v=cf835555">
-  <img alt="stats" src="out/h-stats-light.svg?v=dd5beedd">
+  <source media="(prefers-color-scheme: dark)" srcset="out/h-stats-dark.svg?v=b22b962d">
+  <img alt="stats" src="out/h-stats-light.svg?v=7dea786a">
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=abdade05">
-  <img alt="language and repository stats" src="out/stats-light.svg?v=b8528a2e">
+  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=2ff7f84d">
+  <img alt="language and repository stats" src="out/stats-light.svg?v=f4878a8a">
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=13702af0">
-  <img alt="118 active days in the last year" src="out/heatmap-light.svg?v=7e113807">
+  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=f6a17969">
+  <img alt="117 active days in the last year" src="out/heatmap-light.svg?v=2cf8e04a">
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/h-colophon-dark.svg?v=3c932866">
-  <img alt="about this page" src="out/h-colophon-light.svg?v=fe118ebe">
+  <source media="(prefers-color-scheme: dark)" srcset="out/h-colophon-dark.svg?v=e8527698">
+  <img alt="about this page" src="out/h-colophon-light.svg?v=40ee665d">
 </picture>
 
 Every graphic on this page is generated here, not borrowed from a third-party
@@ -72,7 +72,7 @@ block, the language bars and the year grid are drawn straight from the GitHub
 GraphQL API by a scheduled action, once a day, committing only what changed.
 
 They animate with SMIL from inside the SVG, because GitHub renders README images
-with scripting disabled â€” and since nothing loads from anyone else's domain,
+with scripting disabled — and since nothing loads from anyone else's domain,
 nothing here can rate-limit or go dark. The section headings are SVGs for the
 same reason: GitHub strips CSS from READMEs, so an image is the only way to put
 this page's own typeface on them.
