@@ -1,0 +1,53 @@
+# The only file you need to edit. README.md is generated -- don't edit that.
+
+[profile]
+username = "Arham-Begani"
+name = ""                       # blank = pull the display name from the API
+photo  = "assets/me.jpg"
+
+# Portrait. These are tuned for your avatar -- see SETUP.md before changing them.
+portrait_cols     = 140         # grid width; more columns = finer grain
+portrait_width    = 460         # rendered width in px
+portrait_polarity = "ink"       # dense glyphs where the art is DARK, in both themes
+portrait_weight   = 1.6         # >1 keeps the black suit from flooding the frame
+portrait_local    = 0.6         # local contrast; separates the face from the backdrop
+portrait_vignette = 0.0         # your background is part of the art, so leave it
+
+exclude_langs = ["html", "css", "jupyter notebook"]
+colophon = true
+
+# --- rewrite these two lines in your own voice --------------------------------
+about = [
+  "Python and frontend. I'd rather take on something too big than something too safe.",
+  "Right now that's **[Forze](https://forze.in)** — an agentic system that turns a founder's concept into shipped work instead of another to-do list.",
+]
+
+stack = [
+  "python", "typescript", "javascript", "react", "node",
+  "fastapi", "postgres", "docker", "git", "linux",
+]
+
+[[links]]
+label = "forze.in"
+url = "https://forze.in"
+
+[[links]]
+label = "linkedin"
+url = "https://linkedin.com/in/arhambegani"
+
+# Uncomment if you want your email on the page.
+# [[links]]
+# label = "email"
+# url = "mailto:arhambegani2@gmail.com"
+
+[[projects]]
+name = "Forze"
+url = "https://github.com/Arham-Begani/Forze"
+meta = "typescript"
+blurb = "An agentic system built to close the execution gap for founders — AI as a proactive workforce rather than a passive assistant, turning raw concepts into work that ships."
+
+[[projects]]
+name = "Forze_IDE"
+url = "https://github.com/Arham-Begani/Forze_IDE"
+meta = "typescript"
+blurb = "The editor side of Forze."
