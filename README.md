@@ -10,8 +10,8 @@
 </div>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=ffb7d645">
-  <img alt="3053 contributions in the last year" src="out/hero-light.svg?v=1a352cf6">
+  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=8157d4b5">
+  <img alt="3092 contributions in the last year" src="out/hero-light.svg?v=f722ea74">
 </picture>
 
 <p align="center"><a href="https://forze.in">forze.in</a> &nbsp;·&nbsp; <a href="https://linkedin.com/in/arhambegani">linkedin</a></p>
@@ -52,13 +52,13 @@ The editor side of Forze.
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=e7548f1b">
-  <img alt="language and repository stats" src="out/stats-light.svg?v=ee2f152c">
+  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=03ac566a">
+  <img alt="language and repository stats" src="out/stats-light.svg?v=16b951b6">
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=b6bd0a72">
-  <img alt="120 active days in the last year" src="out/heatmap-light.svg?v=aa33c914">
+  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=83b9c269">
+  <img alt="122 active days in the last year" src="out/heatmap-light.svg?v=f974f4ac">
 </picture>
 
 <picture>
