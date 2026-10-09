@@ -10,8 +10,8 @@
 </div>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=57583fee">
-  <img alt="3090 contributions in the last year" src="out/hero-light.svg?v=eeba1d93">
+  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=958405dd">
+  <img alt="3090 contributions in the last year" src="out/hero-light.svg?v=e0bba9ea">
 </picture>
 
 <p align="center"><a href="https://forze.in">forze.in</a> &nbsp;·&nbsp; <a href="https://linkedin.com/in/arhambegani">linkedin</a></p>
@@ -57,8 +57,8 @@ The editor side of Forze.
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=31dd3c52">
-  <img alt="121 active days in the last year" src="out/heatmap-light.svg?v=1996ce0b">
+  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=17016a9a">
+  <img alt="121 active days in the last year" src="out/heatmap-light.svg?v=892b6442">
 </picture>
 
 <picture>
