@@ -10,8 +10,8 @@
 </div>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=213d11ff">
-  <img alt="3136 contributions in the last year" src="out/hero-light.svg?v=1f0ae7bd">
+  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=91e34338">
+  <img alt="3143 contributions in the last year" src="out/hero-light.svg?v=5be19926">
 </picture>
 
 <p align="center"><a href="https://forze.in">forze.in</a> &nbsp;·&nbsp; <a href="https://linkedin.com/in/arhambegani">linkedin</a></p>
@@ -63,6 +63,7 @@ Contributions to public projects outside my own account, refreshed daily from Gi
 
 | Project | Contribution | Status |
 | --- | --- | --- |
+| [pytest-env](https://github.com/pytest-dev/pytest-env) | [fix: respect Windows key casing when preserving existing env values · #278](https://github.com/pytest-dev/pytest-env/pull/278) | Open |
 | [agent-control-standard](https://github.com/GenAI-Security-Project/agent-control-standard) | [refimpl: add first-stage Rust AGT Guardian · #187](https://github.com/GenAI-Security-Project/agent-control-standard/pull/187) | Open |
 | [awesome-ai-apps](https://github.com/Arindam200/awesome-ai-apps) | [feat: add A2A collaboration example with Agno and LangGraph · #368](https://github.com/Arindam200/awesome-ai-apps/pull/368) | Open |
 | [llama_index](https://github.com/run-llama/llama_index) | [fix(core): repair streamed partial JSON inside arrays and escaped strings · #23470](https://github.com/run-llama/llama_index/pull/23470) | Open |
@@ -80,8 +81,8 @@ Contributions to public projects outside my own account, refreshed daily from Gi
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=585ce7d5">
-  <img alt="language and repository stats" src="out/stats-light.svg?v=ba89d844">
+  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=166b0d17">
+  <img alt="language and repository stats" src="out/stats-light.svg?v=abdf8649">
 </picture>
 
 <picture>
