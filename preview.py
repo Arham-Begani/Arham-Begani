@@ -7,7 +7,7 @@ import webbrowser
 
 ROOT = pathlib.Path(__file__).resolve().parent
 ORDER = ["portrait", "hero", "h-about", "h-stack", "stack",
-         "h-projects", "h-stats", "stats", "heatmap", "h-colophon"]
+         "h-projects", "h-contributions", "h-stats", "stats", "heatmap", "h-colophon"]
 
 
 def column(theme: str) -> str:

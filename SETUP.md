@@ -39,6 +39,16 @@ GITHUB_TOKEN=ghp_yourtoken python generate.py
 daily, regenerates everything, and commits only the files that actually changed.
 You can also trigger it by hand from the Actions tab.
 
+### Open-source showcase
+
+The open source section lists every public pull request to a repository outside
+your own account. It separates merged work, open or draft work, and a collapsed
+archive of PRs closed without merging. Merge dates come from GitHub's `mergedAt`
+field. Private repository details are excluded even when the token can see them.
+
+It refreshes with the existing daily workflow, so new PRs and merges appear
+automatically. Set `contributions = false` under `[profile]` to hide it.
+
 ### Private contributions (optional)
 
 The workflow's built-in token sees public activity only. For the full number:

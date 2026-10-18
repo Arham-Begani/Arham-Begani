@@ -10,8 +10,8 @@
 </div>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=76d052b9">
-  <img alt="3133 contributions in the last year" src="out/hero-light.svg?v=2fbc8923">
+  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=de50b923">
+  <img alt="3135 contributions in the last year" src="out/hero-light.svg?v=a273c45e">
 </picture>
 
 <p align="center"><a href="https://forze.in">forze.in</a> &nbsp;·&nbsp; <a href="https://linkedin.com/in/arhambegani">linkedin</a></p>
@@ -47,18 +47,46 @@ An agentic system built to close the execution gap for founders — AI as a proa
 The editor side of Forze.
 
 <picture>
+  <source media="(prefers-color-scheme: dark)" srcset="out/h-contributions-dark.svg?v=3b3847a4">
+  <img alt="open source contributions" src="out/h-contributions-light.svg?v=dc9924f8">
+</picture>
+
+Contributions to public projects outside my own account, refreshed daily from GitHub.
+
+**Merged**
+
+| Project | Contribution | Status |
+| --- | --- | --- |
+| [first-contributions](https://github.com/firstcontributions/first-contributions) | [arham · #86678](https://github.com/firstcontributions/first-contributions/pull/86678) | Merged · 2024-07-20 |
+
+**In progress**
+
+| Project | Contribution | Status |
+| --- | --- | --- |
+| [awesome-ai-apps](https://github.com/Arindam200/awesome-ai-apps) | [feat: add A2A collaboration example with Agno and LangGraph · #368](https://github.com/Arindam200/awesome-ai-apps/pull/368) | Open |
+| [llama_index](https://github.com/run-llama/llama_index) | [fix(core): repair streamed partial JSON inside arrays and escaped strings · #23470](https://github.com/run-llama/llama_index/pull/23470) | Open |
+| [iggy](https://github.com/apache/iggy) | [feat(node): expose client lifecycle events through on and once · #4552](https://github.com/apache/iggy/pull/4552) | Open |
+| [pyrefly](https://github.com/facebook/pyrefly) | [Resolve identifiers inside quoted annotations in the LSP. · #5243](https://github.com/facebook/pyrefly/pull/5243) | Open |
+| [langchainjs](https://github.com/langchain-ai/langchainjs) | [fix(openai): require an explicit model in ChatOpenAI · #11955](https://github.com/langchain-ai/langchainjs/pull/11955) | Open |
+| [langchainjs](https://github.com/langchain-ai/langchainjs) | [fix(anthropic): default ChatAnthropic to claude-sonnet-5-5 · #11943](https://github.com/langchain-ai/langchainjs/pull/11943) | Draft |
+| [agent-control-standard](https://github.com/GenAI-Security-Project/agent-control-standard) | [refimpl: add first-stage Rust AGT Guardian · #187](https://github.com/GenAI-Security-Project/agent-control-standard/pull/187) | Open |
+| [uv](https://github.com/astral-sh/uv) | [Move UV\_GIT\_LFS handling into environment settings · #22002](https://github.com/astral-sh/uv/pull/22002) | Open |
+
+[Full contribution history](https://github.com/search?q=is%3Apr%20author%3AArham-Begani%20-user%3AArham-Begani&type=pullrequests)
+
+<picture>
   <source media="(prefers-color-scheme: dark)" srcset="out/h-stats-dark.svg?v=b22b962d">
   <img alt="stats" src="out/h-stats-light.svg?v=7dea786a">
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=61615e56">
-  <img alt="language and repository stats" src="out/stats-light.svg?v=05ab72b1">
+  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=e96d1f08">
+  <img alt="language and repository stats" src="out/stats-light.svg?v=aaa2fc78">
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=8b17a272">
-  <img alt="125 active days in the last year" src="out/heatmap-light.svg?v=1004aa1b">
+  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=bb43fd4f">
+  <img alt="124 active days in the last year" src="out/heatmap-light.svg?v=489e3949">
 </picture>
 
 <picture>

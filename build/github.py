@@ -1,4 +1,4 @@
-"""One GraphQL round trip for everything the page shows.
+"""GitHub activity and public upstream pull requests for the profile.
 
 Needs a token in GITHUB_TOKEN. The workflow's built-in token is enough for
 public activity; a classic PAT with read:user also picks up private
@@ -22,6 +22,13 @@ query($login:String!, $from:DateTime!, $to:DateTime!) {
   user(login:$login) {
     name
     followers { totalCount }
+    pullRequests(first:100, orderBy:{field:UPDATED_AT, direction:DESC}) {
+      nodes {
+        number title url state isDraft mergedAt
+        repository { nameWithOwner isPrivate owner { login } }
+      }
+      pageInfo { hasNextPage endCursor }
+    }
     contributionsCollection(from:$from, to:$to) {
       totalCommitContributions
       totalPullRequestContributions
@@ -49,11 +56,36 @@ query($login:String!, $from:DateTime!, $to:DateTime!) {
 }
 """
 
+PULL_REQUESTS_QUERY = """
+query($login:String!, $after:String!) {
+  user(login:$login) {
+    pullRequests(first:100, after:$after, orderBy:{field:UPDATED_AT, direction:DESC}) {
+      nodes {
+        number title url state isDraft mergedAt
+        repository { nameWithOwner isPrivate owner { login } }
+      }
+      pageInfo { hasNextPage endCursor }
+    }
+  }
+}
+"""
+
 
 @dataclass
 class Day:
     date: dt.date
     count: int
+
+
+@dataclass
+class PullRequest:
+    repository: str
+    number: int
+    title: str
+    url: str
+    state: str
+    draft: bool = False
+    merged_at: str | None = None
 
 
 @dataclass
@@ -71,6 +103,7 @@ class Stats:
     stars: int = 0
     bytes_by_lang: dict[str, int] = field(default_factory=dict)
     repos_by_lang: dict[str, int] = field(default_factory=dict)
+    pull_requests: list[PullRequest] = field(default_factory=list)
 
     # -- derived ----------------------------------------------------------
     @property
@@ -119,10 +152,10 @@ class Stats:
         return [sum(c[i:i + 7]) for i in range(0, len(c), 7)]
 
 
-def _post(token: str, variables: dict) -> dict:
+def _post(token: str, variables: dict, *, query: str = QUERY) -> dict:
     req = urllib.request.Request(
         API,
-        data=json.dumps({"query": QUERY, "variables": variables}).encode(),
+        data=json.dumps({"query": query, "variables": variables}).encode(),
         headers={
             "Authorization": f"bearer {token}",
             "Content-Type": "application/json",
@@ -134,6 +167,26 @@ def _post(token: str, variables: dict) -> dict:
     if payload.get("errors"):
         raise RuntimeError(f"GraphQL: {payload['errors']}")
     return payload["data"]
+
+
+def _pull_requests(token: str, login: str, page: dict) -> list[PullRequest]:
+    """Include every public PR outside the user's own repositories."""
+    result = []
+    while True:
+        for pr in page["nodes"]:
+            repo = pr["repository"]
+            if repo["isPrivate"] or repo["owner"]["login"].casefold() == login.casefold():
+                continue
+            result.append(PullRequest(
+                repository=repo["nameWithOwner"], number=pr["number"],
+                title=pr["title"], url=pr["url"], state=pr["state"],
+                draft=pr["isDraft"], merged_at=pr["mergedAt"],
+            ))
+        if not page["pageInfo"]["hasNextPage"]:
+            return result
+        data = _post(token, {"login": login, "after": page["pageInfo"]["endCursor"]},
+                     query=PULL_REQUESTS_QUERY)
+        page = data["user"]["pullRequests"]
 
 
 def fetch(login: str, *, token: str | None = None, exclude: list[str] | None = None) -> Stats:
@@ -167,6 +220,7 @@ def fetch(login: str, *, token: str | None = None, exclude: list[str] | None = N
         private=cc["restrictedContributionsCount"],
         followers=u["followers"]["totalCount"],
         repos=u["repositories"]["totalCount"],
+        pull_requests=_pull_requests(token, login, u["pullRequests"]),
     )
     for repo in u["repositories"]["nodes"]:
         s.stars += repo["stargazerCount"]

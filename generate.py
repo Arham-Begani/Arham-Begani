@@ -21,6 +21,7 @@ HEADINGS = {
     "h-about": "about",
     "h-stack": "stack",
     "h-projects": "projects",
+    "h-contributions": "open source",
     "h-stats": "stats",
     "h-colophon": "about this page",
 }

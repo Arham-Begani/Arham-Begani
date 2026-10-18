@@ -21,6 +21,7 @@ portrait_duration = 2.2         # seconds, start to last straggler
 
 exclude_langs = ["html", "css", "jupyter notebook"]
 colophon = true
+contributions = true            # public upstream PRs, refreshed from GitHub daily
 
 # --- rewrite these two lines in your own voice --------------------------------
 about = [

@@ -44,6 +44,7 @@ class Config:
     portrait_duration: float = 2.2
     exclude_langs: list[str] = field(default_factory=list)
     colophon: bool = True
+    contributions: bool = True
 
     @property
     def photo_path(self) -> Path:
@@ -74,6 +75,7 @@ def load(path: Path | None = None) -> Config:
         portrait_duration=float(p.get("portrait_duration", 2.2)),
         exclude_langs=[s.lower() for s in p.get("exclude_langs", [])],
         colophon=bool(p.get("colophon", True)),
+        contributions=bool(p.get("contributions", True)),
     )
     cfg.links = [Link(l["label"], l["url"]) for l in raw.get("links", [])]
     cfg.projects = [
