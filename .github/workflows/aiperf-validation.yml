@@ -15,12 +15,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      AIPERF_REPO: ${{ runner.temp }}/aiperf-validation-checkout
+      AIPERF_REPO: ${{ github.workspace }}/aiperf-validation-checkout
       PYTHONUTF8: "1"
     defaults:
       run:
         shell: bash
-        working-directory: ${{ runner.temp }}/aiperf-validation-checkout
+        working-directory: aiperf-validation-checkout
     steps:
       - name: Check out validation assets
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
@@ -36,7 +36,7 @@ jobs:
           enable-cache: false
       - name: Apply the exact reviewed patch to the audited upstream base
         id: prepare
-        working-directory: ${{ github.workspace }}
+        working-directory: .
         run: |
           git init "$AIPERF_REPO"
           git -C "$AIPERF_REPO" remote add origin https://github.com/ai-dynamo/aiperf.git
