@@ -10,8 +10,8 @@
 </div>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=e2f4c7d2">
-  <img alt="3145 contributions in the last year" src="out/hero-light.svg?v=85cff6f4">
+  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=e25b6ef6">
+  <img alt="3161 contributions in the last year" src="out/hero-light.svg?v=c6eb923e">
 </picture>
 
 <p align="center"><a href="https://forze.in">forze.in</a> &nbsp;·&nbsp; <a href="https://linkedin.com/in/arhambegani">linkedin</a></p>
@@ -64,6 +64,7 @@ Contributions to public projects outside my own account, refreshed daily from Gi
 
 | Project | Contribution | Status |
 | --- | --- | --- |
+| [pytest-timeout](https://github.com/pytest-dev/pytest-timeout) | [fix: preserve capture fixture output on thread timeouts · #212](https://github.com/pytest-dev/pytest-timeout/pull/212) | Open |
 | [pytest-rerunfailures](https://github.com/pytest-dev/pytest-rerunfailures) | [fix: prevent internal errors from non-finite rerun delays · #391](https://github.com/pytest-dev/pytest-rerunfailures/pull/391) | Open |
 | [awesome-ai-apps](https://github.com/Arindam200/awesome-ai-apps) | [feat: add A2A collaboration example with Agno and LangGraph · #368](https://github.com/Arindam200/awesome-ai-apps/pull/368) | Open |
 | [agent-control-standard](https://github.com/GenAI-Security-Project/agent-control-standard) | [refimpl: add first-stage Rust AGT Guardian · #187](https://github.com/GenAI-Security-Project/agent-control-standard/pull/187) | Open |
@@ -82,13 +83,13 @@ Contributions to public projects outside my own account, refreshed daily from Gi
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=166b0d17">
-  <img alt="language and repository stats" src="out/stats-light.svg?v=abdf8649">
+  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=727f26e9">
+  <img alt="language and repository stats" src="out/stats-light.svg?v=797f4cf1">
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=a0766e94">
-  <img alt="126 active days in the last year" src="out/heatmap-light.svg?v=450e2688">
+  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=711a99de">
+  <img alt="127 active days in the last year" src="out/heatmap-light.svg?v=41512827">
 </picture>
 
 <picture>
