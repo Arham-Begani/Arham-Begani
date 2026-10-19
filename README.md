@@ -10,8 +10,8 @@
 </div>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=393f6bd8">
-  <img alt="3187 contributions in the last year" src="out/hero-light.svg?v=ecb5e82e">
+  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=5f6d86c4">
+  <img alt="3188 contributions in the last year" src="out/hero-light.svg?v=2174c8d9">
 </picture>
 
 <p align="center"><a href="https://forze.in">forze.in</a> &nbsp;·&nbsp; <a href="https://linkedin.com/in/arhambegani">linkedin</a></p>
