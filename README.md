@@ -10,8 +10,8 @@
 </div>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=7b20b520">
-  <img alt="3180 contributions in the last year" src="out/hero-light.svg?v=45cabdf5">
+  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=87471e27">
+  <img alt="3185 contributions in the last year" src="out/hero-light.svg?v=b8e20f2f">
 </picture>
 
 <p align="center"><a href="https://forze.in">forze.in</a> &nbsp;·&nbsp; <a href="https://linkedin.com/in/arhambegani">linkedin</a></p>
@@ -57,6 +57,7 @@ Contributions to public projects outside my own account, refreshed daily from Gi
 
 | Project | Contribution | Status |
 | --- | --- | --- |
+| [kvpress](https://github.com/NVIDIA/kvpress) | [Stop pipeline generation at an immediate EOS 🤖🤖🤖 · #307](https://github.com/NVIDIA/kvpress/pull/307) | Merged · 2026-10-19 |
 | [pytest-env](https://github.com/pytest-dev/pytest-env) | [fix: respect Windows key casing when preserving existing env values · #278](https://github.com/pytest-dev/pytest-env/pull/278) | Merged · 2026-10-18 |
 | [first-contributions](https://github.com/firstcontributions/first-contributions) | [arham · #86678](https://github.com/firstcontributions/first-contributions/pull/86678) | Merged · 2024-07-20 |
 
@@ -65,7 +66,6 @@ Contributions to public projects outside my own account, refreshed daily from Gi
 | Project | Contribution | Status |
 | --- | --- | --- |
 | [trio](https://github.com/python-trio/trio) | [Preserve nursery cleanup when exception repr raises · #3548](https://github.com/python-trio/trio/pull/3548) | Open |
-| [kvpress](https://github.com/NVIDIA/kvpress) | [Stop pipeline generation at an immediate EOS 🤖🤖🤖 · #307](https://github.com/NVIDIA/kvpress/pull/307) | Draft |
 | [awesome-ai-apps](https://github.com/Arindam200/awesome-ai-apps) | [feat: add A2A collaboration example with Agno and LangGraph · #368](https://github.com/Arindam200/awesome-ai-apps/pull/368) | Open |
 | [pytest-timeout](https://github.com/pytest-dev/pytest-timeout) | [fix: preserve capture fixture output on thread timeouts · #212](https://github.com/pytest-dev/pytest-timeout/pull/212) | Open |
 | [pytest-rerunfailures](https://github.com/pytest-dev/pytest-rerunfailures) | [fix: prevent internal errors from non-finite rerun delays · #391](https://github.com/pytest-dev/pytest-rerunfailures/pull/391) | Open |
@@ -85,8 +85,8 @@ Contributions to public projects outside my own account, refreshed daily from Gi
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=f59ed6c6">
-  <img alt="language and repository stats" src="out/stats-light.svg?v=221d04a5">
+  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=82fbeebf">
+  <img alt="language and repository stats" src="out/stats-light.svg?v=1549d84e">
 </picture>
 
 <picture>
