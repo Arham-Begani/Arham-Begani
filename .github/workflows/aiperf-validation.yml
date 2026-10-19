@@ -1,0 +1,81 @@
+name: Validate prepared AIPerf patch
+
+on:
+  push:
+    branches: [oss-validation/aiperf-1583]
+    paths:
+      - .github/workflows/aiperf-validation.yml
+      - .github/validation/**
+
+permissions:
+  contents: read
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      AIPERF_REPO: ${{ runner.temp }}/aiperf-validation-checkout
+      PYTHONUTF8: "1"
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ runner.temp }}/aiperf-validation-checkout
+    steps:
+      - name: Check out validation assets
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.12"
+      - name: Set up uv
+        uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
+        with:
+          enable-cache: false
+      - name: Apply the exact reviewed patch to the audited upstream base
+        id: prepare
+        working-directory: ${{ github.workspace }}
+        run: |
+          git init "$AIPERF_REPO"
+          git -C "$AIPERF_REPO" remote add origin https://github.com/ai-dynamo/aiperf.git
+          git -C "$AIPERF_REPO" fetch --depth=1 origin f7257c900f3d38a3ca1f7ba7f40aca05ffe0123e
+          git -C "$AIPERF_REPO" checkout --detach FETCH_HEAD
+          python -c 'import hashlib,os,pathlib; p=pathlib.Path(os.environ["GITHUB_WORKSPACE"])/".github/validation/aiperf-network-latency.patch"; assert hashlib.sha256(p.read_bytes()).hexdigest()=="6960a1142aeafcb1479e72e6f87401dbb7dfa0e2a07df1704a8dc21d533efc0a"'
+          git -C "$AIPERF_REPO" apply --check "$GITHUB_WORKSPACE/.github/validation/aiperf-network-latency.patch"
+          git -C "$AIPERF_REPO" apply "$GITHUB_WORKSPACE/.github/validation/aiperf-network-latency.patch"
+      - name: Install the locked upstream CI environment
+        id: install
+        run: make ci-install PYTHON_VERSION=3.12 2>&1 | tee "$RUNNER_TEMP/aiperf-install.log"
+      - name: Run unmodified upstream pre-commit hooks
+        if: ${{ always() && steps.install.outcome == 'success' }}
+        run: |
+          uv run pre-commit run --files src/aiperf/config/flags/resolver.py tests/unit/config/test_config_telemetry_overrides.py docs/metrics-reference.md 2>&1 | tee "$RUNNER_TEMP/aiperf-pre-commit.log"
+      - name: Verify the tested source still equals the reviewed patch
+        id: exact_patch
+        if: ${{ always() && steps.install.outcome == 'success' }}
+        run: |
+          git diff --binary > "$RUNNER_TEMP/aiperf-resulting.patch"
+          python -c 'import os,pathlib; expected=pathlib.Path(os.environ["GITHUB_WORKSPACE"])/".github/validation/aiperf-network-latency.patch"; actual=pathlib.Path(os.environ["RUNNER_TEMP"])/"aiperf-resulting.patch"; assert expected.read_bytes()==actual.read_bytes(), "Hooks changed the reviewed patch"'
+          git diff --check
+      - name: Run the complete unit suite
+        if: ${{ always() && steps.exact_patch.outcome == 'success' }}
+        run: uv run pytest tests/unit/ -n 2 -q --tb=short --maxfail=1 --junitxml="$RUNNER_TEMP/aiperf-unit.xml" 2>&1 | tee "$RUNNER_TEMP/aiperf-unit.log"
+      - name: Run property invariants
+        if: ${{ always() && steps.exact_patch.outcome == 'success' }}
+        run: uv run pytest tests/unit/property/ -n 2 -q --tb=short --junitxml="$RUNNER_TEMP/aiperf-property.xml" 2>&1 | tee "$RUNNER_TEMP/aiperf-property.log"
+      - name: Verify YAML-only calibration through the real CLI
+        if: ${{ always() && steps.exact_patch.outcome == 'success' }}
+        run: uv run python "$GITHUB_WORKSPACE/.github/validation/aiperf_live_mock.py"
+      - name: Preserve actual results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: aiperf-linux-validation
+          retention-days: 7
+          path: |
+            ${{ runner.temp }}/aiperf-*.log
+            ${{ runner.temp }}/aiperf-*.xml
+            ${{ runner.temp }}/aiperf-resulting.patch
+            ${{ runner.temp }}/aiperf-mock
