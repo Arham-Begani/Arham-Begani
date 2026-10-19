@@ -10,8 +10,8 @@
 </div>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=57c96984">
-  <img alt="3171 contributions in the last year" src="out/hero-light.svg?v=cfcd48e4">
+  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=b29a4629">
+  <img alt="3172 contributions in the last year" src="out/hero-light.svg?v=255e005d">
 </picture>
 
 <p align="center"><a href="https://forze.in">forze.in</a> &nbsp;·&nbsp; <a href="https://linkedin.com/in/arhambegani">linkedin</a></p>
@@ -64,6 +64,7 @@ Contributions to public projects outside my own account, refreshed daily from Gi
 
 | Project | Contribution | Status |
 | --- | --- | --- |
+| [kvpress](https://github.com/NVIDIA/kvpress) | [Stop pipeline generation at an immediate EOS 🤖🤖🤖 · #307](https://github.com/NVIDIA/kvpress/pull/307) | Draft |
 | [awesome-ai-apps](https://github.com/Arindam200/awesome-ai-apps) | [feat: add A2A collaboration example with Agno and LangGraph · #368](https://github.com/Arindam200/awesome-ai-apps/pull/368) | Open |
 | [pytest-timeout](https://github.com/pytest-dev/pytest-timeout) | [fix: preserve capture fixture output on thread timeouts · #212](https://github.com/pytest-dev/pytest-timeout/pull/212) | Open |
 | [pytest-rerunfailures](https://github.com/pytest-dev/pytest-rerunfailures) | [fix: prevent internal errors from non-finite rerun delays · #391](https://github.com/pytest-dev/pytest-rerunfailures/pull/391) | Open |
