@@ -10,8 +10,8 @@
 </div>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=1d88bbb5">
-  <img alt="3197 contributions in the last year" src="out/hero-light.svg?v=81e8f39d">
+  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=41d4001c">
+  <img alt="3201 contributions in the last year" src="out/hero-light.svg?v=d8da6438">
 </picture>
 
 <p align="center"><a href="https://forze.in">forze.in</a> &nbsp;·&nbsp; <a href="https://linkedin.com/in/arhambegani">linkedin</a></p>
@@ -65,10 +65,10 @@ Contributions to public projects outside my own account, refreshed daily from Gi
 
 | Project | Contribution | Status |
 | --- | --- | --- |
+| [aiperf](https://github.com/ai-dynamo/aiperf) | [fix(config): preserve YAML network-latency calibration · #1587](https://github.com/ai-dynamo/aiperf/pull/1587) | Open |
 | [pytest-rerunfailures](https://github.com/pytest-dev/pytest-rerunfailures) | [fix: prevent internal errors from non-finite rerun delays · #391](https://github.com/pytest-dev/pytest-rerunfailures/pull/391) | Open |
 | [iggy](https://github.com/apache/iggy) | [feat(node): expose client lifecycle events through on and once · #4552](https://github.com/apache/iggy/pull/4552) | Open |
 | [llama_index](https://github.com/run-llama/llama_index) | [fix(core): repair streamed partial JSON inside arrays and escaped strings · #23470](https://github.com/run-llama/llama_index/pull/23470) | Open |
-| [aiperf](https://github.com/ai-dynamo/aiperf) | [fix(config): preserve YAML network-latency calibration · #1587](https://github.com/ai-dynamo/aiperf/pull/1587) | Open |
 | [agent-control-standard](https://github.com/GenAI-Security-Project/agent-control-standard) | [refimpl: add first-stage Rust AGT Guardian · #187](https://github.com/GenAI-Security-Project/agent-control-standard/pull/187) | Open |
 | [awesome-ai-apps](https://github.com/Arindam200/awesome-ai-apps) | [feat: add A2A collaboration example with Agno and LangGraph · #368](https://github.com/Arindam200/awesome-ai-apps/pull/368) | Open |
 | [pytest-timeout](https://github.com/pytest-dev/pytest-timeout) | [fix: preserve capture fixture output on thread timeouts · #212](https://github.com/pytest-dev/pytest-timeout/pull/212) | Open |
@@ -78,10 +78,11 @@ Contributions to public projects outside my own account, refreshed daily from Gi
 | [uv](https://github.com/astral-sh/uv) | [Move UV\_GIT\_LFS handling into environment settings · #22002](https://github.com/astral-sh/uv/pull/22002) | Open |
 
 <details>
-<summary>Closed without merging · 1</summary>
+<summary>Closed without merging · 2</summary>
 
 | Project | Contribution | Status |
 | --- | --- | --- |
+| [python-gitlab](https://github.com/python-gitlab/python-gitlab) | [fix(cli): resolve parent IDs when creating commit statuses · #3453](https://github.com/python-gitlab/python-gitlab/pull/3453) | Closed without merge |
 | [trio](https://github.com/python-trio/trio) | [Preserve nursery cleanup when exception repr raises · #3548](https://github.com/python-trio/trio/pull/3548) | Closed without merge |
 
 </details>
@@ -94,13 +95,13 @@ Contributions to public projects outside my own account, refreshed daily from Gi
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=9a0866bf">
-  <img alt="language and repository stats" src="out/stats-light.svg?v=1b6c53d8">
+  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=62a97de5">
+  <img alt="language and repository stats" src="out/stats-light.svg?v=df093bca">
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=99f0331a">
-  <img alt="127 active days in the last year" src="out/heatmap-light.svg?v=126f1e1e">
+  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=fde93f0d">
+  <img alt="128 active days in the last year" src="out/heatmap-light.svg?v=034107f0">
 </picture>
 
 <picture>
