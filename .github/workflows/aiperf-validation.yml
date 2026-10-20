@@ -40,7 +40,7 @@ jobs:
         run: |
           git init "$AIPERF_REPO"
           git -C "$AIPERF_REPO" remote add origin https://github.com/ai-dynamo/aiperf.git
-          git -C "$AIPERF_REPO" fetch --depth=1 origin f7257c900f3d38a3ca1f7ba7f40aca05ffe0123e
+          git -C "$AIPERF_REPO" fetch --depth=1 origin b0276e19398169eb450f5a79db28509dd4bcb48f
           git -C "$AIPERF_REPO" checkout --detach FETCH_HEAD
           python -c 'import hashlib,os,pathlib; p=pathlib.Path(os.environ["GITHUB_WORKSPACE"])/".github/validation/aiperf-network-latency.patch"; assert hashlib.sha256(p.read_bytes()).hexdigest()=="6960a1142aeafcb1479e72e6f87401dbb7dfa0e2a07df1704a8dc21d533efc0a"'
           git -C "$AIPERF_REPO" apply --check "$GITHUB_WORKSPACE/.github/validation/aiperf-network-latency.patch"
