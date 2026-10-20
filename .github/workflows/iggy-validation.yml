@@ -178,11 +178,12 @@ jobs:
           wait-timeout-seconds: "90"
         env:
           IGGY_PATH: ${{ runner.temp }}/iggy-data-bdd
-      - name: Full Node BDD suite against real server
+      - name: All upstream-supported Node BDD scenarios against real server
         if: always() && steps.bdd.outcome == 'success'
         run: |
           cd foreign/node
-          IGGY_TCP_ADDRESS=127.0.0.1:8090 IGGY_ROOT_USERNAME=iggy IGGY_ROOT_PASSWORD=iggy npm run test:bdd 2>&1 | tee "$RUNNER_TEMP/iggy-results/bdd.log"
+          # bdd/node/Dockerfile copies only these two implemented feature sets.
+          IGGY_TCP_ADDRESS=127.0.0.1:8090 IGGY_ROOT_USERNAME=iggy IGGY_ROOT_PASSWORD=iggy npm run test:bdd -- --tags '@basic-messaging or @raw-command' 2>&1 | tee "$RUNNER_TEMP/iggy-results/bdd.log"
       - name: Stop BDD server
         if: always()
         uses: ./iggy/.github/actions/utils/server-stop
