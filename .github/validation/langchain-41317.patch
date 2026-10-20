@@ -1,0 +1,66 @@
+diff --git a/libs/core/langchain_core/messages/utils.py b/libs/core/langchain_core/messages/utils.py
+index 091ebf9..a6184d0 100644
+--- a/libs/core/langchain_core/messages/utils.py
++++ b/libs/core/langchain_core/messages/utils.py
+@@ -1590,7 +1590,7 @@ def convert_to_openai_messages(
+ 
+     Raises:
+         ValueError: if an unrecognized `text_format` is specified, or if a message
+-            content block is missing expected keys.
++            content block is missing expected keys or uses an unsupported role.
+ 
+     Returns:
+         The return type depends on the input type:
+@@ -1814,6 +1814,15 @@ def convert_to_openai_messages(
+                     and isinstance(block.get("input_audio", {}).get("format"), str)
+                 ):
+                     content.append(block)
++                elif block.get("type") in {
++                    "tool_use",
++                    "function_call",
++                } and not isinstance(message, AIMessage):
++                    err = (
++                        f"Unrecognized content block at messages[{i}].content[{j}]: "
++                        f"{block.get('type')!r} is only valid for assistant messages."
++                    )
++                    raise ValueError(err)
+                 elif block.get("type") == "tool_use":
+                     if missing := [
+                         k for k in ("id", "name", "input") if k not in block
+diff --git a/libs/core/tests/unit_tests/messages/test_utils.py b/libs/core/tests/unit_tests/messages/test_utils.py
+index ce44968..4fb1f27 100644
+--- a/libs/core/tests/unit_tests/messages/test_utils.py
++++ b/libs/core/tests/unit_tests/messages/test_utils.py
+@@ -1224,6 +1224,32 @@ def test_convert_to_openai_messages_tool_use() -> None:
+     assert result[0]["tool_calls"][0]["function"]["arguments"] == json.dumps({"a": "b"})
+ 
+ 
++@pytest.mark.parametrize("role", ["user", "system", "developer"])
++@pytest.mark.parametrize(
++    "block",
++    [
++        {"type": "tool_use", "id": "123", "name": "calculator", "input": {"a": 1}},
++        {
++            "type": "function_call",
++            "call_id": "123",
++            "name": "calculator",
++            "arguments": '{"a": 1}',
++        },
++    ],
++)
++def test_convert_to_openai_messages_tool_call_requires_ai_message(
++    role: str, block: dict[str, Any]
++) -> None:
++    messages = [
++        {"role": "user", "content": "hello"},
++        {"role": role, "content": [{"type": "text", "text": "hello"}, block]},
++    ]
++    with pytest.raises(
++        ValueError, match=r"Unrecognized content block at messages\[1\].content\[1\]"
++    ):
++        convert_to_openai_messages(messages)
++
++
+ def test_convert_to_openai_messages_tool_use_unicode() -> None:
+     """Test that Unicode characters in tool call args are preserved correctly."""
+     messages = [

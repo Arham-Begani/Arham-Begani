@@ -1,0 +1,89 @@
+name: Validate prepared LangChain patch
+
+on:
+  push:
+    branches: [oss-validation/langchain-41317]
+    paths:
+      - .github/workflows/langchain-validation.yml
+      - .github/validation/langchain-41317.patch
+
+permissions:
+  contents: read
+
+jobs:
+  core:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ['3.10', '3.13']
+    env:
+      PYTHONUTF8: '1'
+      LANGSMITH_TRACING: 'false'
+    defaults:
+      run:
+        shell: bash
+        working-directory: langchain-checkout/libs/core
+    steps:
+      - name: Check out validation assets
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Set up uv
+        uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78
+        with:
+          enable-cache: false
+      - name: Apply exact patch to audited upstream source
+        working-directory: .
+        run: |
+          git init langchain-checkout
+          git -C langchain-checkout remote add origin https://github.com/langchain-ai/langchain.git
+          git -C langchain-checkout fetch --depth=1 origin afafd55d34cb11b794781fd0f7bef9127c633f84
+          git -C langchain-checkout checkout --detach FETCH_HEAD
+          echo '546006d53985e9e92f846f928fdc735dbbae15525675d64260bb4a00ca207e94  .github/validation/langchain-41317.patch' | sha256sum -c
+          git -C langchain-checkout apply --check "$GITHUB_WORKSPACE/.github/validation/langchain-41317.patch"
+          git -C langchain-checkout apply "$GITHUB_WORKSPACE/.github/validation/langchain-41317.patch"
+      - name: Install locked upstream environment
+        run: uv sync --frozen --all-groups --python '${{ matrix.python }}'
+      - name: Confirm regressions fail without the source change
+        run: |
+          uv run --frozen --no-sync --group test python - <<'PY'
+          import os
+          from pathlib import Path
+          import subprocess
+          path = Path('langchain_core/messages/utils.py')
+          patched = path.read_bytes()
+          baseline = subprocess.check_output(['git','show','HEAD:libs/core/langchain_core/messages/utils.py'])
+          try:
+              path.write_bytes(baseline)
+              result = subprocess.run(['uv','run','--frozen','--no-sync','--group','test','pytest','tests/unit_tests/messages/test_utils.py','-k','tool_call_requires_ai_message','--benchmark-disable','--disable-socket','--allow-unix-socket','-q'],capture_output=True,text=True)
+              Path(os.environ['RUNNER_TEMP'],'langchain-before.log').write_text(result.stdout+result.stderr)
+              print(result.stdout)
+              assert result.returncode == 1 and '6 failed' in result.stdout and 'AttributeError' in result.stdout
+          finally:
+              path.write_bytes(patched)
+          PY
+      - name: Run upstream make format and lint
+        run: make format lint 2>&1 | tee "$RUNNER_TEMP/langchain-lint.log"
+      - name: Verify formatting preserved the exact patch
+        run: |
+          git diff --binary > "$RUNNER_TEMP/langchain-resulting.patch"
+          cmp "$GITHUB_WORKSPACE/.github/validation/langchain-41317.patch" "$RUNNER_TEMP/langchain-resulting.patch"
+          git diff --check
+      - name: Run complete upstream core unit tests
+        run: make test PYTEST_EXTRA="-n 2 --junitxml=$RUNNER_TEMP/langchain-unit.xml" 2>&1 | tee "$RUNNER_TEMP/langchain-unit.log"
+      - name: Preserve actual results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: langchain-core-${{ matrix.python }}
+          retention-days: 7
+          path: |
+            ${{ runner.temp }}/langchain-*.log
+            ${{ runner.temp }}/langchain-*.xml
+            ${{ runner.temp }}/langchain-resulting.patch
