@@ -1,0 +1,66 @@
+name: Validate LangChain.js rebase
+
+on:
+  push:
+    branches: [oss-validation/langchainjs-11955]
+    paths: [.github/workflows/langchainjs-validation.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  openai:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: Arham-Begani/langchainjs
+          ref: 694e96efd6ee92efc9cd0b451a05e6904683011c
+          fetch-depth: 100
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.14.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - name: Record exact source and install locked dependencies
+        run: |
+          mkdir -p /tmp/langchainjs-results
+          git rev-parse HEAD HEAD^{tree} | tee /tmp/langchainjs-results/source.txt
+          node --version | tee /tmp/langchainjs-results/node.txt
+          pnpm --filter '@langchain/openai...' install --frozen-lockfile 2>&1 | tee /tmp/langchainjs-results/install.log
+      - name: Lint and check changed-file formatting
+        run: |
+          pnpm lint 2>&1 | tee /tmp/langchainjs-results/lint.log
+          git diff --name-only -z aecbc7eae0befb6103ef7d90b2c603d94af0e20a HEAD | xargs -0 pnpm exec oxfmt --check 2>&1 | tee /tmp/langchainjs-results/format.log
+      - name: Build core and run all OpenAI unit tests
+        run: |
+          pnpm --filter @langchain/core build 2>&1 | tee /tmp/langchainjs-results/build.log
+          pnpm --filter @langchain/openai test 2>&1 | tee /tmp/langchainjs-results/tests.log
+          git diff --exit-code
+      - name: Compare type-check diagnostics with unchanged upstream
+        shell: bash
+        run: |
+          set +e
+          pnpm --filter @langchain/openai exec tsc --noEmit > /tmp/langchainjs-results/types-head.log 2>&1
+          head_exit=$?
+          set -e
+          printf 'head exit: %s\n' "$head_exit" | tee /tmp/langchainjs-results/types-status.txt
+          if [ "$head_exit" -eq 0 ]; then exit 0; fi
+          git switch --detach aecbc7eae0befb6103ef7d90b2c603d94af0e20a
+          set +e
+          pnpm --filter @langchain/openai exec tsc --noEmit > /tmp/langchainjs-results/types-base.log 2>&1
+          base_exit=$?
+          set -e
+          printf 'base exit: %s\n' "$base_exit" | tee -a /tmp/langchainjs-results/types-status.txt
+          test "$base_exit" = "$head_exit"
+          diff -u /tmp/langchainjs-results/types-base.log /tmp/langchainjs-results/types-head.log | tee /tmp/langchainjs-results/types-diff.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: langchainjs-11955-linux-results
+          path: /tmp/langchainjs-results
