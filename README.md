@@ -65,6 +65,7 @@ Contributions to public projects outside my own account, refreshed daily from Gi
 
 | Project | Contribution | Status |
 | --- | --- | --- |
+| [langchainjs](https://github.com/langchain-ai/langchainjs) | [fix(openai): require an explicit model in ChatOpenAI · #11955](https://github.com/langchain-ai/langchainjs/pull/11955) | Open |
 | [iggy](https://github.com/apache/iggy) | [feat(node): expose client lifecycle events through on and once · #4552](https://github.com/apache/iggy/pull/4552) | Draft |
 | [pytest-timeout](https://github.com/pytest-dev/pytest-timeout) | [fix: preserve capture fixture output on thread timeouts · #212](https://github.com/pytest-dev/pytest-timeout/pull/212) | Open |
 | [aiperf](https://github.com/ai-dynamo/aiperf) | [fix(config): preserve YAML network-latency calibration · #1587](https://github.com/ai-dynamo/aiperf/pull/1587) | Open |
@@ -73,7 +74,6 @@ Contributions to public projects outside my own account, refreshed daily from Gi
 | [agent-control-standard](https://github.com/GenAI-Security-Project/agent-control-standard) | [refimpl: add first-stage Rust AGT Guardian · #187](https://github.com/GenAI-Security-Project/agent-control-standard/pull/187) | Open |
 | [awesome-ai-apps](https://github.com/Arindam200/awesome-ai-apps) | [feat: add A2A collaboration example with Agno and LangGraph · #368](https://github.com/Arindam200/awesome-ai-apps/pull/368) | Open |
 | [pyrefly](https://github.com/facebook/pyrefly) | [Resolve identifiers inside quoted annotations in the LSP. · #5243](https://github.com/facebook/pyrefly/pull/5243) | Open |
-| [langchainjs](https://github.com/langchain-ai/langchainjs) | [fix(openai): require an explicit model in ChatOpenAI · #11955](https://github.com/langchain-ai/langchainjs/pull/11955) | Open |
 | [langchainjs](https://github.com/langchain-ai/langchainjs) | [fix(anthropic): default ChatAnthropic to claude-sonnet-5-5 · #11943](https://github.com/langchain-ai/langchainjs/pull/11943) | Draft |
 | [uv](https://github.com/astral-sh/uv) | [Move UV\_GIT\_LFS handling into environment settings · #22002](https://github.com/astral-sh/uv/pull/22002) | Open |
 
