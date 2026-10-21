@@ -65,8 +65,8 @@ Contributions to public projects outside my own account, refreshed daily from Gi
 
 | Project | Contribution | Status |
 | --- | --- | --- |
+| [iggy](https://github.com/apache/iggy) | [feat(node): expose client lifecycle events through on and once · #4552](https://github.com/apache/iggy/pull/4552) | Open |
 | [langchainjs](https://github.com/langchain-ai/langchainjs) | [fix(openai): require an explicit model in ChatOpenAI · #11955](https://github.com/langchain-ai/langchainjs/pull/11955) | Open |
-| [iggy](https://github.com/apache/iggy) | [feat(node): expose client lifecycle events through on and once · #4552](https://github.com/apache/iggy/pull/4552) | Draft |
 | [pytest-timeout](https://github.com/pytest-dev/pytest-timeout) | [fix: preserve capture fixture output on thread timeouts · #212](https://github.com/pytest-dev/pytest-timeout/pull/212) | Open |
 | [aiperf](https://github.com/ai-dynamo/aiperf) | [fix(config): preserve YAML network-latency calibration · #1587](https://github.com/ai-dynamo/aiperf/pull/1587) | Open |
 | [pytest-rerunfailures](https://github.com/pytest-dev/pytest-rerunfailures) | [fix: prevent internal errors from non-finite rerun delays · #391](https://github.com/pytest-dev/pytest-rerunfailures/pull/391) | Open |
