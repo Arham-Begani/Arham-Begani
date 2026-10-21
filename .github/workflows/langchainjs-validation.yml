@@ -58,7 +58,34 @@ jobs:
           set -e
           printf 'base exit: %s\n' "$base_exit" | tee -a /tmp/langchainjs-results/types-status.txt
           test "$base_exit" = "$head_exit"
-          diff -u /tmp/langchainjs-results/types-base.log /tmp/langchainjs-results/types-head.log | tee /tmp/langchainjs-results/types-diff.log
+          diff -u /tmp/langchainjs-results/types-base.log /tmp/langchainjs-results/types-head.log > /tmp/langchainjs-results/types-diff.log || true
+          python - <<'PY'
+          import difflib, pathlib, posixpath, re, subprocess
+          root = pathlib.Path('/tmp/langchainjs-results')
+          base = 'aecbc7eae0befb6103ef7d90b2c603d94af0e20a'
+          head = '694e96efd6ee92efc9cd0b451a05e6904683011c'
+          maps = {}
+          def source(ref, path):
+              return subprocess.check_output(['git', 'show', f'{ref}:{path}']).decode().splitlines()
+          def remap(match):
+              path, line, column = match.groups()
+              if path not in maps:
+                  repo_path = posixpath.normpath('libs/providers/langchain-openai/' + path)
+                  before, after = source(base, repo_path), source(head, repo_path)
+                  maps[path] = {}
+                  for block in difflib.SequenceMatcher(None, before, after, autojunk=False).get_matching_blocks():
+                      maps[path].update({block.b + offset + 1: block.a + offset + 1 for offset in range(block.size)})
+              assert int(line) in maps[path], f'Diagnostic on a changed source line: {path}:{line}'
+              return f'{path}({maps[path][int(line)]},{column}): error TS'
+          pattern = r'^([^\n(]+)\((\d+),(\d+)\): error TS'
+          normalized = re.sub(pattern, remap, (root / 'types-head.log').read_text(), flags=re.M)
+          (root / 'types-head-mapped.log').write_text(normalized)
+          assert normalized == (root / 'types-base.log').read_text(), 'Type diagnostics differ after mapping unchanged lines'
+          count = len(re.findall(pattern, normalized, re.M))
+          result = f'{count} identical baseline diagnostics; all anchors map to unchanged source lines.\n'
+          (root / 'types-comparison.txt').write_text(result)
+          print(result)
+          PY
       - uses: actions/upload-artifact@v4
         if: always()
         with:
