@@ -68,7 +68,7 @@ jobs:
       - name: Verify hooks did not change tested source
         if: always()
         run: |
-          test "$(git rev-parse HEAD)" = 9e228a50734ab9310fecd420871fb910d309a29c
+          test "$(git rev-parse HEAD)" = 19359fa2f36f70daafc4e613e76465ecf22b3ce1
           git diff --exit-code HEAD
           git diff HEAD --check
       - name: SDK lint and build
@@ -192,7 +192,7 @@ jobs:
       - name: Verify final tested source
         if: always()
         run: |
-          test "$(git rev-parse HEAD)" = 9e228a50734ab9310fecd420871fb910d309a29c
+          test "$(git rev-parse HEAD)" = 19359fa2f36f70daafc4e613e76465ecf22b3ce1
           git diff --exit-code HEAD
       - name: Save actual server and test results
         if: always()
