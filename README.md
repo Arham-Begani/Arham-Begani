@@ -10,8 +10,8 @@
 </div>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=45846cbc">
-  <img alt="3212 contributions in the last year" src="out/hero-light.svg?v=efe4145a">
+  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=3e5ab632">
+  <img alt="3213 contributions in the last year" src="out/hero-light.svg?v=a2a06ad6">
 </picture>
 
 <p align="center"><a href="https://forze.in">forze.in</a> &nbsp;·&nbsp; <a href="https://linkedin.com/in/arhambegani">linkedin</a></p>
@@ -65,6 +65,7 @@ Contributions to public projects outside my own account, refreshed daily from Gi
 
 | Project | Contribution | Status |
 | --- | --- | --- |
+| [vscode](https://github.com/microsoft/vscode) | [Fix save locations for untitled custom editors in virtual workspaces · #343326](https://github.com/microsoft/vscode/pull/343326) | Open |
 | [iggy](https://github.com/apache/iggy) | [feat(node): expose client lifecycle events through on and once · #4552](https://github.com/apache/iggy/pull/4552) | Open |
 | [aiperf](https://github.com/ai-dynamo/aiperf) | [fix(config): preserve YAML network-latency calibration · #1587](https://github.com/ai-dynamo/aiperf/pull/1587) | Open |
 | [langchainjs](https://github.com/langchain-ai/langchainjs) | [fix(openai): require an explicit model in ChatOpenAI · #11955](https://github.com/langchain-ai/langchainjs/pull/11955) | Open |
