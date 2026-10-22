@@ -6,9 +6,9 @@ from pathlib import Path
 import subprocess
 
 BASE = 'c5709f52042477d24c0847e6035bfdcafddc32bc'
-HEAD = 'fc31fa2eec9cea7c9750e7c0920b706623afe463'
-TREE = '6f3909795e80b7da809f0cc64da52e9779ce51d9'
-BUNDLE_SHA256 = '4c57f1ff4b39e051db4fab675e62f85abadf38bee952b6dd6c2e59334c6de595'
+HEAD = 'a3de19bd7923ba57931fadbe3a05b5b293ee3ada'
+TREE = '8af1b6ccda2bf7925ea63ce733396dbdc9df677a'
+BUNDLE_SHA256 = '221f0ecdc1d678e48c192f3d9d854638faea75d0c9a454a774bea441cab5a9da'
 root = Path(os.environ['GITHUB_WORKSPACE'])
 bundle = root / '.github/validation/iggy-4552.bundle'
 assert hashlib.sha256(bundle.read_bytes()).hexdigest() == BUNDLE_SHA256
