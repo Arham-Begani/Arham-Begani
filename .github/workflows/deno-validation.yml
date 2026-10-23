@@ -80,9 +80,7 @@ jobs:
         run: cargo test --locked -p deno_http_h1 2>&1 | tee "$RUNNER_TEMP/deno-results/http-h1.log"
       - name: Build modified runtime and test server
         run: cargo build --locked -p deno -p test_server --bin deno --bin test_server 2>&1 | tee "$RUNNER_TEMP/deno-results/build.log"
-      - name: Run regression using modified runtime
-        run: target/debug/deno test --no-check -A --config tests/config/deno.json tests/unit/serve_test.ts --filter httpServerResponseConnectionClose 2>&1 | tee "$RUNNER_TEMP/deno-results/regression.log"
-      - name: Run complete HTTP server unit file
+      - name: Run HTTP server unit file including regression through harness
         run: ./x test-unit serve_test 2>&1 | tee "$RUNNER_TEMP/deno-results/serve-tests.log"
       - name: Run repository lint
         run: ./x lint 2>&1 | tee "$RUNNER_TEMP/deno-results/lint.log"
