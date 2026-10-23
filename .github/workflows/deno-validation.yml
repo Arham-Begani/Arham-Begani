@@ -42,8 +42,8 @@ jobs:
         run: git submodule update --init --depth 1 tests/util/std
       - name: Install native dependencies
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends cmake libglib2.0-dev libssl-dev pkg-config protobuf-compiler clang lld
+          sudo apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 update
+          sudo apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 install -y --no-install-recommends cmake libglib2.0-dev libssl-dev pkg-config protobuf-compiler clang lld
           df -h .
           free -h
       - uses: denoland/setup-deno@667a34cdef165d8d2b2e98dde39547c9daac7282
@@ -83,7 +83,7 @@ jobs:
       - name: Run regression using modified runtime
         run: target/debug/deno test --no-check -A --config tests/config/deno.json tests/unit/serve_test.ts --filter httpServerResponseConnectionClose 2>&1 | tee "$RUNNER_TEMP/deno-results/regression.log"
       - name: Run complete HTTP server unit file
-        run: ./x test serve_test 2>&1 | tee "$RUNNER_TEMP/deno-results/serve-tests.log"
+        run: ./x test-unit serve_test 2>&1 | tee "$RUNNER_TEMP/deno-results/serve-tests.log"
       - name: Run repository lint
         run: ./x lint 2>&1 | tee "$RUNNER_TEMP/deno-results/lint.log"
       - name: Verify tested source unchanged
