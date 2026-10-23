@@ -1,4 +1,4 @@
-name: Validate prepared Iggy rebase
+name: Validate prepared Iggy branch
 
 on:
   push:
@@ -64,11 +64,11 @@ jobs:
       - name: Run all applicable unmodified prek hooks
         id: hooks
         if: matrix.node == '24'
-        run: prek run --from-ref c5709f52042477d24c0847e6035bfdcafddc32bc --to-ref HEAD 2>&1 | tee "$RUNNER_TEMP/iggy-results/prek.log"
+        run: prek run --from-ref 87528db58f2941e180547b54860dc855c161594b --to-ref HEAD 2>&1 | tee "$RUNNER_TEMP/iggy-results/prek.log"
       - name: Verify hooks did not change tested source
         if: always()
         run: |
-          test "$(git rev-parse HEAD)" = 63c8f036e7f8a2705c67aabb95068798dfd41dd4
+          test "$(git rev-parse HEAD)" = 647007e9032806938caea1b4c938b87d67f3e51a
           git diff --exit-code HEAD
           git diff HEAD --check
       - name: SDK lint and build
@@ -129,7 +129,9 @@ jobs:
           working-directory: iggy
           log-file: ${{ runner.temp }}/iggy-results/server-tcp.log
           pid-file: ${{ runner.temp }}/iggy-tcp.pid
+          encryption-enabled: "true"
           wait-timeout-seconds: "90"
+          encryption-key: "/rvT1xP4V8u1EAhk4xDdqzqM2UOPXyy9XYkl4uRShgE="
         env:
           IGGY_PATH: ${{ runner.temp }}/iggy-data-tcp
       - name: Full real-server TCP E2E suite
@@ -151,6 +153,7 @@ jobs:
           log-file: ${{ runner.temp }}/iggy-results/server-tls.log
           pid-file: ${{ runner.temp }}/iggy-tls.pid
           wait-timeout-seconds: "90"
+          encryption-key: "/rvT1xP4V8u1EAhk4xDdqzqM2UOPXyy9XYkl4uRShgE="
         env:
           IGGY_PATH: ${{ runner.temp }}/iggy-data-tls
           IGGY_TCP_TLS_ENABLED: "true"
@@ -175,15 +178,17 @@ jobs:
           working-directory: iggy
           log-file: ${{ runner.temp }}/iggy-results/server-bdd.log
           pid-file: ${{ runner.temp }}/iggy-bdd.pid
+          encryption-enabled: "true"
           wait-timeout-seconds: "90"
+          encryption-key: "/rvT1xP4V8u1EAhk4xDdqzqM2UOPXyy9XYkl4uRShgE="
         env:
           IGGY_PATH: ${{ runner.temp }}/iggy-data-bdd
       - name: All upstream-supported Node BDD scenarios against real server
         if: always() && steps.bdd.outcome == 'success'
         run: |
           cd foreign/node
-          # bdd/node/Dockerfile copies only these two implemented feature sets.
-          IGGY_TCP_ADDRESS=127.0.0.1:8090 IGGY_ROOT_USERNAME=iggy IGGY_ROOT_PASSWORD=iggy npm run test:bdd -- --tags '@basic-messaging or @raw-command' 2>&1 | tee "$RUNNER_TEMP/iggy-results/bdd.log"
+          # Match the five feature sets in the current bdd/node/Dockerfile.
+          IGGY_TCP_ADDRESS=127.0.0.1:8090 IGGY_ROOT_USERNAME=iggy IGGY_ROOT_PASSWORD=iggy npm run test:bdd -- --tags '@basic-messaging or @raw-command or @stream-options or @resource-options-patch or @session-contract' 2>&1 | tee "$RUNNER_TEMP/iggy-results/bdd.log"
       - name: Stop BDD server
         if: always()
         uses: ./iggy/.github/actions/utils/server-stop
@@ -192,7 +197,7 @@ jobs:
       - name: Verify final tested source
         if: always()
         run: |
-          test "$(git rev-parse HEAD)" = 63c8f036e7f8a2705c67aabb95068798dfd41dd4
+          test "$(git rev-parse HEAD)" = 647007e9032806938caea1b4c938b87d67f3e51a
           git diff --exit-code HEAD
       - name: Save actual server and test results
         if: always()
