@@ -183,12 +183,55 @@ jobs:
           encryption-key: "/rvT1xP4V8u1EAhk4xDdqzqM2UOPXyy9XYkl4uRShgE="
         env:
           IGGY_PATH: ${{ runner.temp }}/iggy-data-bdd
-      - name: All upstream-supported Node BDD scenarios against real server
+      - name: Start isolated replica without quorum for session contract
+        id: no-quorum
         if: always() && steps.bdd.outcome == 'success'
+        uses: ./iggy/.github/actions/utils/server-start
+        with:
+          bin: ${{ github.workspace }}/iggy/target/debug/iggy-server
+          working-directory: iggy
+          tcp_address: 127.0.0.1:8093
+          http_address: 127.0.0.1:3003
+          replica-id: "0"
+          log-file: ${{ runner.temp }}/iggy-results/server-no-quorum.log
+          pid-file: ${{ runner.temp }}/iggy-no-quorum.pid
+          wait-timeout-seconds: "90"
+        env:
+          # Mirror bdd/docker-compose.no-quorum.yml on isolated loopback ports.
+          IGGY_PATH: ${{ runner.temp }}/iggy-data-no-quorum
+          IGGY_CLUSTER_ENABLED: "true"
+          IGGY_CLUSTER_NAME: no-quorum-cluster
+          IGGY_CLUSTER_NODES_0_NAME: no-quorum-node
+          IGGY_CLUSTER_NODES_0_IP: 127.0.0.1
+          IGGY_CLUSTER_NODES_0_REPLICA_ID: "0"
+          IGGY_CLUSTER_NODES_0_PORTS_TCP: "8093"
+          IGGY_CLUSTER_NODES_0_PORTS_QUIC: "8083"
+          IGGY_CLUSTER_NODES_0_PORTS_HTTP: "3003"
+          IGGY_CLUSTER_NODES_0_PORTS_WEBSOCKET: "8073"
+          IGGY_CLUSTER_NODES_0_PORTS_TCP_REPLICA: "8193"
+          IGGY_CLUSTER_NODES_1_NAME: absent-node
+          IGGY_CLUSTER_NODES_1_IP: 127.0.0.2
+          IGGY_CLUSTER_NODES_1_REPLICA_ID: "1"
+          IGGY_CLUSTER_NODES_1_PORTS_TCP: "8094"
+          IGGY_CLUSTER_NODES_1_PORTS_QUIC: "8084"
+          IGGY_CLUSTER_NODES_1_PORTS_HTTP: "3004"
+          IGGY_CLUSTER_NODES_1_PORTS_WEBSOCKET: "8074"
+          IGGY_CLUSTER_NODES_1_PORTS_TCP_REPLICA: "8194"
+          IGGY_CLUSTER_AUTH_ENABLED: "true"
+          IGGY_CLUSTER_AUTH_SHARED_SECRET: "bdd-vsr-no-quorum-shared-secret-0123456789"
+          IGGY_QUIC_ADDRESS: 127.0.0.1:8083
+          IGGY_WEBSOCKET_ADDRESS: 127.0.0.1:8073
+      - name: All upstream-supported Node BDD scenarios against real server
+        if: always() && steps.no-quorum.outcome == 'success'
         run: |
           cd foreign/node
           # Match the five feature sets in the current bdd/node/Dockerfile.
-          IGGY_TCP_ADDRESS=127.0.0.1:8090 IGGY_ROOT_USERNAME=iggy IGGY_ROOT_PASSWORD=iggy npm run test:bdd -- --tags '@basic-messaging or @raw-command or @stream-options or @resource-options-patch or @session-contract' 2>&1 | tee "$RUNNER_TEMP/iggy-results/bdd.log"
+          IGGY_TCP_ADDRESS=127.0.0.1:8090 IGGY_TCP_ADDRESS_NO_QUORUM=127.0.0.1:8093 IGGY_ROOT_USERNAME=iggy IGGY_ROOT_PASSWORD=iggy npm run test:bdd -- --tags '@basic-messaging or @raw-command or @stream-options or @resource-options-patch or @session-contract' 2>&1 | tee "$RUNNER_TEMP/iggy-results/bdd.log"
+      - name: Stop replica without quorum
+        if: always()
+        uses: ./iggy/.github/actions/utils/server-stop
+        with:
+          pid-file: ${{ runner.temp }}/iggy-no-quorum.pid
       - name: Stop BDD server
         if: always()
         uses: ./iggy/.github/actions/utils/server-stop
