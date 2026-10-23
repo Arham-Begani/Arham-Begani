@@ -10,8 +10,8 @@
 </div>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=f8bef356">
-  <img alt="3214 contributions in the last year" src="out/hero-light.svg?v=c056b17d">
+  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=fe0e72f6">
+  <img alt="3214 contributions in the last year" src="out/hero-light.svg?v=ced2fe32">
 </picture>
 
 <p align="center"><a href="https://forze.in">forze.in</a> &nbsp;·&nbsp; <a href="https://linkedin.com/in/arhambegani">linkedin</a></p>
@@ -65,8 +65,8 @@ Contributions to public projects outside my own account, refreshed daily from Gi
 
 | Project | Contribution | Status |
 | --- | --- | --- |
-| [awesome-ai-apps](https://github.com/Arindam200/awesome-ai-apps) | [feat: add A2A collaboration example with Agno and LangGraph · #368](https://github.com/Arindam200/awesome-ai-apps/pull/368) | Open |
 | [iggy](https://github.com/apache/iggy) | [feat(node): expose client lifecycle events through on and once · #4552](https://github.com/apache/iggy/pull/4552) | Open |
+| [awesome-ai-apps](https://github.com/Arindam200/awesome-ai-apps) | [feat: add A2A collaboration example with Agno and LangGraph · #368](https://github.com/Arindam200/awesome-ai-apps/pull/368) | Open |
 | [vscode](https://github.com/microsoft/vscode) | [Fix save locations for untitled custom editors in virtual workspaces · #343326](https://github.com/microsoft/vscode/pull/343326) | Open |
 | [aiperf](https://github.com/ai-dynamo/aiperf) | [fix(config): preserve YAML network-latency calibration · #1587](https://github.com/ai-dynamo/aiperf/pull/1587) | Open |
 | [langchainjs](https://github.com/langchain-ai/langchainjs) | [fix(openai): require an explicit model in ChatOpenAI · #11955](https://github.com/langchain-ai/langchainjs/pull/11955) | Open |
@@ -101,8 +101,8 @@ Contributions to public projects outside my own account, refreshed daily from Gi
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=10ed7997">
-  <img alt="130 active days in the last year" src="out/heatmap-light.svg?v=5434c8fd">
+  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=f2c7bd13">
+  <img alt="130 active days in the last year" src="out/heatmap-light.svg?v=298d1ff9">
 </picture>
 
 <picture>
