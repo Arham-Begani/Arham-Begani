@@ -1,0 +1,106 @@
+name: Validate Deno HTTP connection close fix
+
+on:
+  push:
+    branches: [oss-validation/deno-37050]
+    paths:
+      - .github/workflows/deno-validation.yml
+      - .github/validation/deno/**
+
+permissions:
+  contents: read
+
+jobs:
+  linux:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    env:
+      CARGO_PROFILE_DEV_DEBUG: 0
+      CARGO_PROFILE_TEST_DEBUG: 0
+      CARGO_INCREMENTAL: 0
+      CARGO_BUILD_JOBS: 3
+      CARGO_TERM_COLOR: never
+      RUST_BACKTRACE: 1
+    defaults:
+      run:
+        shell: bash
+        working-directory: deno
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          repository: denoland/deno
+          ref: d7205acbed60f68414d1485407a5b50bc867131e
+          path: deno
+          persist-credentials: false
+      - name: Prepare exact proposed source
+        working-directory: .
+        run: python3 .github/validation/deno/prepare.py
+      - name: Initialize test dependencies
+        run: git submodule update --init --depth 1 tests/util/std
+      - name: Install native dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends cmake libglib2.0-dev libssl-dev pkg-config protobuf-compiler clang lld
+          df -h .
+          free -h
+      - uses: denoland/setup-deno@667a34cdef165d8d2b2e98dde39547c9daac7282
+        with:
+          deno-version: v2.9.8
+      - name: Install repository Rust toolchain
+        run: |
+          rustup toolchain install 1.95.0 --profile minimal --component clippy,rustfmt,rust-src
+          rustc --version
+          deno --version
+      - uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            deno/target
+          key: deno-37050-linux-${{ hashFiles('deno/Cargo.lock') }}-${{ github.sha }}
+          restore-keys: deno-37050-linux-${{ hashFiles('deno/Cargo.lock') }}-
+      - name: Demonstrate regression on released runtime
+        run: |
+          set +e
+          deno test --no-check -A --config tests/config/deno.json tests/unit/serve_test.ts --filter httpServerResponseConnectionClose > "$RUNNER_TEMP/deno-results/baseline.log" 2>&1
+          result=$?
+          set -e
+          cat "$RUNNER_TEMP/deno-results/baseline.log"
+          test "$result" -ne 0
+          grep -q 'AssertionError' "$RUNNER_TEMP/deno-results/baseline.log"
+          grep -q '9 failed steps' "$RUNNER_TEMP/deno-results/baseline.log"
+      - name: Check formatting without source changes
+        run: |
+          ./x fmt 2>&1 | tee "$RUNNER_TEMP/deno-results/format.log"
+          git diff --exit-code
+      - name: Test HTTP serializer
+        run: cargo test --locked -p deno_http_h1 2>&1 | tee "$RUNNER_TEMP/deno-results/http-h1.log"
+      - name: Build modified runtime and test server
+        run: cargo build --locked -p deno -p test_server --bin deno --bin test_server 2>&1 | tee "$RUNNER_TEMP/deno-results/build.log"
+      - name: Run regression using modified runtime
+        run: target/debug/deno test --no-check -A --config tests/config/deno.json tests/unit/serve_test.ts --filter httpServerResponseConnectionClose 2>&1 | tee "$RUNNER_TEMP/deno-results/regression.log"
+      - name: Run complete HTTP server unit file
+        run: ./x test serve_test 2>&1 | tee "$RUNNER_TEMP/deno-results/serve-tests.log"
+      - name: Run repository lint
+        run: ./x lint 2>&1 | tee "$RUNNER_TEMP/deno-results/lint.log"
+      - name: Verify tested source unchanged
+        if: always()
+        working-directory: .
+        run: python3 .github/validation/deno/prepare.py --verify
+      - uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830
+        if: always()
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            deno/target
+          key: deno-37050-linux-${{ hashFiles('deno/Cargo.lock') }}-${{ github.sha }}
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        if: always()
+        with:
+          name: deno-37050-linux-results
+          path: ${{ runner.temp }}/deno-results
+          retention-days: 7

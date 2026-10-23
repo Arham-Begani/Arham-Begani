@@ -1,0 +1,10 @@
+{
+  "issue": "https://github.com/denoland/deno/issues/37050",
+  "base": "d7205acbed60f68414d1485407a5b50bc867131e",
+  "patch_sha256": "de269fa57b18ab764cefb28bbce4d9d6cd624a7c85180a2cd7429997e5b83087",
+  "files": {
+    "ext/http/http_next.rs": "a42640641fb19592ecb353b0a420ecf3f2cf7d2218117b68f90dbc0c8346bab0",
+    "libs/http_h1/write.rs": "9ee48bfd1637ab5d507e49cb003d2aa37035e37ed67d901284b03b69c07d9124",
+    "tests/unit/serve_test.ts": "9bb3904fc5a63cd93e5af21a3d6b7fc886c4432b983e6f3e653f1fda6110d742"
+  }
+}
