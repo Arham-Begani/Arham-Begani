@@ -10,8 +10,8 @@
 </div>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=fe0e72f6">
-  <img alt="3214 contributions in the last year" src="out/hero-light.svg?v=ced2fe32">
+  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=d7af469f">
+  <img alt="3217 contributions in the last year" src="out/hero-light.svg?v=35f399f7">
 </picture>
 
 <p align="center"><a href="https://forze.in">forze.in</a> &nbsp;·&nbsp; <a href="https://linkedin.com/in/arhambegani">linkedin</a></p>
@@ -65,6 +65,7 @@ Contributions to public projects outside my own account, refreshed daily from Gi
 
 | Project | Contribution | Status |
 | --- | --- | --- |
+| [deno](https://github.com/denoland/deno) | [fix(ext/http): honor Connection: close in HTTP/1 responses · #37067](https://github.com/denoland/deno/pull/37067) | Open |
 | [iggy](https://github.com/apache/iggy) | [feat(node): expose client lifecycle events through on and once · #4552](https://github.com/apache/iggy/pull/4552) | Open |
 | [awesome-ai-apps](https://github.com/Arindam200/awesome-ai-apps) | [feat: add A2A collaboration example with Agno and LangGraph · #368](https://github.com/Arindam200/awesome-ai-apps/pull/368) | Open |
 | [vscode](https://github.com/microsoft/vscode) | [Fix save locations for untitled custom editors in virtual workspaces · #343326](https://github.com/microsoft/vscode/pull/343326) | Open |
@@ -96,13 +97,13 @@ Contributions to public projects outside my own account, refreshed daily from Gi
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=6e04b406">
-  <img alt="language and repository stats" src="out/stats-light.svg?v=d4baa1c3">
+  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=f9f4fe9a">
+  <img alt="language and repository stats" src="out/stats-light.svg?v=9e369b09">
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=f2c7bd13">
-  <img alt="130 active days in the last year" src="out/heatmap-light.svg?v=298d1ff9">
+  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=48ae0e39">
+  <img alt="131 active days in the last year" src="out/heatmap-light.svg?v=234765a1">
 </picture>
 
 <picture>
