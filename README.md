@@ -10,8 +10,8 @@
 </div>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=5a5953f4">
-  <img alt="3222 contributions in the last year" src="out/hero-light.svg?v=c39e30f1">
+  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=f600d8fe">
+  <img alt="3223 contributions in the last year" src="out/hero-light.svg?v=7fc87d9a">
 </picture>
 
 <p align="center"><a href="https://forze.in">forze.in</a> &nbsp;·&nbsp; <a href="https://linkedin.com/in/arhambegani">linkedin</a></p>
@@ -97,13 +97,13 @@ Contributions to public projects outside my own account, refreshed daily from Gi
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=de32701f">
-  <img alt="language and repository stats" src="out/stats-light.svg?v=ed5be43f">
+  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=8c243865">
+  <img alt="language and repository stats" src="out/stats-light.svg?v=b930d038">
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=d0b9ef82">
-  <img alt="131 active days in the last year" src="out/heatmap-light.svg?v=4e60323c">
+  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=2ed7ec6f">
+  <img alt="132 active days in the last year" src="out/heatmap-light.svg?v=98fef5f6">
 </picture>
 
 <picture>
