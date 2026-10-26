@@ -65,11 +65,11 @@ Contributions to public projects outside my own account, refreshed daily from Gi
 
 | Project | Contribution | Status |
 | --- | --- | --- |
+| [iggy](https://github.com/apache/iggy) | [feat(node): expose client lifecycle events through on and once · #4552](https://github.com/apache/iggy/pull/4552) | Open |
 | [browser-use](https://github.com/browser-use/browser-use) | [fix(dom): preserve omitted select option counts · #6212](https://github.com/browser-use/browser-use/pull/6212) | Draft |
 | [aiperf](https://github.com/ai-dynamo/aiperf) | [fix(config): preserve YAML network-latency calibration · #1587](https://github.com/ai-dynamo/aiperf/pull/1587) | Open |
 | [langchainjs](https://github.com/langchain-ai/langchainjs) | [fix(anthropic): default ChatAnthropic to claude-sonnet-5-5 · #11943](https://github.com/langchain-ai/langchainjs/pull/11943) | Draft |
 | [llama_index](https://github.com/run-llama/llama_index) | [fix(core): repair streamed partial JSON inside arrays and escaped strings · #23470](https://github.com/run-llama/llama_index/pull/23470) | Open |
-| [iggy](https://github.com/apache/iggy) | [feat(node): expose client lifecycle events through on and once · #4552](https://github.com/apache/iggy/pull/4552) | Open |
 | [deno](https://github.com/denoland/deno) | [fix(ext/http): honor Connection: close in HTTP/1 responses · #37067](https://github.com/denoland/deno/pull/37067) | Open |
 | [awesome-ai-apps](https://github.com/Arindam200/awesome-ai-apps) | [feat: add A2A collaboration example with Agno and LangGraph · #368](https://github.com/Arindam200/awesome-ai-apps/pull/368) | Open |
 | [vscode](https://github.com/microsoft/vscode) | [Fix save locations for untitled custom editors in virtual workspaces · #343326](https://github.com/microsoft/vscode/pull/343326) | Open |
