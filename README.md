@@ -10,8 +10,8 @@
 </div>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=be07d03d">
-  <img alt="3309 contributions in the last year" src="out/hero-light.svg?v=b984acc1">
+  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=7cde9271">
+  <img alt="3316 contributions in the last year" src="out/hero-light.svg?v=0fd09a19">
 </picture>
 
 <p align="center"><a href="https://forze.in">forze.in</a> &nbsp;·&nbsp; <a href="https://linkedin.com/in/arhambegani">linkedin</a></p>
@@ -65,6 +65,7 @@ Contributions to public projects outside my own account, refreshed daily from Gi
 
 | Project | Contribution | Status |
 | --- | --- | --- |
+| [browser-use](https://github.com/browser-use/browser-use) | [fix(dom): preserve omitted select option counts · #6212](https://github.com/browser-use/browser-use/pull/6212) | Draft |
 | [aiperf](https://github.com/ai-dynamo/aiperf) | [fix(config): preserve YAML network-latency calibration · #1587](https://github.com/ai-dynamo/aiperf/pull/1587) | Open |
 | [langchainjs](https://github.com/langchain-ai/langchainjs) | [fix(anthropic): default ChatAnthropic to claude-sonnet-5-5 · #11943](https://github.com/langchain-ai/langchainjs/pull/11943) | Draft |
 | [llama_index](https://github.com/run-llama/llama_index) | [fix(core): repair streamed partial JSON inside arrays and escaped strings · #23470](https://github.com/run-llama/llama_index/pull/23470) | Open |
@@ -97,13 +98,13 @@ Contributions to public projects outside my own account, refreshed daily from Gi
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=2a1d990a">
-  <img alt="language and repository stats" src="out/stats-light.svg?v=fc0b3989">
+  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=c3bd0658">
+  <img alt="language and repository stats" src="out/stats-light.svg?v=70d14506">
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=f43eaf8d">
-  <img alt="133 active days in the last year" src="out/heatmap-light.svg?v=5dd6b2a7">
+  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=78b6f62f">
+  <img alt="134 active days in the last year" src="out/heatmap-light.svg?v=1908bbb5">
 </picture>
 
 <picture>
