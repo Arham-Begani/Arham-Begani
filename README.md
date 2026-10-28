@@ -10,8 +10,8 @@
 </div>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=ec7e3cd0">
-  <img alt="3318 contributions in the last year" src="out/hero-light.svg?v=3104a98c">
+  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=2e84b155">
+  <img alt="3319 contributions in the last year" src="out/hero-light.svg?v=e9a269f8">
 </picture>
 
 <p align="center"><a href="https://forze.in">forze.in</a> &nbsp;·&nbsp; <a href="https://linkedin.com/in/arhambegani">linkedin</a></p>
@@ -57,6 +57,7 @@ Contributions to public projects outside my own account, refreshed daily from Gi
 
 | Project | Contribution | Status |
 | --- | --- | --- |
+| [aiperf](https://github.com/ai-dynamo/aiperf) | [fix(config): preserve YAML network-latency calibration · #1587](https://github.com/ai-dynamo/aiperf/pull/1587) | Merged · 2026-10-28 |
 | [kvpress](https://github.com/NVIDIA/kvpress) | [Stop pipeline generation at an immediate EOS 🤖🤖🤖 · #307](https://github.com/NVIDIA/kvpress/pull/307) | Merged · 2026-10-19 |
 | [pytest-env](https://github.com/pytest-dev/pytest-env) | [fix: respect Windows key casing when preserving existing env values · #278](https://github.com/pytest-dev/pytest-env/pull/278) | Merged · 2026-10-18 |
 | [first-contributions](https://github.com/firstcontributions/first-contributions) | [arham · #86678](https://github.com/firstcontributions/first-contributions/pull/86678) | Merged · 2024-07-20 |
@@ -70,7 +71,6 @@ Contributions to public projects outside my own account, refreshed daily from Gi
 | [prettier](https://github.com/prettier/prettier) | [Fix unstable comments before generic function type parameters · #20374](https://github.com/prettier/prettier/pull/20374) | Open |
 | [iggy](https://github.com/apache/iggy) | [feat(node): expose client lifecycle events through on and once · #4552](https://github.com/apache/iggy/pull/4552) | Open |
 | [browser-use](https://github.com/browser-use/browser-use) | [fix(dom): preserve omitted select option counts · #6212](https://github.com/browser-use/browser-use/pull/6212) | Draft |
-| [aiperf](https://github.com/ai-dynamo/aiperf) | [fix(config): preserve YAML network-latency calibration · #1587](https://github.com/ai-dynamo/aiperf/pull/1587) | Open |
 | [langchainjs](https://github.com/langchain-ai/langchainjs) | [fix(anthropic): default ChatAnthropic to claude-sonnet-5-5 · #11943](https://github.com/langchain-ai/langchainjs/pull/11943) | Draft |
 | [llama_index](https://github.com/run-llama/llama_index) | [fix(core): repair streamed partial JSON inside arrays and escaped strings · #23470](https://github.com/run-llama/llama_index/pull/23470) | Open |
 | [deno](https://github.com/denoland/deno) | [fix(ext/http): honor Connection: close in HTTP/1 responses · #37067](https://github.com/denoland/deno/pull/37067) | Open |
@@ -99,13 +99,13 @@ Contributions to public projects outside my own account, refreshed daily from Gi
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=c3bd0658">
-  <img alt="language and repository stats" src="out/stats-light.svg?v=70d14506">
+  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=75009e4c">
+  <img alt="language and repository stats" src="out/stats-light.svg?v=7620d2d2">
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=c9ec6120">
-  <img alt="134 active days in the last year" src="out/heatmap-light.svg?v=20216123">
+  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=c3514359">
+  <img alt="135 active days in the last year" src="out/heatmap-light.svg?v=aec4a9d6">
 </picture>
 
 <picture>
