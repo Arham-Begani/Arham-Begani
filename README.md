@@ -10,8 +10,8 @@
 </div>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=933a7e11">
-  <img alt="3351 contributions in the last year" src="out/hero-light.svg?v=43e2b8ad">
+  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=f7299ef6">
+  <img alt="3370 contributions in the last year" src="out/hero-light.svg?v=b4684119">
 </picture>
 
 <p align="center"><a href="https://forze.in">forze.in</a> &nbsp;·&nbsp; <a href="https://linkedin.com/in/arhambegani">linkedin</a></p>
@@ -66,6 +66,7 @@ Contributions to public projects outside my own account, refreshed daily from Gi
 
 | Project | Contribution | Status |
 | --- | --- | --- |
+| [pyrefly](https://github.com/meta/pyrefly) | [Resolve identifiers inside quoted annotations in the LSP. · #5243](https://github.com/meta/pyrefly/pull/5243) | Open |
 | [pytest-rerunfailures](https://github.com/pytest-dev/pytest-rerunfailures) | [fix: prevent internal errors from non-finite rerun delays · #391](https://github.com/pytest-dev/pytest-rerunfailures/pull/391) | Open |
 | [pytest-timeout](https://github.com/pytest-dev/pytest-timeout) | [fix: preserve capture fixture output on thread timeouts · #212](https://github.com/pytest-dev/pytest-timeout/pull/212) | Open |
 | [prettier](https://github.com/prettier/prettier) | [Fix unstable comments before generic function type parameters · #20374](https://github.com/prettier/prettier/pull/20374) | Open |
@@ -78,7 +79,6 @@ Contributions to public projects outside my own account, refreshed daily from Gi
 | [vscode](https://github.com/microsoft/vscode) | [Fix save locations for untitled custom editors in virtual workspaces · #343326](https://github.com/microsoft/vscode/pull/343326) | Open |
 | [langchainjs](https://github.com/langchain-ai/langchainjs) | [fix(openai): require an explicit model in ChatOpenAI · #11955](https://github.com/langchain-ai/langchainjs/pull/11955) | Open |
 | [agent-control-standard](https://github.com/GenAI-Security-Project/agent-control-standard) | [refimpl: add first-stage Rust AGT Guardian · #187](https://github.com/GenAI-Security-Project/agent-control-standard/pull/187) | Open |
-| [pyrefly](https://github.com/meta/pyrefly) | [Resolve identifiers inside quoted annotations in the LSP. · #5243](https://github.com/meta/pyrefly/pull/5243) | Open |
 | [uv](https://github.com/astral-sh/uv) | [Move UV\_GIT\_LFS handling into environment settings · #22002](https://github.com/astral-sh/uv/pull/22002) | Open |
 
 <details>
@@ -99,13 +99,13 @@ Contributions to public projects outside my own account, refreshed daily from Gi
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=d7f0c08c">
-  <img alt="language and repository stats" src="out/stats-light.svg?v=d2f8a37c">
+  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=55fa8734">
+  <img alt="language and repository stats" src="out/stats-light.svg?v=e110d095">
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=e5c55fac">
-  <img alt="135 active days in the last year" src="out/heatmap-light.svg?v=28f75fc5">
+  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=db1803a3">
+  <img alt="136 active days in the last year" src="out/heatmap-light.svg?v=fbd0acde">
 </picture>
 
 <picture>
