@@ -5,10 +5,10 @@ import os
 from pathlib import Path
 import subprocess
 
-BASE = '87528db58f2941e180547b54860dc855c161594b'
-HEAD = '672e5ff11df234f1e8999d7a31426ec823ec9588'
-TREE = 'efd2b794c511c9ffe7c7962fed3c349339f0779c'
-BUNDLE_SHA256 = 'fdc391fa4bed653dac52ec99066af34e7b9fe2e6f77a0741d3524e907bdf8e04'
+BASE = 'af99cd9f74680495280aa69ad3e71152c7b20e8e'
+HEAD = '4f0b105e9420010ebcc90cf246a231da10b2a53b'
+TREE = '7d5b1e2b4812894d8e3a45fd4e0df154b77c668f'
+BUNDLE_SHA256 = '5e9a4b65103fe5282902b7545df8899603d178450cfb57c03f6a9459db992c76'
 root = Path(os.environ['GITHUB_WORKSPACE'])
 bundle = root / '.github/validation/iggy-4552.bundle'
 assert hashlib.sha256(bundle.read_bytes()).hexdigest() == BUNDLE_SHA256
@@ -18,6 +18,7 @@ def git(*args):
 subprocess.run(['git', 'init', str(checkout)], check=True)
 git('remote', 'add', 'origin', 'https://github.com/apache/iggy.git')
 git('fetch', '--depth=1', '--no-tags', 'origin', BASE)
+git('fetch', '--depth=1', '--no-tags', 'origin', '87528db58f2941e180547b54860dc855c161594b')
 git('fetch', '--depth=1', '--no-tags', 'origin', 'c5709f52042477d24c0847e6035bfdcafddc32bc')
 git('checkout', '--detach', BASE)
 git('bundle', 'verify', str(bundle))

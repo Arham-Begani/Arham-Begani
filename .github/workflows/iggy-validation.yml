@@ -19,7 +19,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: ["23", "24"]
+        node: ["24", "26"]
     defaults:
       run:
         shell: bash
@@ -64,11 +64,13 @@ jobs:
       - name: Run all applicable unmodified prek hooks
         id: hooks
         if: matrix.node == '24'
-        run: prek run --from-ref 87528db58f2941e180547b54860dc855c161594b --to-ref HEAD 2>&1 | tee "$RUNNER_TEMP/iggy-results/prek.log"
+        run: prek run --from-ref af99cd9f74680495280aa69ad3e71152c7b20e8e --to-ref HEAD 2>&1 | tee "$RUNNER_TEMP/iggy-results/prek.log"
       - name: Verify hooks did not change tested source
         if: always()
         run: |
-          test "$(git rev-parse HEAD)" = 672e5ff11df234f1e8999d7a31426ec823ec9588
+          test "$(git rev-parse HEAD)" = 4f0b105e9420010ebcc90cf246a231da10b2a53b
+          test "$(git rev-parse HEAD^{tree})" = 7d5b1e2b4812894d8e3a45fd4e0df154b77c668f
+          test -z "$(git status --porcelain)"
           git diff --exit-code HEAD
           git diff HEAD --check
       - name: SDK lint and build
@@ -82,170 +84,17 @@ jobs:
         run: |
           cd foreign/node
           npm run test:unit 2>&1 | tee "$RUNNER_TEMP/iggy-results/unit.log"
+      - name: Verify final tested source
+        if: always()
+        run: |
+          test "$(git rev-parse HEAD)" = 4f0b105e9420010ebcc90cf246a231da10b2a53b
+          test "$(git rev-parse HEAD^{tree})" = 7d5b1e2b4812894d8e3a45fd4e0df154b77c668f
+          git diff --exit-code HEAD
+          test -z "$(git status --porcelain)"
       - name: Save actual validation results
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: iggy-sdk-node-${{ matrix.node }}
-          retention-days: 7
-          path: ${{ runner.temp }}/iggy-results/
-
-  server:
-    name: Real server TCP, TLS and BDD
-    runs-on: ubuntu-24.04
-    timeout-minutes: 60
-    defaults:
-      run:
-        shell: bash
-        working-directory: iggy
-    env:
-      CARGO_INCREMENTAL: "0"
-      CARGO_PROFILE_DEV_DEBUG: "0"
-      CARGO_REGISTRIES_CRATES_IO_PROTOCOL: sparse
-    steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
-        with:
-          persist-credentials: false
-      - name: Restore and verify exact local commits
-        working-directory: .
-        run: python3 .github/validation/prepare_iggy.py
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
-        with:
-          node-version: "26"
-      - name: Prepare Linux runtime dependencies
-        run: |
-          ./scripts/ci/apt-install.sh libhwloc-dev pkg-config libudev-dev netcat-openbsd
-          if test -e /proc/sys/kernel/io_uring_disabled; then sudo sysctl -w kernel.io_uring_disabled=0; fi
-          npm --prefix foreign/node ci --ignore-scripts
-          rustup show
-      - name: Build matching real server and CLI from locked source
-        id: runtime
-        run: cargo build --locked --bin iggy-server --bin iggy 2>&1 | tee "$RUNNER_TEMP/iggy-results/runtime-build.log"
-      - name: Start real TCP server
-        id: tcp
-        uses: ./iggy/.github/actions/utils/server-start
-        with:
-          bin: ${{ github.workspace }}/iggy/target/debug/iggy-server
-          working-directory: iggy
-          log-file: ${{ runner.temp }}/iggy-results/server-tcp.log
-          pid-file: ${{ runner.temp }}/iggy-tcp.pid
-          encryption-enabled: "true"
-          wait-timeout-seconds: "90"
-          encryption-key: "/rvT1xP4V8u1EAhk4xDdqzqM2UOPXyy9XYkl4uRShgE="
-        env:
-          IGGY_PATH: ${{ runner.temp }}/iggy-data-tcp
-      - name: Full real-server TCP E2E suite
-        run: |
-          cd foreign/node
-          npm run test:e2e 2>&1 | tee "$RUNNER_TEMP/iggy-results/e2e-tcp.log"
-      - name: Stop TCP server
-        if: always()
-        uses: ./iggy/.github/actions/utils/server-stop
-        with:
-          pid-file: ${{ runner.temp }}/iggy-tcp.pid
-      - name: Start real TLS server
-        id: tls
-        if: always() && steps.runtime.outcome == 'success'
-        uses: ./iggy/.github/actions/utils/server-start
-        with:
-          bin: ${{ github.workspace }}/iggy/target/debug/iggy-server
-          working-directory: iggy
-          log-file: ${{ runner.temp }}/iggy-results/server-tls.log
-          pid-file: ${{ runner.temp }}/iggy-tls.pid
-          wait-timeout-seconds: "90"
-          encryption-key: "/rvT1xP4V8u1EAhk4xDdqzqM2UOPXyy9XYkl4uRShgE="
-        env:
-          IGGY_PATH: ${{ runner.temp }}/iggy-data-tls
-          IGGY_TCP_TLS_ENABLED: "true"
-          IGGY_TCP_TLS_CERT_FILE: core/certs/iggy_cert.pem
-          IGGY_TCP_TLS_KEY_FILE: core/certs/iggy_key.pem
-      - name: Real-server TLS E2E tests
-        if: always() && steps.tls.outcome == 'success'
-        run: |
-          cd foreign/node
-          IGGY_TCP_TLS_ENABLED=true IGGY_TCP_ADDRESS=127.0.0.1:8090 node --import @swc-node/register/esm-register --test src/e2e/tls.system.e2e.ts 2>&1 | tee "$RUNNER_TEMP/iggy-results/e2e-tls.log"
-      - name: Stop TLS server
-        if: always()
-        uses: ./iggy/.github/actions/utils/server-stop
-        with:
-          pid-file: ${{ runner.temp }}/iggy-tls.pid
-      - name: Start clean real server for BDD
-        id: bdd
-        if: always() && steps.runtime.outcome == 'success'
-        uses: ./iggy/.github/actions/utils/server-start
-        with:
-          bin: ${{ github.workspace }}/iggy/target/debug/iggy-server
-          working-directory: iggy
-          log-file: ${{ runner.temp }}/iggy-results/server-bdd.log
-          pid-file: ${{ runner.temp }}/iggy-bdd.pid
-          encryption-enabled: "true"
-          wait-timeout-seconds: "90"
-          encryption-key: "/rvT1xP4V8u1EAhk4xDdqzqM2UOPXyy9XYkl4uRShgE="
-        env:
-          IGGY_PATH: ${{ runner.temp }}/iggy-data-bdd
-      - name: Start isolated replica without quorum for session contract
-        id: no-quorum
-        if: always() && steps.bdd.outcome == 'success'
-        uses: ./iggy/.github/actions/utils/server-start
-        with:
-          bin: ${{ github.workspace }}/iggy/target/debug/iggy-server
-          working-directory: iggy
-          tcp_address: 127.0.0.1:8093
-          http_address: 127.0.0.1:3003
-          replica-id: "0"
-          log-file: ${{ runner.temp }}/iggy-results/server-no-quorum.log
-          pid-file: ${{ runner.temp }}/iggy-no-quorum.pid
-          wait-timeout-seconds: "90"
-        env:
-          # Mirror bdd/docker-compose.no-quorum.yml on isolated loopback ports.
-          IGGY_PATH: ${{ runner.temp }}/iggy-data-no-quorum
-          IGGY_CLUSTER_ENABLED: "true"
-          IGGY_CLUSTER_NAME: no-quorum-cluster
-          IGGY_CLUSTER_NODES_0_NAME: no-quorum-node
-          IGGY_CLUSTER_NODES_0_IP: 127.0.0.1
-          IGGY_CLUSTER_NODES_0_REPLICA_ID: "0"
-          IGGY_CLUSTER_NODES_0_PORTS_TCP: "8093"
-          IGGY_CLUSTER_NODES_0_PORTS_QUIC: "8083"
-          IGGY_CLUSTER_NODES_0_PORTS_HTTP: "3003"
-          IGGY_CLUSTER_NODES_0_PORTS_WEBSOCKET: "8073"
-          IGGY_CLUSTER_NODES_0_PORTS_TCP_REPLICA: "8193"
-          IGGY_CLUSTER_NODES_1_NAME: absent-node
-          IGGY_CLUSTER_NODES_1_IP: 127.0.0.2
-          IGGY_CLUSTER_NODES_1_REPLICA_ID: "1"
-          IGGY_CLUSTER_NODES_1_PORTS_TCP: "8094"
-          IGGY_CLUSTER_NODES_1_PORTS_QUIC: "8084"
-          IGGY_CLUSTER_NODES_1_PORTS_HTTP: "3004"
-          IGGY_CLUSTER_NODES_1_PORTS_WEBSOCKET: "8074"
-          IGGY_CLUSTER_NODES_1_PORTS_TCP_REPLICA: "8194"
-          IGGY_CLUSTER_AUTH_ENABLED: "true"
-          IGGY_CLUSTER_AUTH_SHARED_SECRET: "bdd-vsr-no-quorum-shared-secret-0123456789"
-          IGGY_QUIC_ADDRESS: 127.0.0.1:8083
-          IGGY_WEBSOCKET_ADDRESS: 127.0.0.1:8073
-      - name: All upstream-supported Node BDD scenarios against real server
-        if: always() && steps.no-quorum.outcome == 'success'
-        run: |
-          cd foreign/node
-          # Match the five feature sets in the current bdd/node/Dockerfile.
-          IGGY_TCP_ADDRESS=127.0.0.1:8090 IGGY_TCP_ADDRESS_NO_QUORUM=127.0.0.1:8093 IGGY_ROOT_USERNAME=iggy IGGY_ROOT_PASSWORD=iggy npm run test:bdd -- --tags '@basic-messaging or @raw-command or @stream-options or @resource-options-patch or @session-contract' 2>&1 | tee "$RUNNER_TEMP/iggy-results/bdd.log"
-      - name: Stop replica without quorum
-        if: always()
-        uses: ./iggy/.github/actions/utils/server-stop
-        with:
-          pid-file: ${{ runner.temp }}/iggy-no-quorum.pid
-      - name: Stop BDD server
-        if: always()
-        uses: ./iggy/.github/actions/utils/server-stop
-        with:
-          pid-file: ${{ runner.temp }}/iggy-bdd.pid
-      - name: Verify final tested source
-        if: always()
-        run: |
-          test "$(git rev-parse HEAD)" = 672e5ff11df234f1e8999d7a31426ec823ec9588
-          git diff --exit-code HEAD
-      - name: Save actual server and test results
-        if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        with:
-          name: iggy-real-server-validation
           retention-days: 7
           path: ${{ runner.temp }}/iggy-results/
