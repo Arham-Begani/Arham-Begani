@@ -8,7 +8,10 @@ permissions:
 jobs:
   config-dependencies:
     runs-on: ubuntu-24.04
-    timeout-minutes: 75
+    timeout-minutes: 90
+    defaults:
+      run:
+        shell: bash
     env:
       CARGO_INCREMENTAL: "0"
       CARGO_PROFILE_DEV_DEBUG: "line-tables-only"
@@ -50,6 +53,9 @@ jobs:
           set -e
           test "$status" -ne 0
           grep -Eq '1 tests? run: 0 passed, 1 failed' ../rust-baseline.log
+      - name: Build registry fixture binaries
+        working-directory: source
+        run: pnpm ci:build-pnpr
       - name: TypeScript baseline must fail the round-trip assertion
         working-directory: source
         shell: bash
@@ -72,6 +78,12 @@ jobs:
       - name: TypeScript env-installer tests
         working-directory: source
         run: pnpm --filter @pnpm/installing.env-installer test 2>&1 | tee ../ts-tests.log
+      - name: Rust config-dependency CLI tests
+        working-directory: source
+        run: pnpm test:rust -p pnpm-cli -E 'test(config_dependencies::)' 2>&1 | tee ../rust-cli-tests.log
+      - name: TypeScript config-dependency CLI tests
+        working-directory: source
+        run: pnpm --filter pnpm test configurationalDependencies.test.ts 2>&1 | tee ../ts-cli-tests.log
       - name: Check workspace
         working-directory: source
         run: pnpm check:rust
@@ -97,3 +109,5 @@ jobs:
             rust-tests.log
             ts-tests.log
             formatted.patch
+            rust-cli-tests.log
+            ts-cli-tests.log
