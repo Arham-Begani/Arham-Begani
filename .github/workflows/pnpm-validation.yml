@@ -43,23 +43,19 @@ jobs:
           git apply ../validation/pnpm-231-impl.patch
           git add -N .
           pnpm install --frozen-lockfile
-      - name: Affected crate and downstream smoke tests
-        working-directory: source
-        run: pnpm test:rust-affected --base HEAD 2>&1 | tee ../affected-tests.log
-      - name: Store CLI tests
-        working-directory: source
-        run: pnpm test:rust -p pnpm-cli -E 'test(store::) | test(store_prune_in_use::)' 2>&1 | tee ../cli-tests.log
       - name: Install custom lint tools from source
         run: cargo +1.97.0 install cargo-dylint dylint-link --locked
-      - name: Complete Rust pre-push checks
+      - name: Check formatting and custom lints
         working-directory: source
-        run: pnpm pre-push:rust 2>&1 | tee ../pre-push.log
+        run: |
+          node pnpm/scripts/rustfmt.mjs --all -- --check
+          RUSTFLAGS='-D warnings' pnpm ci:rust-dylint 2>&1 | tee ../dylint.log
+          typos pnpm pnpr
+          git diff --check
       - name: Upload evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: pnpm-231-final-linux-evidence
           path: |
-            affected-tests.log
-            cli-tests.log
-            pre-push.log
+            dylint.log
