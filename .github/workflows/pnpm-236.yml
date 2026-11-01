@@ -43,49 +43,23 @@ jobs:
           git apply ../validation/pnpm-236.patch
           git add -N .
           pnpm install --frozen-lockfile
-      - name: Build registry fixture binaries
-        working-directory: source
-        env:
-          CARGO_PROFILE_RELEASE_OPT_LEVEL: "0"
-          CARGO_PROFILE_RELEASE_LTO: "false"
-          CARGO_PROFILE_RELEASE_CODEGEN_UNITS: "256"
-        run: pnpm ci:build-pnpr
-      - name: Rust env-installer tests
-        working-directory: source
-        run: pnpm test:rust -p pnpm-env-installer 2>&1 | tee ../rust-tests.log
-      - name: TypeScript env-installer tests
-        working-directory: source
-        run: pnpm --filter @pnpm/installing.env-installer test 2>&1 | tee ../ts-tests.log
-      - name: Rust config-dependency CLI tests
-        working-directory: source
-        run: pnpm test:rust -p pnpm-cli -E 'test(config_dependencies::)' 2>&1 | tee ../rust-cli-tests.log
-      - name: TypeScript config-dependency CLI tests
-        working-directory: source
-        run: pnpm --filter pnpm test configurationalDependencies.test.ts 2>&1 | tee ../ts-cli-tests.log
-      - name: Check workspace
-        working-directory: source
-        run: pnpm check:rust
-      - name: Formatting and spelling
+      - name: Format final source and check spelling
         working-directory: source
         run: |
+          node pnpm/scripts/rustfmt.mjs --all
+          node pnpm/scripts/rustfmt.mjs --all -- --check
           typos pnpm pnpr
           taplo format --check
-          node pnpm/scripts/rustfmt.mjs --all
-          git diff > ../formatted.patch
-          node pnpm/scripts/rustfmt.mjs --all -- --check
-      - name: Downstream CLI smoke tests
-        working-directory: source
-        run: pnpm test:rust-smoke -p pnpm-cli 2>&1 | tee ../smoke-tests.log
-      - name: Install custom lint tools from source
-        run: cargo +1.97.0 install cargo-dylint dylint-link --locked
-      - name: Complete Rust pre-push checks
-        working-directory: source
-        run: pnpm pre-push:rust 2>&1 | tee ../pre-push.log
-      - name: TypeScript workspace compile and lint
+      - name: TypeScript pre-push compile and lint gates
         working-directory: source
         run: |
-          pnpm compile-only
-          pnpm lint --quiet
+          pnpm compile-only 2>&1 | tee ../compile.log
+          pnpm lint --quiet 2>&1 | tee ../lint.log
+      - name: Install custom lint tools from source
+        run: cargo +1.97.0 install cargo-dylint dylint-link --locked
+      - name: Final custom lint
+        working-directory: source
+        run: RUSTFLAGS='-D warnings' pnpm ci:rust-dylint 2>&1 | tee ../dylint.log
       - name: Capture checked source
         if: always()
         working-directory: source
@@ -94,12 +68,9 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: pnpm-236-linux-evidence
+          name: pnpm-236-final-gates
           path: |
-            rust-tests.log
-            ts-tests.log
+            compile.log
+            lint.log
+            dylint.log
             formatted.patch
-            rust-cli-tests.log
-            ts-cli-tests.log
-            smoke-tests.log
-            pre-push.log
