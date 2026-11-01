@@ -10,8 +10,8 @@
 </div>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=43727f4b">
-  <img alt="3374 contributions in the last year" src="out/hero-light.svg?v=b442b0d6">
+  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=70a7e503">
+  <img alt="3380 contributions in the last year" src="out/hero-light.svg?v=af3797b1">
 </picture>
 
 <p align="center"><a href="https://forze.in">forze.in</a> &nbsp;·&nbsp; <a href="https://linkedin.com/in/arhambegani">linkedin</a></p>
@@ -66,13 +66,14 @@ Contributions to public projects outside my own account, refreshed daily from Gi
 
 | Project | Contribution | Status |
 | --- | --- | --- |
+| [pytest-timeout](https://github.com/pytest-dev/pytest-timeout) | [fix: preserve capture fixture output on thread timeouts · #212](https://github.com/pytest-dev/pytest-timeout/pull/212) | Open |
+| [vite](https://github.com/vitejs/vite) | [fix(optimizer): preserve explicit asset queries in dependencies (fix #20285) · #23962](https://github.com/vitejs/vite/pull/23962) | Open |
+| [iggy](https://github.com/apache/iggy) | [feat(node): expose client lifecycle events through on and once · #4552](https://github.com/apache/iggy/pull/4552) | Open |
 | [awesome-ai-apps](https://github.com/Arindam200/awesome-ai-apps) | [feat: add A2A collaboration example with Agno and LangGraph · #368](https://github.com/Arindam200/awesome-ai-apps/pull/368) | Open |
 | [agent-control-standard](https://github.com/GenAI-Security-Project/agent-control-standard) | [refimpl: add first-stage Rust AGT Guardian · #187](https://github.com/GenAI-Security-Project/agent-control-standard/pull/187) | Open |
 | [pyrefly](https://github.com/meta/pyrefly) | [Resolve identifiers inside quoted annotations in the LSP. · #5243](https://github.com/meta/pyrefly/pull/5243) | Open |
 | [pytest-rerunfailures](https://github.com/pytest-dev/pytest-rerunfailures) | [fix: prevent internal errors from non-finite rerun delays · #391](https://github.com/pytest-dev/pytest-rerunfailures/pull/391) | Open |
-| [pytest-timeout](https://github.com/pytest-dev/pytest-timeout) | [fix: preserve capture fixture output on thread timeouts · #212](https://github.com/pytest-dev/pytest-timeout/pull/212) | Open |
 | [prettier](https://github.com/prettier/prettier) | [Fix unstable comments before generic function type parameters · #20374](https://github.com/prettier/prettier/pull/20374) | Open |
-| [iggy](https://github.com/apache/iggy) | [feat(node): expose client lifecycle events through on and once · #4552](https://github.com/apache/iggy/pull/4552) | Open |
 | [browser-use](https://github.com/browser-use/browser-use) | [fix(dom): preserve omitted select option counts · #6212](https://github.com/browser-use/browser-use/pull/6212) | Draft |
 | [langchainjs](https://github.com/langchain-ai/langchainjs) | [fix(anthropic): default ChatAnthropic to claude-sonnet-5-5 · #11943](https://github.com/langchain-ai/langchainjs/pull/11943) | Draft |
 | [llama_index](https://github.com/run-llama/llama_index) | [fix(core): repair streamed partial JSON inside arrays and escaped strings · #23470](https://github.com/run-llama/llama_index/pull/23470) | Open |
@@ -99,13 +100,13 @@ Contributions to public projects outside my own account, refreshed daily from Gi
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=941ec64e">
-  <img alt="language and repository stats" src="out/stats-light.svg?v=150ae470">
+  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=85437808">
+  <img alt="language and repository stats" src="out/stats-light.svg?v=c4cbef7f">
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=4c76b5bc">
-  <img alt="136 active days in the last year" src="out/heatmap-light.svg?v=309ef3cb">
+  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=9f2c48bd">
+  <img alt="138 active days in the last year" src="out/heatmap-light.svg?v=3c43276d">
 </picture>
 
 <picture>
