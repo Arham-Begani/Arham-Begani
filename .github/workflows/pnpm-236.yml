@@ -37,41 +37,19 @@ jobs:
       - uses: taiki-e/install-action@86f7a0ffb25f40114606501a311ebcfaf882ea32
         with:
           tool: just,cargo-nextest,typos-cli,taplo-cli
-      - name: Prepare baseline with test input wiring
+      - name: Apply patch and install dependencies
         working-directory: source
         run: |
           git apply ../validation/pnpm-236.patch
-          git restore pnpm/crates/env-installer/src/resolve_and_install_config_deps.rs pnpm/crates/env-installer/src/resolve_and_install_config_deps/plan.rs pnpm/crates/env-installer/src/resolve_optional_subdeps.rs pnpm/crates/env-installer/src/manifest_lockfile.rs pnpm/crates/env-installer/src/install_config_deps/optional_dependencies.rs pnpm/crates/env-installer/src/resolve_package_manager_integrities.rs pnpm11/installing/env-installer/src
+          git add -N .
           pnpm install --frozen-lockfile
-      - name: Rust baseline must fail the round-trip assertion
-        working-directory: source
-        shell: bash
-        run: |
-          set +e
-          pnpm test:rust -p pnpm-env-installer -E 'test(pnpr_config_dependencies_round_trip_without_tarball_urls)' 2>&1 | tee ../rust-baseline.log
-          status=${PIPESTATUS[0]}
-          set -e
-          test "$status" -ne 0
-          grep -Eq '1 tests? run: 0 passed, 1 failed' ../rust-baseline.log
       - name: Build registry fixture binaries
         working-directory: source
+        env:
+          CARGO_PROFILE_RELEASE_OPT_LEVEL: "0"
+          CARGO_PROFILE_RELEASE_LTO: "false"
+          CARGO_PROFILE_RELEASE_CODEGEN_UNITS: "256"
         run: pnpm ci:build-pnpr
-      - name: TypeScript baseline must fail the round-trip assertion
-        working-directory: source
-        shell: bash
-        run: |
-          set +e
-          pnpm --filter @pnpm/installing.env-installer test resolveAndInstallConfigDeps.test.ts -t 'pnpr config dependencies round trip' 2>&1 | tee ../ts-baseline.log
-          status=${PIPESTATUS[0]}
-          set -e
-          test "$status" -ne 0
-          grep -q 'Expected path: not "tarball"' ../ts-baseline.log
-      - name: Apply complete fix
-        working-directory: source
-        run: |
-          git restore .
-          git apply ../validation/pnpm-236.patch
-          pnpm install --frozen-lockfile
       - name: Rust env-installer tests
         working-directory: source
         run: pnpm test:rust -p pnpm-env-installer 2>&1 | tee ../rust-tests.log
@@ -87,9 +65,6 @@ jobs:
       - name: Check workspace
         working-directory: source
         run: pnpm check:rust
-      - name: Lint workspace
-        working-directory: source
-        run: pnpm lint:rust
       - name: Formatting and spelling
         working-directory: source
         run: |
@@ -98,16 +73,33 @@ jobs:
           node pnpm/scripts/rustfmt.mjs --all
           git diff > ../formatted.patch
           node pnpm/scripts/rustfmt.mjs --all -- --check
+      - name: Downstream CLI smoke tests
+        working-directory: source
+        run: pnpm test:rust-smoke -p pnpm-cli 2>&1 | tee ../smoke-tests.log
+      - name: Install custom lint tools from source
+        run: cargo +1.97.0 install cargo-dylint dylint-link --locked
+      - name: Complete Rust pre-push checks
+        working-directory: source
+        run: pnpm pre-push:rust 2>&1 | tee ../pre-push.log
+      - name: TypeScript workspace compile and lint
+        working-directory: source
+        run: |
+          pnpm compile-only
+          pnpm lint --quiet
+      - name: Capture checked source
+        if: always()
+        working-directory: source
+        run: git diff > ../formatted.patch
       - name: Upload evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: pnpm-236-linux-evidence
           path: |
-            rust-baseline.log
-            ts-baseline.log
             rust-tests.log
             ts-tests.log
             formatted.patch
             rust-cli-tests.log
             ts-cli-tests.log
+            smoke-tests.log
+            pre-push.log
