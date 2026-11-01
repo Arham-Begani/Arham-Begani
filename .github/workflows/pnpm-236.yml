@@ -50,6 +50,11 @@ jobs:
           node pnpm/scripts/rustfmt.mjs --all -- --check
           typos pnpm pnpr
           taplo format --check
+      - name: Rust config-dependency regression tests
+        working-directory: source
+        run: |
+          pnpm test:rust -p pnpm-env-installer 2>&1 | tee ../rust-tests.log
+          pnpm test:rust -p pnpm-cli -E 'test(config_dependencies::)' 2>&1 | tee ../rust-cli-tests.log
       - name: TypeScript pre-push compile and lint gates
         working-directory: source
         run: |
@@ -57,9 +62,9 @@ jobs:
           pnpm lint --quiet 2>&1 | tee ../lint.log
       - name: Install custom lint tools from source
         run: cargo +1.97.0 install cargo-dylint dylint-link --locked
-      - name: Final custom lint
+      - name: Complete Rust pre-push checks
         working-directory: source
-        run: RUSTFLAGS='-D warnings' pnpm ci:rust-dylint 2>&1 | tee ../dylint.log
+        run: pnpm pre-push:rust 2>&1 | tee ../pre-push.log
       - name: Capture checked source
         if: always()
         working-directory: source
@@ -72,5 +77,7 @@ jobs:
           path: |
             compile.log
             lint.log
-            dylint.log
+            pre-push.log
+            rust-tests.log
+            rust-cli-tests.log
             formatted.patch
