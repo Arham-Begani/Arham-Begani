@@ -1,0 +1,668 @@
+diff --git a/pnpm-lock.yaml b/pnpm-lock.yaml
+index 70cd8bf..4bb526c 100644
+--- a/pnpm-lock.yaml
++++ b/pnpm-lock.yaml
+@@ -6833,6 +6833,9 @@ importers:
+ 
+   pnpm11/installing/env-installer:
+     dependencies:
++      '@pnpm/config.normalize-registries':
++        specifier: workspace:*
++        version: link:../../config/normalize-registries
+       '@pnpm/config.package-is-installable':
+         specifier: workspace:*
+         version: link:../../config/package-is-installable
+diff --git a/pnpm/crates/cli/src/config_deps.rs b/pnpm/crates/cli/src/config_deps.rs
+index eeb1c08..098784e 100644
+--- a/pnpm/crates/cli/src/config_deps.rs
++++ b/pnpm/crates/cli/src/config_deps.rs
+@@ -467,6 +467,7 @@ impl EnvInstallerContext {
+             mode: ConfigDepsInstallMode::Reconcile,
+             verification: ConfigDependencyVerification {
+                 registries: &self.network.registries,
++                registry_options_by_url: &self.resolver.format.registry_options_by_url,
+                 resolution_verifiers: Vec::new(),
+                 resolution_policy: ResolutionPolicyOptions::default(),
+             },
+diff --git a/pnpm/crates/env-installer/src/install_config_deps/optional_dependencies.rs b/pnpm/crates/env-installer/src/install_config_deps/optional_dependencies.rs
+index 0a795ca..10414b2 100644
+--- a/pnpm/crates/env-installer/src/install_config_deps/optional_dependencies.rs
++++ b/pnpm/crates/env-installer/src/install_config_deps/optional_dependencies.rs
+@@ -172,7 +172,7 @@ pub(super) fn normalize_from_lockfile(
+             &pkg.resolution,
+             name,
+             &spec.version,
+-            opts.verification.pick_registry(name),
++            opts.verification.lockfile_form(name),
+         )
+         .ok_or_else(|| ConfigDepError::EnvLockfileCorrupted {
+             message: format!(
+@@ -247,7 +247,7 @@ fn read_optional_subdeps(
+             &pkg.resolution,
+             &subdep_name,
+             &version,
+-            opts.verification.pick_registry(&subdep_name),
++            opts.verification.lockfile_form(&subdep_name),
+         )
+         .ok_or_else(|| ConfigDepError::EnvLockfileCorrupted {
+             message: format!(
+@@ -292,12 +292,12 @@ fn integrity_and_tarball(
+     resolution: &LockfileResolution,
+     name: &str,
+     version: &str,
+-    registry: &str,
++    lockfile_form: pnpm_lockfile::LockfileFormOptions<'_>,
+ ) -> Option<(Integrity, String)> {
+     match resolution {
+         LockfileResolution::Registry(registry_resolution) => Some((
+             registry_resolution.integrity.clone(),
+-            npm_tarball_url(name, version, TarballUrlOptions { registry, server_type: None }),
++            npm_tarball_url(name, version, TarballUrlOptions { registry: lockfile_form.registry, server_type: lockfile_form.server_type }),
+         )),
+         LockfileResolution::Tarball(tarball) => {
+             let integrity = tarball.integrity.clone()?;
+diff --git a/pnpm/crates/env-installer/src/manifest_lockfile.rs b/pnpm/crates/env-installer/src/manifest_lockfile.rs
+index 8fa257f..dbb4d32 100644
+--- a/pnpm/crates/env-installer/src/manifest_lockfile.rs
++++ b/pnpm/crates/env-installer/src/manifest_lockfile.rs
+@@ -10,19 +10,14 @@ pub(crate) fn package_metadata(
+     name: &str,
+     version: &str,
+     result: &ResolveResult,
+-    registry: &str,
+-    lockfile_include_tarball_url: bool,
++    lockfile_form: LockfileFormOptions<'_>,
+ ) -> Result<PackageMetadata, LockfileFormError> {
+     let manifest = result.package.manifest.as_deref();
+     Ok(PackageMetadata {
+         resolution: result.resolution.to_lockfile_form(
+             name,
+             version,
+-            LockfileFormOptions {
+-                registry,
+-                server_type: None,
+-                include_tarball_url: lockfile_include_tarball_url,
+-            },
++            lockfile_form,
+         )?,
+         version: None,
+         engines: read_engines(manifest),
+diff --git a/pnpm/crates/env-installer/src/options.rs b/pnpm/crates/env-installer/src/options.rs
+index c53e785..6cc0da0 100644
+--- a/pnpm/crates/env-installer/src/options.rs
++++ b/pnpm/crates/env-installer/src/options.rs
+@@ -52,6 +52,7 @@ pub struct ConfigDependencyStoreIndex {
+ pub struct ConfigDependencyVerification<'a> {
+     /// `default` plus per-scope (`@scope`) registry entries.
+     pub registries: &'a HashMap<String, String>,
++    pub registry_options_by_url: &'a std::collections::BTreeMap<String, pnpm_lockfile::RegistryOptions>,
+     pub resolution_verifiers: Vec<Arc<dyn pnpm_resolving_resolver_base::ResolutionVerifier>>,
+     /// Applied when resolving a config dependency, so a resolution never
+     /// picks a version the resolution verifiers reject.
+@@ -59,6 +60,15 @@ pub struct ConfigDependencyVerification<'a> {
+ }
+ 
+ impl ConfigDependencyVerification<'_> {
++    pub(crate) fn lockfile_form(&self, name: &str) -> pnpm_lockfile::LockfileFormOptions<'_> {
++        let registry = self.pick_registry(name);
++        pnpm_lockfile::LockfileFormOptions {
++            registry,
++            server_type: pnpm_lockfile::registry_server_type(self.registry_options_by_url, registry),
++            include_tarball_url: false,
++        }
++    }
++
+     /// The install-wide default registry. Used to derive a config
+     /// dependency's tarball URL when the lockfile stored an
+     /// integrity-only (registry-form) resolution.
+diff --git a/pnpm/crates/env-installer/src/resolve_and_install_config_deps.rs b/pnpm/crates/env-installer/src/resolve_and_install_config_deps.rs
+index 5124834..1c22def 100644
+--- a/pnpm/crates/env-installer/src/resolve_and_install_config_deps.rs
++++ b/pnpm/crates/env-installer/src/resolve_and_install_config_deps.rs
+@@ -34,13 +34,6 @@ use std::collections::BTreeMap;
+ mod plan;
+ use plan::{ToResolve, plan_config_deps};
+ 
+-/// Config deps keep the npm tarball layout: `registries` is a workspace
+-/// setting, and config deps are resolved before workspace settings apply. The
+-/// writer and the reader here agree because both use this same default.
+-fn npm_lockfile_form(registry: &str) -> LockfileFormOptions<'_> {
+-    LockfileFormOptions { registry, server_type: None, include_tarball_url: false }
+-}
+-
+ /// Resolve + install the config dependencies declared in
+ /// `pnpm-workspace.yaml` (`config_deps`).
+ pub async fn resolve_and_install_config_deps<Reporter: self::Reporter>(
+@@ -246,7 +239,7 @@ async fn resolve_one(
+         &version,
+         result.resolution,
+         pinned_integrity,
+-        opts.verification.pick_registry(name),
++        opts.verification.lockfile_form(name),
+     )?;
+ 
+     // A pinned dependency covers only itself, so its optional subdeps stay out
+@@ -279,7 +272,7 @@ fn record_config_dependency(
+     version: &str,
+     mut resolution: LockfileResolution,
+     pinned_integrity: Option<&Integrity>,
+-    registry: &str,
++    lockfile_form: LockfileFormOptions<'_>,
+ ) -> Result<(), ConfigDepError> {
+     let (name, specifier) = declaration;
+     env_lockfile
+@@ -297,7 +290,7 @@ fn record_config_dependency(
+         key.clone(),
+         registry_package_metadata(
+             resolution
+-                .to_lockfile_form(name, version, npm_lockfile_form(registry))
++                .to_lockfile_form(name, version, lockfile_form)
+                 .map_err(ConfigDepError::LockfileForm)?,
+         ),
+     );
+@@ -368,7 +361,7 @@ fn migrate_into_lockfile(
+     version: &str,
+     integrity: Integrity,
+     tarball: String,
+-    registry: &str,
++    lockfile_form: LockfileFormOptions<'_>,
+ ) -> Result<(), ConfigDepError> {
+     let key = pkg_key(name, version)?;
+     env_lockfile
+@@ -385,7 +378,7 @@ fn migrate_into_lockfile(
+         git_hosted: None,
+         path: None,
+     })
+-    .to_lockfile_form(name, version, npm_lockfile_form(registry))
++    .to_lockfile_form(name, version, lockfile_form)
+     .map_err(ConfigDepError::LockfileForm)?;
+     env_lockfile.packages.insert(key.clone(), registry_package_metadata(resolution));
+     env_lockfile.snapshots.insert(key, SnapshotEntry::default());
+diff --git a/pnpm/crates/env-installer/src/resolve_and_install_config_deps/plan.rs b/pnpm/crates/env-installer/src/resolve_and_install_config_deps/plan.rs
+index 3d2f069..059c0cf 100644
+--- a/pnpm/crates/env-installer/src/resolve_and_install_config_deps/plan.rs
++++ b/pnpm/crates/env-installer/src/resolve_and_install_config_deps/plan.rs
+@@ -89,8 +89,8 @@ fn plan_detailed(
+     let Some(tarball) = detail.tarball.clone() else {
+         return Ok(ConfigDepPlan::Resolve { specifier: version, integrity: Some(integrity) });
+     };
+-    let registry = opts.verification.pick_registry(name);
+-    migrate_into_lockfile(env_lockfile, name, &version, integrity, tarball, registry)?;
++    let lockfile_form = opts.verification.lockfile_form(name);
++    migrate_into_lockfile(env_lockfile, name, &version, integrity, tarball, lockfile_form)?;
+     Ok(ConfigDepPlan::Migrated)
+ }
+ 
+diff --git a/pnpm/crates/env-installer/src/resolve_optional_subdeps.rs b/pnpm/crates/env-installer/src/resolve_optional_subdeps.rs
+index 04e4027..e8b0938 100644
+--- a/pnpm/crates/env-installer/src/resolve_optional_subdeps.rs
++++ b/pnpm/crates/env-installer/src/resolve_optional_subdeps.rs
+@@ -75,7 +75,7 @@ fn record_optional_subdep(
+     subdep_version: &str,
+     result: &ResolveResult,
+ ) -> Result<(), ConfigDepError> {
+-    let registry = opts.verification.pick_registry(subdep_name);
++    let lockfile_form = opts.verification.lockfile_form(subdep_name);
+     let pkg_key: PackageKey = format!("{subdep_name}@{subdep_version}")
+         .parse()
+         .map_err(|_| ConfigDepError::BadConfigDep {
+@@ -86,7 +86,7 @@ fn record_optional_subdep(
+ 
+     env_lockfile.packages.insert(
+         pkg_key.clone(),
+-        package_metadata(subdep_name, subdep_version, result, registry, false)
++        package_metadata(subdep_name, subdep_version, result, lockfile_form)
+             .map_err(ConfigDepError::LockfileForm)?,
+     );
+     env_lockfile.snapshots
+diff --git a/pnpm/crates/env-installer/src/resolve_package_manager_integrities.rs b/pnpm/crates/env-installer/src/resolve_package_manager_integrities.rs
+index 15951fb..1ad3c9c 100644
+--- a/pnpm/crates/env-installer/src/resolve_package_manager_integrities.rs
++++ b/pnpm/crates/env-installer/src/resolve_package_manager_integrities.rs
+@@ -145,9 +145,9 @@ async fn record_package(
+     resolver: &dyn Resolver,
+     opts: &ConfigDepsInstallOptions<'_>,
+ ) -> Result<Vec<EnvPackage>, ConfigDepError> {
+-    let registry = opts.verification.pick_registry(&package.name);
++    let lockfile_form = opts.verification.lockfile_form(&package.name);
+     let mut metadata =
+-        package_metadata(&package.name, &package.version, &package.result, registry, false)
++        package_metadata(&package.name, &package.version, &package.result, lockfile_form)
+             .map_err(ConfigDepError::LockfileForm)?;
+     metadata.resolution = strip_registry_tarball_url(metadata.resolution);
+     env_lockfile.packages.insert(package.key.clone(), metadata);
+diff --git a/pnpm/crates/env-installer/src/tests.rs b/pnpm/crates/env-installer/src/tests.rs
+index a81f9c3..f0e609f 100644
+--- a/pnpm/crates/env-installer/src/tests.rs
++++ b/pnpm/crates/env-installer/src/tests.rs
+@@ -112,6 +112,7 @@ fn build_resolver(registry: &str) -> (NpmResolver<InMemoryPackageMetaCache>, Tem
+ struct Harness {
+     registry_url: String,
+     registries: std::collections::HashMap<String, String>,
++    registry_options_by_url: std::collections::BTreeMap<String, pnpm_lockfile::RegistryOptions>,
+     http_client: ThrottledClient,
+     auth_headers: AuthHeaders,
+     store_dir: &'static StoreDir,
+@@ -129,6 +130,7 @@ fn harness() -> Harness {
+     let store_dir: &'static StoreDir =
+         Box::leak(Box::new(StoreDir::new(store_root.path().to_path_buf())));
+     Harness {
++        registry_options_by_url: std::collections::BTreeMap::new(),
+         registry_url,
+         registries,
+         http_client: ThrottledClient::default(),
+@@ -147,6 +149,7 @@ fn options<'a>(
+         mode: crate::ConfigDepsInstallMode::Reconcile,
+         verification: ConfigDependencyVerification {
+             registries: &harness.registries,
++            registry_options_by_url: &harness.registry_options_by_url,
+             resolution_verifiers: pnpm_package_manager::build_resolution_verifiers(
+                 &pnpm_config::Config {
+                     registry: harness.registry_url.clone(),
+diff --git a/pnpm/crates/env-installer/src/tests/configuration.rs b/pnpm/crates/env-installer/src/tests/configuration.rs
+index 69979a9..b896c2d 100644
+--- a/pnpm/crates/env-installer/src/tests/configuration.rs
++++ b/pnpm/crates/env-installer/src/tests/configuration.rs
+@@ -493,3 +493,40 @@ async fn removal_preserves_a_shared_package_manager_graph() {
+             .exists(),
+     );
+ }
++
++#[tokio::test]
++async fn pnpr_config_dependencies_round_trip_without_tarball_urls() {
++    let mut test_harness = harness();
++    test_harness.registry_options_by_url.insert(
++        test_harness.registry_url.clone(),
++        pnpm_lockfile::RegistryOptions {
++            server_type: Some(pnpm_lockfile::RegistryServerType::Pnpr),
++            ..Default::default()
++        },
++    );
++    let (resolver, _cache) = build_resolver(&test_harness.registry_url);
++    let root = TempDir::new().unwrap();
++    let config_deps = BTreeMap::from([(
++        "@pnpm.e2e/support-different-architectures".to_string(),
++        clean_spec("1.0.0"),
++    )]);
++    resolve_and_install_config_deps::<SilentReporter>(
++        &config_deps, &resolver, &options(&test_harness, root.path(), false),
++    ).await.unwrap();
++
++    let env = EnvLockfile::read(root.path()).unwrap().unwrap();
++    dbg!(&env.packages);
++    assert!(env.packages.values().all(|package| matches!(
++        package.resolution, pnpm_lockfile::LockfileResolution::Registry(_)
++    )));
++
++    let mut fresh_harness = harness();
++    fresh_harness.registry_options_by_url = test_harness.registry_options_by_url.clone();
++    let fresh_root = TempDir::new().unwrap();
++    install_config_deps::<SilentReporter>(
++        &env, &options(&fresh_harness, fresh_root.path(), true),
++    ).await.unwrap();
++    assert!(fresh_root.path().join(
++        "node_modules/.pnpm-config/@pnpm.e2e/support-different-architectures/package.json"
++    ).is_file());
++}
+diff --git a/pnpm11/installing/env-installer/package.json b/pnpm11/installing/env-installer/package.json
+index 526d006..8359884 100644
+--- a/pnpm11/installing/env-installer/package.json
++++ b/pnpm11/installing/env-installer/package.json
+@@ -33,6 +33,7 @@
+     ".test": "cross-env NODE_OPTIONS=\"$NODE_OPTIONS --experimental-vm-modules --disable-warning=ExperimentalWarning --disable-warning=DEP0169\" jest"
+   },
+   "dependencies": {
++    "@pnpm/config.normalize-registries": "workspace:*",
+     "@pnpm/config.package-is-installable": "workspace:*",
+     "@pnpm/config.pick-registry-for-package": "workspace:*",
+     "@pnpm/config.version-policy": "workspace:*",
+diff --git a/pnpm11/installing/env-installer/src/installConfigDeps.ts b/pnpm11/installing/env-installer/src/installConfigDeps.ts
+index 43e6227..4811959 100644
+--- a/pnpm11/installing/env-installer/src/installConfigDeps.ts
++++ b/pnpm11/installing/env-installer/src/installConfigDeps.ts
+@@ -2,6 +2,7 @@ import fs from 'node:fs'
+ import path from 'node:path'
+ 
+ import { checkPackage } from '@pnpm/config.package-is-installable'
++import { getRegistryServerType } from '@pnpm/config.normalize-registries'
+ import { pickRegistryForPackage } from '@pnpm/config.pick-registry-for-package'
+ import { installingConfigDepsLogger, skippedOptionalDependencyLogger } from '@pnpm/core-loggers'
+ import { calcGlobalVirtualStorePathWithSubdeps, calcLeafGlobalVirtualStorePath } from '@pnpm/deps.graph-hasher'
+@@ -11,7 +12,7 @@ import { safeJoinModulesDir } from '@pnpm/fs.symlink-dependency'
+ import { type EnvLockfile, readEnvLockfile } from '@pnpm/lockfile.fs'
+ import { getNpmTarballUrl } from '@pnpm/resolving.tarball-url'
+ import type { StoreController } from '@pnpm/store.controller'
+-import type { ConfigDependencies, RegistriesByScope } from '@pnpm/types'
++import type { ConfigDependencies, RegistryContext } from '@pnpm/types'
+ import { rimraf } from '@zkochan/rimraf'
+ import { symlinkDir } from 'symlink-dir'
+ 
+@@ -19,9 +20,8 @@ import { migrateConfigDepsToLockfile } from './migrateConfigDeps.js'
+ import type { NormalizedConfigDep, NormalizedSubdep } from './parseIntegrity.js'
+ import { verifyEnvLockfile } from './verifyEnvLockfile.js'
+ 
+-export interface InstallConfigDepsOpts {
++export interface InstallConfigDepsOpts extends RegistryContext {
+   frozenLockfile?: boolean
+-  registriesByScope: RegistriesByScope
+   rootDir: string
+   store: StoreController
+   storeDir: string
+@@ -70,9 +70,9 @@ export async function installConfigDeps (
+  */
+ export async function areConfigDepsInstalled (
+   envLockfile: EnvLockfile,
+-  opts: Pick<InstallConfigDepsOpts, 'registriesByScope' | 'rootDir' | 'storeDir'>
++  opts: Pick<InstallConfigDepsOpts, 'registriesByScope' | 'registryOptionsByUrl' | 'rootDir' | 'storeDir'>
+ ): Promise<boolean> {
+-  const normalizedDeps = normalizeFromLockfile(envLockfile, opts.registriesByScope)
++  const normalizedDeps = normalizeFromLockfile(envLockfile, opts)
+   const configModulesDir = path.join(opts.rootDir, 'node_modules/.pnpm-config')
+   const globalVirtualStoreDir = path.join(opts.storeDir, 'links')
+   const installed = await Promise.all(Object.entries(normalizedDeps).map(async ([pkgName, pkg]) => {
+@@ -198,13 +198,13 @@ async function normalizeForInstall (
+ ): Promise<Record<string, NormalizedConfigDep>> {
+   if (isEnvLockfile(configDepsOrLockfile)) {
+     verifyEnvLockfile(configDepsOrLockfile)
+-    return normalizeFromLockfile(configDepsOrLockfile, opts.registriesByScope)
++    return normalizeFromLockfile(configDepsOrLockfile, opts)
+   }
+ 
+   const envLockfile = await readEnvLockfile(opts.rootDir)
+   if (envLockfile) {
+     verifyEnvLockfile(envLockfile)
+-    return normalizeFromLockfile(envLockfile, opts.registriesByScope)
++    return normalizeFromLockfile(envLockfile, opts)
+   }
+ 
+   // No env lockfile yet — migrate from old inline integrity format
+@@ -229,7 +229,7 @@ function isEnvLockfile (obj: ConfigDependencies | EnvLockfile): obj is EnvLockfi
+ 
+ function normalizeFromLockfile (
+   lockfile: EnvLockfile,
+-  registriesByScope: RegistriesByScope
++  registryContext: RegistryContext
+ ): Record<string, NormalizedConfigDep> {
+   const deps: Record<string, NormalizedConfigDep> = {}
+   const configDeps = lockfile.importers['.']?.configDependencies ?? {}
+@@ -250,16 +250,16 @@ function normalizeFromLockfile (
+         `pnpm-lock.yaml is corrupted or incomplete: missing integrity for "${pkgKey}"`
+       )
+     }
+-    const registry = pickRegistryForPackage(registriesByScope, pkgName)
++    const registry = pickRegistryForPackage(registryContext.registriesByScope, pkgName)
+     const snapshot = lockfile.snapshots[pkgKey]
+     const optionalSubdeps = snapshot?.optionalDependencies
+-      ? readOptionalSubdepsFromLockfile(pkgName, snapshot.optionalDependencies, lockfile, registriesByScope)
++      ? readOptionalSubdepsFromLockfile(pkgName, snapshot.optionalDependencies, lockfile, registryContext)
+       : undefined
+     deps[pkgName] = {
+       version,
+       resolution: {
+         integrity: resolution.integrity,
+-        tarball: resolution.tarball ?? getNpmTarballUrl(pkgName, version, { registry }),
++        tarball: resolution.tarball ?? getNpmTarballUrl(pkgName, version, { registry, serverType: getRegistryServerType(registryContext, registry) }),
+       },
+       optionalSubdeps,
+     }
+@@ -271,7 +271,7 @@ function readOptionalSubdepsFromLockfile (
+   parentName: string,
+   optionalDeps: Record<string, string>,
+   lockfile: EnvLockfile,
+-  registriesByScope: RegistriesByScope
++  registryContext: RegistryContext
+ ): NormalizedSubdep[] {
+   const subdeps: NormalizedSubdep[] = []
+   for (const [subdepName, subdepVersion] of Object.entries(optionalDeps)) {
+@@ -291,13 +291,13 @@ function readOptionalSubdepsFromLockfile (
+         `pnpm-lock.yaml is corrupted or incomplete: missing integrity for "${subdepKey}"`
+       )
+     }
+-    const registry = pickRegistryForPackage(registriesByScope, subdepName)
++    const registry = pickRegistryForPackage(registryContext.registriesByScope, subdepName)
+     subdeps.push({
+       name: subdepName,
+       version: subdepVersion,
+       resolution: {
+         integrity: subdepResolution.integrity,
+-        tarball: subdepResolution.tarball ?? getNpmTarballUrl(subdepName, subdepVersion, { registry }),
++        tarball: subdepResolution.tarball ?? getNpmTarballUrl(subdepName, subdepVersion, { registry, serverType: getRegistryServerType(registryContext, registry) }),
+       },
+       os: subdepInfo.os,
+       cpu: subdepInfo.cpu,
+diff --git a/pnpm11/installing/env-installer/src/migrateConfigDeps.ts b/pnpm11/installing/env-installer/src/migrateConfigDeps.ts
+index 98e8b95..bf8e4a4 100644
+--- a/pnpm11/installing/env-installer/src/migrateConfigDeps.ts
++++ b/pnpm11/installing/env-installer/src/migrateConfigDeps.ts
+@@ -1,3 +1,4 @@
++import { getRegistryServerType } from '@pnpm/config.normalize-registries'
+ import { pickRegistryForPackage } from '@pnpm/config.pick-registry-for-package'
+ import { writeSettings } from '@pnpm/config.writer'
+ import { PnpmError } from '@pnpm/error'
+@@ -5,14 +6,13 @@ import { createEnvLockfile } from '@pnpm/lockfile.fs'
+ import type { LockfileResolution } from '@pnpm/lockfile.types'
+ import { toLockfileResolution } from '@pnpm/lockfile.utils'
+ import { getNpmTarballUrl } from '@pnpm/resolving.tarball-url'
+-import type { ConfigDependencies, ConfigDependencySpecifiers, RegistriesByScope } from '@pnpm/types'
++import type { ConfigDependencies, ConfigDependencySpecifiers, RegistryContext } from '@pnpm/types'
+ 
+ import type { NormalizedConfigDep } from './parseIntegrity.js'
+ import { parseIntegrity } from './parseIntegrity.js'
+ import { writeVerifiedEnvLockfile } from './writeVerifiedEnvLockfile.js'
+ 
+-interface MigrateOpts {
+-  registriesByScope: RegistriesByScope
++interface MigrateOpts extends RegistryContext {
+   rootDir: string
+ }
+ 
+@@ -35,7 +35,7 @@ export async function migrateConfigDepsToLockfile (
+   const normalizedDeps: Record<string, NormalizedConfigDep> = {}
+ 
+   for (const [pkgName, pkgSpec] of Object.entries(configDeps)) {
+-    const migrated = migrateConfigDep(pkgName, pkgSpec, pickRegistryForPackage(opts.registriesByScope, pkgName))
++    const migrated = migrateConfigDep(pkgName, pkgSpec, opts)
+     if (!migrated) continue
+     const { version, lockfileResolution, resolution } = migrated
+     cleanSpecifiers[pkgName] = version
+@@ -75,17 +75,19 @@ interface MigratedConfigDep {
+ function migrateConfigDep (
+   pkgName: string,
+   pkgSpec: ConfigDependencies[string],
+-  registry: string
++  registryContext: RegistryContext
+ ): MigratedConfigDep | undefined {
++  const registry = pickRegistryForPackage(registryContext.registriesByScope, pkgName)
++  const registryOptions = { registry, serverType: getRegistryServerType(registryContext, registry) }
+   if (typeof pkgSpec === 'object') {
+     const { version, integrity } = parseIntegrity(pkgName, pkgSpec.integrity)
+-    const tarball = pkgSpec.tarball ?? getNpmTarballUrl(pkgName, version, { registry })
++    const tarball = pkgSpec.tarball ?? getNpmTarballUrl(pkgName, version, registryOptions)
+     return {
+       version,
+       lockfileResolution: toLockfileResolution(
+         { name: pkgName, version },
+         { integrity, tarball },
+-        { registry }
++        registryOptions
+       ),
+       resolution: { integrity, tarball },
+     }
+@@ -107,6 +109,6 @@ function migrateConfigDep (
+   return {
+     version,
+     lockfileResolution: { integrity },
+-    resolution: { integrity, tarball: getNpmTarballUrl(pkgName, version, { registry }) },
++    resolution: { integrity, tarball: getNpmTarballUrl(pkgName, version, registryOptions) },
+   }
+ }
+diff --git a/pnpm11/installing/env-installer/src/resolveAndInstallConfigDeps.ts b/pnpm11/installing/env-installer/src/resolveAndInstallConfigDeps.ts
+index f5d2422..1e42afa 100644
+--- a/pnpm11/installing/env-installer/src/resolveAndInstallConfigDeps.ts
++++ b/pnpm11/installing/env-installer/src/resolveAndInstallConfigDeps.ts
+@@ -1,8 +1,9 @@
++import { getRegistryServerType, pickRegistryContext } from '@pnpm/config.normalize-registries'
+ import { pickRegistryForPackage } from '@pnpm/config.pick-registry-for-package'
+ import { PnpmError } from '@pnpm/error'
+ import type { EnvLockfile } from '@pnpm/lockfile.fs'
+ import { toLockfileResolution } from '@pnpm/lockfile.utils'
+-import type { ConfigDependencies } from '@pnpm/types'
++import type { ConfigDependencies, RegistryContext } from '@pnpm/types'
+ 
+ import { type ConfigDepResolverOpts, type ConfigDepResolvers, createConfigDepResolvers } from './createConfigDepResolvers.js'
+ import { installConfigDeps, type InstallConfigDepsOpts } from './installConfigDeps.js'
+@@ -40,7 +41,7 @@ export async function resolveAndInstallConfigDeps (
+   if (!envLockfile) return
+   const { depsToResolve, lockfileChanged } = collectConfigDepsToResolve(configDeps, {
+     envLockfile,
+-    registriesByScope: opts.registriesByScope,
++    ...pickRegistryContext(opts),
+     pruneRemovedConfigDependencies: opts.mode !== 'bootstrap',
+   })
+ 
+@@ -75,9 +76,8 @@ interface ConfigDepToResolve {
+   pinnedIntegrity?: string
+ }
+ 
+-interface ConfigDepPlanContext {
++interface ConfigDepPlanContext extends RegistryContext {
+   envLockfile: EnvLockfile
+-  registriesByScope: ResolveAndInstallConfigDepsOpts['registriesByScope']
+   pruneRemovedConfigDependencies: boolean
+ }
+ 
+@@ -143,7 +143,7 @@ function planObjectFormatConfigDep (
+   const pkgKey = `${name}@${version}`
+   ctx.envLockfile.importers['.'].configDependencies[name] = { specifier: version, version }
+   ctx.envLockfile.packages[pkgKey] = {
+-    resolution: toLockfileResolution({ name, version }, { integrity, tarball: value.tarball }, { registry }),
++    resolution: toLockfileResolution({ name, version }, { integrity, tarball: value.tarball }, { registry, serverType: getRegistryServerType(ctx, registry) }),
+   }
+   ctx.envLockfile.snapshots[pkgKey] = {}
+   return MIGRATED_INTO_LOCKFILE
+@@ -184,9 +184,11 @@ async function resolveConfigDepIntoLockfile (ctx: ResolveConfigDepContext, dep:
+   const pkgResolution = pinnedIntegrity == null
+     ? resolution.resolution
+     : { ...resolution.resolution, integrity: pinnedIntegrity }
++  const registry = pickRegistryForPackage(opts.registriesByScope, name)
+   envLockfile.packages[pkgKey] = {
+     resolution: toLockfileResolution({ name, version }, pkgResolution, {
+-      registry: pickRegistryForPackage(opts.registriesByScope, name),
++      registry,
++      serverType: getRegistryServerType(opts, registry),
+     }),
+   }
+   // A pinned dependency covers only itself, so its optional subdeps stay out
+@@ -195,7 +197,7 @@ async function resolveConfigDepIntoLockfile (ctx: ResolveConfigDepContext, dep:
+     ? await resolveOptionalSubdeps(name, resolution.manifest, {
+       envLockfile,
+       lockfileDir: opts.rootDir,
+-      registriesByScope: opts.registriesByScope,
++      ...pickRegistryContext(opts),
+       resolveFromNpm: ctx.resolvers.resolve,
+     })
+     : undefined
+diff --git a/pnpm11/installing/env-installer/src/resolveConfigDeps.ts b/pnpm11/installing/env-installer/src/resolveConfigDeps.ts
+index b7ec1b6..2b3e9df 100644
+--- a/pnpm11/installing/env-installer/src/resolveConfigDeps.ts
++++ b/pnpm11/installing/env-installer/src/resolveConfigDeps.ts
+@@ -1,3 +1,4 @@
++import { getRegistryServerType, pickRegistryContext } from '@pnpm/config.normalize-registries'
+ import { pickRegistryForPackage } from '@pnpm/config.pick-registry-for-package'
+ import { writeSettings } from '@pnpm/config.writer'
+ import { PnpmError } from '@pnpm/error'
+@@ -87,13 +88,13 @@ async function addConfigDepToLockfile (ctx: AddConfigDepContext, configDep: stri
+     resolution: toLockfileResolution(
+       { name: pkgName, version },
+       resolution.resolution,
+-      { registry }
++      { registry, serverType: getRegistryServerType(opts, registry) }
+     ),
+   }
+   const optionalSubdeps = await resolveOptionalSubdeps(pkgName, resolution.manifest, {
+     envLockfile,
+     lockfileDir: opts.rootDir,
+-    registriesByScope: opts.registriesByScope,
++    ...pickRegistryContext(opts),
+     resolveFromNpm: ctx.resolveFromNpm,
+   })
+   envLockfile.snapshots[pkgKey] = optionalSubdeps ? { optionalDependencies: optionalSubdeps } : {}
+diff --git a/pnpm11/installing/env-installer/src/resolveOptionalSubdeps.ts b/pnpm11/installing/env-installer/src/resolveOptionalSubdeps.ts
+index ec1bbe5..e66c07b 100644
+--- a/pnpm11/installing/env-installer/src/resolveOptionalSubdeps.ts
++++ b/pnpm11/installing/env-installer/src/resolveOptionalSubdeps.ts
+@@ -1,19 +1,19 @@
+ 
++import { getRegistryServerType } from '@pnpm/config.normalize-registries'
+ import { pickRegistryForPackage } from '@pnpm/config.pick-registry-for-package'
+ import { skippedOptionalDependencyLogger } from '@pnpm/core-loggers'
+ import { isError, PnpmError } from '@pnpm/error'
+ import type { EnvLockfile } from '@pnpm/lockfile.fs'
+ import type { ResolvedDependencies } from '@pnpm/lockfile.types'
+ import { toLockfileResolution } from '@pnpm/lockfile.utils'
+-import type { DependencyManifest, RegistriesByScope } from '@pnpm/types'
++import type { DependencyManifest, RegistryContext } from '@pnpm/types'
+ import semver from 'semver'
+ 
+ import type { ResolveConfigDep } from './createConfigDepResolvers.js'
+ 
+-export interface ResolveOptionalSubdepsOpts {
++export interface ResolveOptionalSubdepsOpts extends RegistryContext {
+   envLockfile: EnvLockfile
+   lockfileDir: string
+-  registriesByScope: RegistriesByScope
+   resolveFromNpm: ResolveConfigDep
+ }
+ 
+@@ -74,7 +74,7 @@ async function resolveOptionalSubdep (ctx: OptionalSubdepContext, subdepName: st
+     resolution: toLockfileResolution(
+       { name: subdepName, version: subdepVersion },
+       resolution.resolution,
+-      { registry }
++      { registry, serverType: getRegistryServerType(opts, registry) }
+     ),
+     ...pickPlatformFields(resolution.manifest),
+   }
+diff --git a/pnpm11/installing/env-installer/test/resolveAndInstallConfigDeps.test.ts b/pnpm11/installing/env-installer/test/resolveAndInstallConfigDeps.test.ts
+index 2170165..a40f3d5 100644
+--- a/pnpm11/installing/env-installer/test/resolveAndInstallConfigDeps.test.ts
++++ b/pnpm11/installing/env-installer/test/resolveAndInstallConfigDeps.test.ts
+@@ -597,3 +597,38 @@ test('removal reconciles config roots while preserving a shared package-manager
+   expect(afterRemoval.snapshots).toEqual({ '@pnpm.e2e/foo@100.0.0': env.snapshots['@pnpm.e2e/foo@100.0.0'] })
+   expect(fs.existsSync('node_modules/.pnpm-config/@pnpm.e2e/bar')).toBe(false)
+ })
++
++test('pnpr config dependencies round trip without tarball URLs', async () => {
++  prepareEmpty()
++  const opts = {
++    ...createOpts(),
++    registryOptionsByUrl: { [registry]: { serverType: 'pnpr' as const } },
++  }
++  await resolveAndInstallConfigDeps({
++    '@pnpm.e2e/support-different-architectures': '1.0.0',
++  }, opts)
++  const lockfile = (await readEnvLockfile(process.cwd()))!
++  expect(Object.values(lockfile.packages).length).toBeGreaterThan(1)
++  for (const pkg of Object.values(lockfile.packages)) {
++    expect(pkg.resolution).not.toHaveProperty('tarball')
++    expect(pkg.resolution).toHaveProperty('integrity')
++  }
++  await opts.store.close()
++
++  const firstRoot = process.cwd()
++  prepareEmpty()
++  const freshOpts = {
++    ...createOpts(),
++    registryOptionsByUrl: opts.registryOptionsByUrl,
++    frozenLockfile: true,
++  }
++  await writeEnvLockfile(process.cwd(), lockfile)
++  await resolveAndInstallConfigDeps({
++    '@pnpm.e2e/support-different-architectures': '1.0.0',
++  }, freshOpts)
++  expect(process.cwd()).not.toBe(firstRoot)
++  expect(loadJsonFileSync<{ name: string }>(
++    'node_modules/.pnpm-config/@pnpm.e2e/support-different-architectures/package.json'
++  ).name).toBe('@pnpm.e2e/support-different-architectures')
++  await freshOpts.store.close()
++})
