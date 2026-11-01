@@ -51,7 +51,7 @@ index 6192117..bce4deb 100644
  fn assert_config_dependency_declared(workspace: &Path, name: &str, specifier: &str) {
 diff --git a/pnpm/crates/cli/tests/suite/config_dependencies/registry_type.rs b/pnpm/crates/cli/tests/suite/config_dependencies/registry_type.rs
 new file mode 100644
-index 0000000..98d6b0c
+index 0000000..09e1c46
 --- /dev/null
 +++ b/pnpm/crates/cli/tests/suite/config_dependencies/registry_type.rs
 @@ -0,0 +1,28 @@
@@ -80,7 +80,7 @@ index 0000000..98d6b0c
 +        env.packages[&key].resolution,
 +        pnpm_lockfile::LockfileResolution::Registry(_),
 +    ),);
-+    assert!(workspace.join("node_modules/.pnpm-config/@pnpm.e2e/foo/package.json").is_file());
++    assert!(workspace.join("node_modules/.pnpm-config/@pnpm.e2e/foo/package.json").is_file(),);
 +    drop((root, npmrc_info));
 +}
 diff --git a/pnpm/crates/env-installer/src/install_config_deps/optional_dependencies.rs b/pnpm/crates/env-installer/src/install_config_deps/optional_dependencies.rs
