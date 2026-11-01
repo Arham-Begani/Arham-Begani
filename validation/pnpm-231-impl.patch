@@ -1,0 +1,83 @@
+diff --git a/pnpm/crates/store-dir/src/store_index/aliases.rs b/pnpm/crates/store-dir/src/store_index/aliases.rs
+index cc7b24b..a386992 100644
+--- a/pnpm/crates/store-dir/src/store_index/aliases.rs
++++ b/pnpm/crates/store-dir/src/store_index/aliases.rs
+@@ -6,7 +6,10 @@
+ //! apart from the rows, in a table pnpm v11 never reads, so a store shared
+ //! with it keeps a row layout that pnpm v11 understands.
+ 
+-use super::{Backend, Connection, HashMap, StoreIndex, StoreIndexError, queries::GET_MANY_CHUNK};
++use super::{
++    Backend, Connection, HashMap, HashSet, StoreIndex, StoreIndexError, files::FilesIndex,
++    queries::GET_MANY_CHUNK,
++};
+ 
+ pub(super) const CREATE_ALIAS_TABLE: &str = "
+     CREATE TABLE IF NOT EXISTS package_index_alias (
+@@ -108,5 +111,32 @@ fn is_missing_alias_table(error: &rusqlite::Error) -> bool {
+     matches!(error, rusqlite::Error::SqliteFailure(_, Some(message)) if message.contains("no such table"))
+ }
+ 
++pub(super) fn delete_sqlite_aliases(
++    conn: &Connection,
++    keys: &[String],
++) -> Result<(), StoreIndexError> {
++    for chunk in keys.chunks(GET_MANY_CHUNK) {
++        let placeholders = std::iter::repeat_n("?", chunk.len()).collect::<Vec<_>>().join(",");
++        let sql = format!("DELETE FROM package_index_alias WHERE target IN ({placeholders})");
++        conn.execute(&sql, rusqlite::params_from_iter(chunk))
++            .map_err(|source| StoreIndexError::Write { source })?;
++    }
++    Ok(())
++}
++
++pub(super) fn delete_files_aliases(
++    files: &FilesIndex,
++    keys: &[String],
++) -> Result<(), StoreIndexError> {
++    let targets: HashSet<&[u8]> = keys.iter().map(|key| key.as_bytes()).collect();
++    let aliases = files.aliases();
++    aliases.for_each(|key, target| {
++        if targets.contains(target.as_slice()) {
++            aliases.remove(&key)?;
++        }
++        Ok(())
++    })
++}
++
+ #[cfg(test)]
+ mod tests;
+diff --git a/pnpm/crates/store-dir/src/store_index/queries.rs b/pnpm/crates/store-dir/src/store_index/queries.rs
+index 1194682..d7bedac 100644
+--- a/pnpm/crates/store-dir/src/store_index/queries.rs
++++ b/pnpm/crates/store-dir/src/store_index/queries.rs
+@@ -394,7 +394,7 @@ impl StoreIndex {
+         Ok(out)
+     }
+ 
+-    /// Delete a batch of package-index rows in one transaction, then
++    /// Delete package-index rows and their aliases in one transaction, then
+     /// shrink `index.db`.
+     ///
+     /// `index.db` uses `auto_vacuum=NONE`, so freed pages stay in the file
+@@ -407,9 +407,10 @@ impl StoreIndex {
+         let conn = match &mut self.backend {
+             Backend::Sqlite { conn, .. } => conn,
+             Backend::Files(files) => {
+-                return keys
++                keys
+                     .iter()
+-                    .try_for_each(|key| files.remove(key));
++                    .try_for_each(|key| files.remove(key))?;
++                return super::aliases::delete_files_aliases(files, keys);
+             }
+         };
+         let tx = conn
+@@ -424,6 +425,7 @@ impl StoreIndex {
+                     .map_err(|source| StoreIndexError::Write { source })?;
+             }
+         }
++        super::aliases::delete_sqlite_aliases(&tx, keys)?;
+         tx.commit()
+             .map_err(|source| StoreIndexError::Write { source })?;
+         conn.execute_batch("VACUUM; PRAGMA wal_checkpoint(TRUNCATE);")
