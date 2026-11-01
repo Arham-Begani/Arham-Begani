@@ -49,7 +49,7 @@ jobs:
           status=${PIPESTATUS[0]}
           set -e
           test "$status" -ne 0
-          grep -q '1 tests run: 0 passed, 1 failed' ../rust-baseline.log
+          grep -Eq '1 tests? run: 0 passed, 1 failed' ../rust-baseline.log
       - name: TypeScript baseline must fail the round-trip assertion
         working-directory: source
         shell: bash
