@@ -1,0 +1,82 @@
+name: pnpm contribution validation
+on:
+  push:
+    branches: [oss-validation/pnpm-231-236]
+    paths: [.github/workflows/pnpm-validation.yml, validation/**]
+permissions:
+  contents: read
+jobs:
+  store-aliases:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    env:
+      CARGO_INCREMENTAL: "0"
+      CARGO_PROFILE_DEV_DEBUG: "line-tables-only"
+      CARGO_PROFILE_TEST_DEBUG: "line-tables-only"
+      CARGO_BUILD_JOBS: "2"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: pnpm/pnpm
+          ref: b003905dd9ad40d9e9bacf1be635f7527eb2b907
+          path: source
+          persist-credentials: false
+      - name: Set up Rust
+        working-directory: source
+        run: rustup toolchain install 1.97.0 --profile minimal --component clippy
+      - uses: pnpm/setup@fa36a5ef7dcdefc3a7cb25655c122e00cf6e636e
+        with:
+          version: 12.16.1
+          install: false
+      - uses: taiki-e/install-action@86f7a0ffb25f40114606501a311ebcfaf882ea32
+        with:
+          tool: just,cargo-nextest,typos-cli,taplo-cli
+      - name: Install workspace dependencies and hooks
+        working-directory: source
+        run: |
+          pnpm install --frozen-lockfile
+          df -h /
+      - name: Baseline must fail the regression assertions
+        working-directory: source
+        shell: bash
+        run: |
+          git apply ../validation/pnpm-231-tests.patch
+          set +e
+          pnpm test:rust -p pnpm-store-dir -E 'test(deleting_sqlite_rows_removes_their_aliases) | test(deleting_files_rows_removes_their_aliases)' 2>&1 | tee ../baseline.log
+          status=${PIPESTATUS[0]}
+          set -e
+          test "$status" -ne 0
+          grep -q 'deleting_sqlite_rows_removes_their_aliases' ../baseline.log
+          grep -q 'deleting_files_rows_removes_their_aliases' ../baseline.log
+          grep -q '2 tests run: 0 passed, 2 failed' ../baseline.log
+      - name: Apply implementation and run store tests
+        working-directory: source
+        run: |
+          git apply ../validation/pnpm-231-impl.patch
+          pnpm test:rust -p pnpm-store-dir 2>&1 | tee ../store-tests.log
+      - name: Check workspace
+        working-directory: source
+        run: pnpm check:rust
+      - name: Lint workspace
+        working-directory: source
+        run: pnpm lint:rust
+      - name: Formatting and spelling
+        working-directory: source
+        run: |
+          typos pnpm pnpr
+          taplo format --check
+          node pnpm/scripts/rustfmt.mjs --all
+          git diff > ../formatted.patch
+          node pnpm/scripts/rustfmt.mjs --all -- --check
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pnpm-231-linux-evidence
+          path: |
+            baseline.log
+            store-tests.log
+            formatted.patch
