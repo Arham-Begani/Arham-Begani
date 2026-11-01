@@ -38,7 +38,7 @@ index eeb1c08..098784e 100644
                  resolution_policy: ResolutionPolicyOptions::default(),
              },
 diff --git a/pnpm/crates/cli/tests/suite/config_dependencies.rs b/pnpm/crates/cli/tests/suite/config_dependencies.rs
-index 6192117..09fcc3b 100644
+index 6192117..bce4deb 100644
 --- a/pnpm/crates/cli/tests/suite/config_dependencies.rs
 +++ b/pnpm/crates/cli/tests/suite/config_dependencies.rs
 @@ -1023,6 +1023,7 @@ fn update_config_hook_switches_loaded_linker_back_to_isolated_layout() {
@@ -49,11 +49,6 @@ index 6192117..09fcc3b 100644
  mod release_age;
  
  fn assert_config_dependency_declared(workspace: &Path, name: &str, specifier: &str) {
-@@ -1109,3 +1110,4 @@ fn cleans_stale_config_dependency_links_without_an_env_lockfile() {
-     assert!(!stale.exists());
-     drop(root);
- }
-+
 diff --git a/pnpm/crates/cli/tests/suite/config_dependencies/registry_type.rs b/pnpm/crates/cli/tests/suite/config_dependencies/registry_type.rs
 new file mode 100644
 index 0000000..9e1b85a
@@ -305,7 +300,7 @@ index 15951fb..1ad3c9c 100644
      metadata.resolution = strip_registry_tarball_url(metadata.resolution);
      env_lockfile.packages.insert(package.key.clone(), metadata);
 diff --git a/pnpm/crates/env-installer/src/tests.rs b/pnpm/crates/env-installer/src/tests.rs
-index a81f9c3..f0e609f 100644
+index a81f9c3..b383c14 100644
 --- a/pnpm/crates/env-installer/src/tests.rs
 +++ b/pnpm/crates/env-installer/src/tests.rs
 @@ -112,6 +112,7 @@ fn build_resolver(registry: &str) -> (NpmResolver<InMemoryPackageMetaCache>, Tem
@@ -324,7 +319,7 @@ index a81f9c3..f0e609f 100644
          registry_url,
          registries,
          http_client: ThrottledClient::default(),
-@@ -147,6 +149,7 @@ fn options<'a>(
+@@ -147,9 +149,11 @@ fn options<'a>(
          mode: crate::ConfigDepsInstallMode::Reconcile,
          verification: ConfigDependencyVerification {
              registries: &harness.registries,
@@ -332,6 +327,10 @@ index a81f9c3..f0e609f 100644
              resolution_verifiers: pnpm_package_manager::build_resolution_verifiers(
                  &pnpm_config::Config {
                      registry: harness.registry_url.clone(),
++                    registry_options_by_url: harness.registry_options_by_url.clone(),
+                     ..Default::default()
+                 },
+                 Arc::new(ThrottledClient::default()),
 diff --git a/pnpm/crates/env-installer/src/tests/configuration.rs b/pnpm/crates/env-installer/src/tests/configuration.rs
 index 69979a9..0ad928d 100644
 --- a/pnpm/crates/env-installer/src/tests/configuration.rs
@@ -777,3 +776,4 @@ index ba852c3..7f20783 100644
 +  })
 +  expect(fs.existsSync('node_modules/.pnpm-config/@pnpm.e2e/foo/package.json')).toBe(true)
 +})
+
