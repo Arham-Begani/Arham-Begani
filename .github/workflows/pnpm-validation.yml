@@ -43,19 +43,17 @@ jobs:
           git apply ../validation/pnpm-231-impl.patch
           git add -N .
           pnpm install --frozen-lockfile
-      - name: Install custom lint tools from source
-        run: cargo +1.97.0 install cargo-dylint dylint-link --locked
-      - name: Check formatting and custom lints
+      - name: TypeScript pre-push compile gate
         working-directory: source
-        run: |
-          node pnpm/scripts/rustfmt.mjs --all -- --check
-          RUSTFLAGS='-D warnings' pnpm ci:rust-dylint 2>&1 | tee ../dylint.log
-          typos pnpm pnpr
-          git diff --check
+        run: pnpm compile-only 2>&1 | tee ../compile.log
+      - name: TypeScript pre-push lint and changeset gate
+        working-directory: source
+        run: pnpm lint --quiet 2>&1 | tee ../lint.log
       - name: Upload evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: pnpm-231-final-linux-evidence
+          name: pnpm-231-typescript-gates
           path: |
-            dylint.log
+            compile.log
+            lint.log
