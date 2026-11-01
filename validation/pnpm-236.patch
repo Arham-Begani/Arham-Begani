@@ -83,18 +83,23 @@ index 6192117..bce4deb 100644
  fn assert_config_dependency_declared(workspace: &Path, name: &str, specifier: &str) {
 diff --git a/pnpm/crates/cli/tests/suite/config_dependencies/registry_type.rs b/pnpm/crates/cli/tests/suite/config_dependencies/registry_type.rs
 new file mode 100644
-index 0000000..cca2647
+index 0000000..3e0ef3f
 --- /dev/null
 +++ b/pnpm/crates/cli/tests/suite/config_dependencies/registry_type.rs
-@@ -0,0 +1,30 @@
+@@ -0,0 +1,38 @@
 +use super::{CommandExtra, CommandTempCwd, EnvLockfile, fs};
 +use assert_cmd::prelude::*;
 +use std::fmt::Write;
 +
 +#[test]
 +fn config_dependency_lockfile_uses_declared_registry_type() {
-+    let CommandTempCwd { pacquet, root, workspace, npmrc_info, .. } =
-+        CommandTempCwd::init().add_mocked_registry();
++    let CommandTempCwd {
++        pacquet,
++        root,
++        workspace,
++        npmrc_info,
++        ..
++    } = CommandTempCwd::init().add_mocked_registry();
 +    fs::write(workspace.join("package.json"), "{}").unwrap();
 +    let manifest_path = workspace.join("pnpm-workspace.yaml");
 +    let mut manifest = fs::read_to_string(&manifest_path).unwrap();
@@ -105,7 +110,10 @@ index 0000000..cca2647
 +    ).unwrap();
 +    fs::write(manifest_path, manifest).unwrap();
 +
-+    pacquet.with_arg("install").assert().success();
++    pacquet
++        .with_arg("install")
++        .assert()
++        .success();
 +
 +    let env = EnvLockfile::read(&workspace).unwrap().unwrap();
 +    let key = "@pnpm.e2e/foo@100.0.0".parse().unwrap();
@@ -114,11 +122,11 @@ index 0000000..cca2647
 +        env.packages[&key].resolution,
 +        pnpm_lockfile::LockfileResolution::Registry(_),
 +    ),);
-+    assert!(workspace.join("node_modules/.pnpm-config/@pnpm.e2e/foo/package.json").is_file(),);
++    assert!(workspace.join("node_modules/.pnpm-config/@pnpm.e2e/foo/package.json").is_file());
 +    drop((root, npmrc_info));
 +}
 diff --git a/pnpm/crates/env-installer/src/install_config_deps/optional_dependencies.rs b/pnpm/crates/env-installer/src/install_config_deps/optional_dependencies.rs
-index 0a795ca..10414b2 100644
+index 0a795ca..51698f9 100644
 --- a/pnpm/crates/env-installer/src/install_config_deps/optional_dependencies.rs
 +++ b/pnpm/crates/env-installer/src/install_config_deps/optional_dependencies.rs
 @@ -172,7 +172,7 @@ pub(super) fn normalize_from_lockfile(
@@ -139,7 +147,7 @@ index 0a795ca..10414b2 100644
          )
          .ok_or_else(|| ConfigDepError::EnvLockfileCorrupted {
              message: format!(
-@@ -292,12 +292,12 @@ fn integrity_and_tarball(
+@@ -292,12 +292,19 @@ fn integrity_and_tarball(
      resolution: &LockfileResolution,
      name: &str,
      version: &str,
@@ -150,15 +158,22 @@ index 0a795ca..10414b2 100644
          LockfileResolution::Registry(registry_resolution) => Some((
              registry_resolution.integrity.clone(),
 -            npm_tarball_url(name, version, TarballUrlOptions { registry, server_type: None }),
-+            npm_tarball_url(name, version, TarballUrlOptions { registry: lockfile_form.registry, server_type: lockfile_form.server_type }),
++            npm_tarball_url(
++                name,
++                version,
++                TarballUrlOptions {
++                    registry: lockfile_form.registry,
++                    server_type: lockfile_form.server_type,
++                },
++            ),
          )),
          LockfileResolution::Tarball(tarball) => {
              let integrity = tarball.integrity.clone()?;
 diff --git a/pnpm/crates/env-installer/src/manifest_lockfile.rs b/pnpm/crates/env-installer/src/manifest_lockfile.rs
-index 8fa257f..dbb4d32 100644
+index 8fa257f..2fcf899 100644
 --- a/pnpm/crates/env-installer/src/manifest_lockfile.rs
 +++ b/pnpm/crates/env-installer/src/manifest_lockfile.rs
-@@ -10,19 +10,14 @@ pub(crate) fn package_metadata(
+@@ -10,20 +10,11 @@ pub(crate) fn package_metadata(
      name: &str,
      version: &str,
      result: &ResolveResult,
@@ -168,32 +183,37 @@ index 8fa257f..dbb4d32 100644
  ) -> Result<PackageMetadata, LockfileFormError> {
      let manifest = result.package.manifest.as_deref();
      Ok(PackageMetadata {
-         resolution: result.resolution.to_lockfile_form(
-             name,
-             version,
+-        resolution: result.resolution.to_lockfile_form(
+-            name,
+-            version,
 -            LockfileFormOptions {
 -                registry,
 -                server_type: None,
 -                include_tarball_url: lockfile_include_tarball_url,
 -            },
-+            lockfile_form,
-         )?,
+-        )?,
++        resolution: result.resolution.to_lockfile_form(name, version, lockfile_form)?,
          version: None,
          engines: read_engines(manifest),
+         cpu: read_string_list(manifest, "cpu"),
 diff --git a/pnpm/crates/env-installer/src/options.rs b/pnpm/crates/env-installer/src/options.rs
-index c53e785..27a5ec9 100644
+index c53e785..a9ef4d1 100644
 --- a/pnpm/crates/env-installer/src/options.rs
 +++ b/pnpm/crates/env-installer/src/options.rs
-@@ -1,6 +1,7 @@
+@@ -1,6 +1,11 @@
  use pnpm_config::PackageImportMethod;
 +use pnpm_lockfile::{LockfileFormOptions, RegistryOptions, registry_server_type};
  use pnpm_store_dir::{SharedReadonlyStoreIndex, StoreDir, StoreIndexWriter};
 -use std::{collections::HashMap, path::Path, sync::Arc};
-+use std::{collections::{BTreeMap, HashMap}, path::Path, sync::Arc};
++use std::{
++    collections::{BTreeMap, HashMap},
++    path::Path,
++    sync::Arc,
++};
  
  /// Default npm registry used when neither the config nor a scope entry
  /// names one.
-@@ -52,6 +53,7 @@ pub struct ConfigDependencyStoreIndex {
+@@ -52,6 +57,7 @@ pub struct ConfigDependencyStoreIndex {
  pub struct ConfigDependencyVerification<'a> {
      /// `default` plus per-scope (`@scope`) registry entries.
      pub registries: &'a HashMap<String, String>,
@@ -201,7 +221,7 @@ index c53e785..27a5ec9 100644
      pub resolution_verifiers: Vec<Arc<dyn pnpm_resolving_resolver_base::ResolutionVerifier>>,
      /// Applied when resolving a config dependency, so a resolution never
      /// picks a version the resolution verifiers reject.
-@@ -59,6 +61,15 @@ pub struct ConfigDependencyVerification<'a> {
+@@ -59,6 +65,15 @@ pub struct ConfigDependencyVerification<'a> {
  }
  
  impl ConfigDependencyVerification<'_> {
@@ -366,10 +386,10 @@ index a81f9c3..b383c14 100644
                  },
                  Arc::new(ThrottledClient::default()),
 diff --git a/pnpm/crates/env-installer/src/tests/configuration.rs b/pnpm/crates/env-installer/src/tests/configuration.rs
-index 69979a9..ce369b8 100644
+index 69979a9..f03ee91 100644
 --- a/pnpm/crates/env-installer/src/tests/configuration.rs
 +++ b/pnpm/crates/env-installer/src/tests/configuration.rs
-@@ -493,3 +493,41 @@ async fn removal_preserves_a_shared_package_manager_graph() {
+@@ -493,3 +493,55 @@ async fn removal_preserves_a_shared_package_manager_graph() {
              .exists(),
      );
  }
@@ -391,25 +411,39 @@ index 69979a9..ce369b8 100644
 +        clean_spec("1.0.0"),
 +    )]);
 +    resolve_and_install_config_deps::<SilentReporter>(
-+        &config_deps, &resolver, &options(&test_harness, root.path(), false),
-+    ).await.unwrap();
++        &config_deps,
++        &resolver,
++        &options(&test_harness, root.path(), false),
++    )
++    .await
++    .unwrap();
 +
 +    let env = EnvLockfile::read(root.path()).unwrap().unwrap();
 +    dbg!(&env.packages);
 +    assert!(env.packages.len() > 1);
-+    assert!(env.packages.values().all(|package| matches!(
-+        package.resolution, pnpm_lockfile::LockfileResolution::Registry(_),
-+    )),);
++    assert!(
++        env.packages
++            .values()
++            .all(|package| matches!(
++                package.resolution,
++                pnpm_lockfile::LockfileResolution::Registry(_),
++            )),
++    );
 +
 +    let mut fresh_harness = harness();
 +    fresh_harness.registry_options_by_url = test_harness.registry_options_by_url.clone();
 +    let fresh_root = TempDir::new().unwrap();
-+    install_config_deps::<SilentReporter>(
-+        &env, &options(&fresh_harness, fresh_root.path(), true),
-+    ).await.unwrap();
-+    assert!(fresh_root.path().join(
-+        "node_modules/.pnpm-config/@pnpm.e2e/support-different-architectures/package.json"
-+    ).is_file(),);
++    install_config_deps::<SilentReporter>(&env, &options(&fresh_harness, fresh_root.path(), true))
++        .await
++        .unwrap();
++    assert!(
++        fresh_root
++            .path()
++            .join(
++                "node_modules/.pnpm-config/@pnpm.e2e/support-different-architectures/package.json"
++            )
++            .is_file(),
++    );
 +}
 diff --git a/pnpm11/installing/env-installer/package.json b/pnpm11/installing/env-installer/package.json
 index 526d006..8359884 100644
@@ -819,4 +853,3 @@ index ba852c3..7f20783 100644
 +  })
 +  expect(fs.existsSync('node_modules/.pnpm-config/@pnpm.e2e/foo/package.json')).toBe(true)
 +})
-
