@@ -37,6 +37,57 @@ index eeb1c08..098784e 100644
                  resolution_verifiers: Vec::new(),
                  resolution_policy: ResolutionPolicyOptions::default(),
              },
+diff --git a/pnpm/crates/cli/tests/suite/config_dependencies.rs b/pnpm/crates/cli/tests/suite/config_dependencies.rs
+index 6192117..09fcc3b 100644
+--- a/pnpm/crates/cli/tests/suite/config_dependencies.rs
++++ b/pnpm/crates/cli/tests/suite/config_dependencies.rs
+@@ -1023,6 +1023,7 @@ fn update_config_hook_switches_loaded_linker_back_to_isolated_layout() {
+     drop((root, mock_instance));
+ }
+ 
++mod registry_type;
+ mod release_age;
+ 
+ fn assert_config_dependency_declared(workspace: &Path, name: &str, specifier: &str) {
+@@ -1109,3 +1110,4 @@ fn cleans_stale_config_dependency_links_without_an_env_lockfile() {
+     assert!(!stale.exists());
+     drop(root);
+ }
++
+diff --git a/pnpm/crates/cli/tests/suite/config_dependencies/registry_type.rs b/pnpm/crates/cli/tests/suite/config_dependencies/registry_type.rs
+new file mode 100644
+index 0000000..9e1b85a
+--- /dev/null
++++ b/pnpm/crates/cli/tests/suite/config_dependencies/registry_type.rs
+@@ -0,0 +1,28 @@
++use super::{CommandExtra, CommandTempCwd, EnvLockfile, fs};
++use assert_cmd::prelude::*;
++
++#[test]
++fn config_dependency_lockfile_uses_declared_registry_type() {
++    let CommandTempCwd { pacquet, root, workspace, npmrc_info, .. } =
++        CommandTempCwd::init().add_mocked_registry();
++    fs::write(workspace.join("package.json"), "{}").unwrap();
++    let manifest_path = workspace.join("pnpm-workspace.yaml");
++    let mut manifest = fs::read_to_string(&manifest_path).unwrap();
++    manifest.push_str(&format!(
++        "\nregistries:\n  '{}':\n    serverType: pnpr\n    scopes: ['@pnpm.e2e']\nconfigDependencies:\n  '@pnpm.e2e/foo': 100.0.0\n",
++        npmrc_info.mock_instance.url(),
++    ));
++    fs::write(manifest_path, manifest).unwrap();
++
++    pacquet.with_arg("install").assert().success();
++
++    let env = EnvLockfile::read(&workspace).unwrap().unwrap();
++    let key = "@pnpm.e2e/foo@100.0.0".parse().unwrap();
++    dbg!(&env.packages[&key].resolution);
++    assert!(matches!(
++        env.packages[&key].resolution,
++        pnpm_lockfile::LockfileResolution::Registry(_)
++    ));
++    assert!(workspace.join("node_modules/.pnpm-config/@pnpm.e2e/foo/package.json").is_file());
++    drop((root, npmrc_info));
++}
 diff --git a/pnpm/crates/env-installer/src/install_config_deps/optional_dependencies.rs b/pnpm/crates/env-installer/src/install_config_deps/optional_dependencies.rs
 index 0a795ca..10414b2 100644
 --- a/pnpm/crates/env-installer/src/install_config_deps/optional_dependencies.rs
@@ -282,10 +333,10 @@ index a81f9c3..f0e609f 100644
                  &pnpm_config::Config {
                      registry: harness.registry_url.clone(),
 diff --git a/pnpm/crates/env-installer/src/tests/configuration.rs b/pnpm/crates/env-installer/src/tests/configuration.rs
-index 69979a9..b896c2d 100644
+index 69979a9..0ad928d 100644
 --- a/pnpm/crates/env-installer/src/tests/configuration.rs
 +++ b/pnpm/crates/env-installer/src/tests/configuration.rs
-@@ -493,3 +493,40 @@ async fn removal_preserves_a_shared_package_manager_graph() {
+@@ -493,3 +493,41 @@ async fn removal_preserves_a_shared_package_manager_graph() {
              .exists(),
      );
  }
@@ -312,6 +363,7 @@ index 69979a9..b896c2d 100644
 +
 +    let env = EnvLockfile::read(root.path()).unwrap().unwrap();
 +    dbg!(&env.packages);
++    assert!(env.packages.len() > 1);
 +    assert!(env.packages.values().all(|package| matches!(
 +        package.resolution, pnpm_lockfile::LockfileResolution::Registry(_)
 +    )));
@@ -702,3 +754,26 @@ index f15c88f..272d1e0 100644
      {
        "path": "../../config/package-is-installable"
      },
+diff --git a/pnpm11/pnpm/test/configurationalDependencies.test.ts b/pnpm11/pnpm/test/configurationalDependencies.test.ts
+index ba852c3..7f20783 100644
+--- a/pnpm11/pnpm/test/configurationalDependencies.test.ts
++++ b/pnpm11/pnpm/test/configurationalDependencies.test.ts
+@@ -279,3 +279,18 @@ test('pnpm get succeeds even when configDependencies fail to install', async ()
+   const result = execPnpmSync(['get', '--location=project', authKey], { expectSuccess: true })
+   expect(result.stdout.toString()).toContain('my-secret-token')
+ })
++
++test('config dependency lockfile uses declared registry type', async () => {
++  prepare()
++  const registry = `http://localhost:${REGISTRY_MOCK_PORT}/npm/`
++  writeYamlFileSync('pnpm-workspace.yaml', {
++    registries: { [registry]: { serverType: 'pnpr', scopes: ['@pnpm.e2e'] } },
++    configDependencies: { '@pnpm.e2e/foo': '100.0.0' },
++  })
++  await execPnpm(['install'])
++  const lockfile = (await readEnvLockfile(process.cwd()))!
++  expect(lockfile.packages['@pnpm.e2e/foo@100.0.0'].resolution).toStrictEqual({
++    integrity: getIntegrity('@pnpm.e2e/foo', '100.0.0'),
++  })
++  expect(fs.existsSync('node_modules/.pnpm-config/@pnpm.e2e/foo/package.json')).toBe(true)
++})
