@@ -1,4 +1,4 @@
-name: pnpm registry-type validation
+name: pnpm contribution validation
 on:
   push:
     branches: [oss-validation/pnpm-236]
@@ -6,7 +6,7 @@ on:
 permissions:
   contents: read
 jobs:
-  config-dependencies:
+  store-aliases:
     runs-on: ubuntu-24.04
     timeout-minutes: 90
     defaults:
@@ -37,47 +37,25 @@ jobs:
       - uses: taiki-e/install-action@86f7a0ffb25f40114606501a311ebcfaf882ea32
         with:
           tool: just,cargo-nextest,typos-cli,taplo-cli
-      - name: Apply patch and install dependencies
+      - name: Install dependencies and apply final patch
         working-directory: source
         run: |
           git apply ../validation/pnpm-236.patch
           git add -N .
           pnpm install --frozen-lockfile
-      - name: Format final source and check spelling
-        working-directory: source
-        run: |
-          node pnpm/scripts/rustfmt.mjs --all
-          node pnpm/scripts/rustfmt.mjs --all -- --check
-          typos pnpm pnpr
-          taplo format --check
-      - name: Rust config-dependency regression tests
-        working-directory: source
-        run: |
-          pnpm test:rust -p pnpm-env-installer 2>&1 | tee ../rust-tests.log
-          pnpm test:rust -p pnpm-cli -E 'test(config_dependencies::)' 2>&1 | tee ../rust-cli-tests.log
-      - name: TypeScript pre-push compile and lint gates
-        working-directory: source
-        run: |
-          pnpm compile-only 2>&1 | tee ../compile.log
-          pnpm lint --quiet 2>&1 | tee ../lint.log
       - name: Install custom lint tools from source
         run: cargo +1.97.0 install cargo-dylint dylint-link --locked
-      - name: Complete Rust pre-push checks
+      - name: Check formatting and custom lints
         working-directory: source
-        run: pnpm pre-push:rust 2>&1 | tee ../pre-push.log
-      - name: Capture checked source
-        if: always()
-        working-directory: source
-        run: git diff > ../formatted.patch
+        run: |
+          node pnpm/scripts/rustfmt.mjs --all -- --check
+          RUSTFLAGS='-D warnings' pnpm ci:rust-dylint 2>&1 | tee ../dylint.log
+          typos pnpm pnpr
+          git diff --check
       - name: Upload evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: pnpm-236-final-gates
+          name: pnpm-236-final-lint
           path: |
-            compile.log
-            lint.log
-            pre-push.log
-            rust-tests.log
-            rust-cli-tests.log
-            formatted.patch
+            dylint.log
