@@ -43,17 +43,47 @@ jobs:
           git apply ../validation/pnpm-231-impl.patch
           git add -N .
           pnpm install --frozen-lockfile
-      - name: TypeScript pre-push compile gate
+      - name: Install custom lint tools from source
+        run: cargo +1.97.0 install cargo-dylint dylint-link --locked
+      - name: Commit with installed hooks
         working-directory: source
-        run: pnpm compile-only 2>&1 | tee ../compile.log
-      - name: TypeScript pre-push lint and changeset gate
+        run: |
+          test "$(git config --get core.hooksPath)" = ".husky/_"
+          test -f .husky/_/pre-commit
+          test -f .husky/_/commit-msg
+          test -f .husky/_/pre-push
+          git switch -c fix/prune-store-aliases
+          git config user.name "Arham Begani"
+          git config user.email "123586002+Arham-Begani@users.noreply.github.com"
+          git add .changeset/prune-package-aliases.md pnpm/crates/store-dir
+          git diff --cached --binary > ../before-commit.patch
+          git commit -m "fix(store): remove aliases of pruned packages" 2>&1 | tee ../commit.log
+          git diff HEAD^ HEAD --binary > ../committed.patch
+          cmp ../before-commit.patch ../committed.patch
+          test -z "$(git status --porcelain)"
+      - name: Exercise actual pre-push hook against local validation remote
         working-directory: source
-        run: pnpm lint --quiet 2>&1 | tee ../lint.log
+        run: |
+          git init --bare ../validated.git
+          git --git-dir=../validated.git fetch "$PWD" b003905dd9ad40d9e9bacf1be635f7527eb2b907:refs/heads/main
+          git remote add validation ../validated.git
+          git fetch validation
+          git push validation HEAD:refs/heads/fix/prune-store-aliases 2>&1 | tee ../pre-push.log
+          test "$(git --git-dir=../validated.git rev-parse refs/heads/fix/prune-store-aliases)" = "$(git rev-parse HEAD)"
+          test -z "$(git status --porcelain)"
+          git show -s --format=fuller HEAD > ../commit-metadata.txt
+          git rev-parse HEAD HEAD^{tree} HEAD^ > ../validated-objects.txt
+          git bundle create ../pnpm-231.bundle b003905dd9ad40d9e9bacf1be635f7527eb2b907..HEAD
       - name: Upload evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: pnpm-231-typescript-gates
+          name: pnpm-231-commit-hook-evidence
           path: |
-            compile.log
-            lint.log
+            commit.log
+            pre-push.log
+            before-commit.patch
+            committed.patch
+            commit-metadata.txt
+            validated-objects.txt
+            pnpm-231.bundle
