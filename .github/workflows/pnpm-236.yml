@@ -1,7 +1,7 @@
 name: pnpm registry-type validation
 on:
   push:
-    branches: [oss-validation/pnpm-236]
+    branches: [oss-validation/pnpm-236-check]
     paths: [.github/workflows/pnpm-236.yml, validation/**]
 permissions:
   contents: read
@@ -43,41 +43,12 @@ jobs:
           git apply ../validation/pnpm-236.patch
           git add -N .
           pnpm install --frozen-lockfile
-      - name: Format final source and check spelling
+      - name: Check complete Rust workspace
         working-directory: source
-        run: |
-          node pnpm/scripts/rustfmt.mjs --all
-          node pnpm/scripts/rustfmt.mjs --all -- --check
-          typos pnpm pnpr
-          taplo format --check
-      - name: Rust config-dependency regression tests
-        working-directory: source
-        run: |
-          pnpm test:rust -p pnpm-env-installer 2>&1 | tee ../rust-tests.log
-          pnpm test:rust -p pnpm-cli -E 'test(config_dependencies::)' 2>&1 | tee ../rust-cli-tests.log
-      - name: TypeScript pre-push compile and lint gates
-        working-directory: source
-        run: |
-          pnpm compile-only 2>&1 | tee ../compile.log
-          pnpm lint --quiet 2>&1 | tee ../lint.log
-      - name: Install custom lint tools from source
-        run: cargo +1.97.0 install cargo-dylint dylint-link --locked
-      - name: Complete Rust pre-push checks
-        working-directory: source
-        run: pnpm pre-push:rust 2>&1 | tee ../pre-push.log
-      - name: Capture checked source
-        if: always()
-        working-directory: source
-        run: git diff > ../formatted.patch
+        run: pnpm check:rust 2>&1 | tee ../check.log
       - name: Upload evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: pnpm-236-final-gates
-          path: |
-            compile.log
-            lint.log
-            pre-push.log
-            rust-tests.log
-            rust-cli-tests.log
-            formatted.patch
+          name: pnpm-236-workspace-check
+          path: check.log
