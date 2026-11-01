@@ -26,10 +26,10 @@ index 70cd8bf..4bb526c 100644
          specifier: workspace:*
          version: link:../../config/package-is-installable
 diff --git a/pnpm/crates/cli/src/config_deps.rs b/pnpm/crates/cli/src/config_deps.rs
-index eeb1c08..098784e 100644
+index eeb1c08..ad2116e 100644
 --- a/pnpm/crates/cli/src/config_deps.rs
 +++ b/pnpm/crates/cli/src/config_deps.rs
-@@ -467,6 +467,7 @@ impl EnvInstallerContext {
+@@ -467,16 +467,11 @@ impl EnvInstallerContext {
              mode: ConfigDepsInstallMode::Reconcile,
              verification: ConfigDependencyVerification {
                  registries: &self.network.registries,
@@ -37,6 +37,38 @@ index eeb1c08..098784e 100644
                  resolution_verifiers: Vec::new(),
                  resolution_policy: ResolutionPolicyOptions::default(),
              },
+-            fetching: pnpm_tarball::ArchiveFetchOptions {
+-                http_client: &self.network.http_client,
+-                auth_headers: &self.network.auth_headers,
+-                retry_opts: self.network.retry_opts,
+-                offline: self.network.offline,
+-                tar_limits: self.network.tar_limits,
+-            },
++            fetching: self.network.fetch_options(),
+             platform: pnpm_package_is_installable::InstallabilityOptions {
+                 supported_architectures: None,
+                 current_node_version: &self.node_version,
+diff --git a/pnpm/crates/cli/src/config_deps/network.rs b/pnpm/crates/cli/src/config_deps/network.rs
+index 9fcb7e9..1306435 100644
+--- a/pnpm/crates/cli/src/config_deps/network.rs
++++ b/pnpm/crates/cli/src/config_deps/network.rs
+@@ -16,6 +16,16 @@ pub(super) struct EnvironmentNetwork {
+ }
+ 
+ impl EnvironmentNetwork {
++    pub(super) fn fetch_options(&self) -> pnpm_tarball::ArchiveFetchOptions<'_> {
++        pnpm_tarball::ArchiveFetchOptions {
++            http_client: &self.http_client,
++            auth_headers: &self.auth_headers,
++            retry_opts: self.retry_opts,
++            offline: self.offline,
++            tar_limits: self.tar_limits,
++        }
++    }
++
+     pub(super) fn resolver(&self, config: &Config) -> NpmResolver<InMemoryPackageMetaCache> {
+         NpmResolver {
+             registries: self.registries.clone(),
 diff --git a/pnpm/crates/cli/tests/suite/config_dependencies.rs b/pnpm/crates/cli/tests/suite/config_dependencies.rs
 index 6192117..bce4deb 100644
 --- a/pnpm/crates/cli/tests/suite/config_dependencies.rs
@@ -51,12 +83,13 @@ index 6192117..bce4deb 100644
  fn assert_config_dependency_declared(workspace: &Path, name: &str, specifier: &str) {
 diff --git a/pnpm/crates/cli/tests/suite/config_dependencies/registry_type.rs b/pnpm/crates/cli/tests/suite/config_dependencies/registry_type.rs
 new file mode 100644
-index 0000000..09e1c46
+index 0000000..cca2647
 --- /dev/null
 +++ b/pnpm/crates/cli/tests/suite/config_dependencies/registry_type.rs
-@@ -0,0 +1,28 @@
+@@ -0,0 +1,30 @@
 +use super::{CommandExtra, CommandTempCwd, EnvLockfile, fs};
 +use assert_cmd::prelude::*;
++use std::fmt::Write;
 +
 +#[test]
 +fn config_dependency_lockfile_uses_declared_registry_type() {
@@ -65,10 +98,11 @@ index 0000000..09e1c46
 +    fs::write(workspace.join("package.json"), "{}").unwrap();
 +    let manifest_path = workspace.join("pnpm-workspace.yaml");
 +    let mut manifest = fs::read_to_string(&manifest_path).unwrap();
-+    manifest.push_str(&format!(
++    write!(
++        manifest,
 +        "\nregistries:\n  '{}':\n    serverType: pnpr\n    scopes: ['@pnpm.e2e']\nconfigDependencies:\n  '@pnpm.e2e/foo': 100.0.0\n",
 +        npmrc_info.mock_instance.url(),
-+    ));
++    ).unwrap();
 +    fs::write(manifest_path, manifest).unwrap();
 +
 +    pacquet.with_arg("install").assert().success();
