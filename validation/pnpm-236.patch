@@ -1,3 +1,16 @@
+diff --git a/.changeset/config-dependency-registry-types.md b/.changeset/config-dependency-registry-types.md
+new file mode 100644
+index 0000000..bc51153
+--- /dev/null
++++ b/.changeset/config-dependency-registry-types.md
+@@ -0,0 +1,7 @@
++---
++"pacquet": patch
++"pnpm": patch
++"@pnpm/installing.env-installer": patch
++---
++
++Config dependencies now respect the registry's `serverType` when writing and reading tarball URLs in the lockfile.
 diff --git a/pnpm-lock.yaml b/pnpm-lock.yaml
 index 70cd8bf..4bb526c 100644
 --- a/pnpm-lock.yaml
@@ -88,26 +101,35 @@ index 8fa257f..dbb4d32 100644
          version: None,
          engines: read_engines(manifest),
 diff --git a/pnpm/crates/env-installer/src/options.rs b/pnpm/crates/env-installer/src/options.rs
-index c53e785..6cc0da0 100644
+index c53e785..27a5ec9 100644
 --- a/pnpm/crates/env-installer/src/options.rs
 +++ b/pnpm/crates/env-installer/src/options.rs
-@@ -52,6 +52,7 @@ pub struct ConfigDependencyStoreIndex {
+@@ -1,6 +1,7 @@
+ use pnpm_config::PackageImportMethod;
++use pnpm_lockfile::{LockfileFormOptions, RegistryOptions, registry_server_type};
+ use pnpm_store_dir::{SharedReadonlyStoreIndex, StoreDir, StoreIndexWriter};
+-use std::{collections::HashMap, path::Path, sync::Arc};
++use std::{collections::{BTreeMap, HashMap}, path::Path, sync::Arc};
+ 
+ /// Default npm registry used when neither the config nor a scope entry
+ /// names one.
+@@ -52,6 +53,7 @@ pub struct ConfigDependencyStoreIndex {
  pub struct ConfigDependencyVerification<'a> {
      /// `default` plus per-scope (`@scope`) registry entries.
      pub registries: &'a HashMap<String, String>,
-+    pub registry_options_by_url: &'a std::collections::BTreeMap<String, pnpm_lockfile::RegistryOptions>,
++    pub registry_options_by_url: &'a BTreeMap<String, RegistryOptions>,
      pub resolution_verifiers: Vec<Arc<dyn pnpm_resolving_resolver_base::ResolutionVerifier>>,
      /// Applied when resolving a config dependency, so a resolution never
      /// picks a version the resolution verifiers reject.
-@@ -59,6 +60,15 @@ pub struct ConfigDependencyVerification<'a> {
+@@ -59,6 +61,15 @@ pub struct ConfigDependencyVerification<'a> {
  }
  
  impl ConfigDependencyVerification<'_> {
-+    pub(crate) fn lockfile_form(&self, name: &str) -> pnpm_lockfile::LockfileFormOptions<'_> {
++    pub(crate) fn lockfile_form(&self, name: &str) -> LockfileFormOptions<'_> {
 +        let registry = self.pick_registry(name);
-+        pnpm_lockfile::LockfileFormOptions {
++        LockfileFormOptions {
 +            registry,
-+            server_type: pnpm_lockfile::registry_server_type(self.registry_options_by_url, registry),
++            server_type: registry_server_type(self.registry_options_by_url, registry),
 +            include_tarball_url: false,
 +        }
 +    }
@@ -317,17 +339,17 @@ index 526d006..8359884 100644
      "@pnpm/config.pick-registry-for-package": "workspace:*",
      "@pnpm/config.version-policy": "workspace:*",
 diff --git a/pnpm11/installing/env-installer/src/installConfigDeps.ts b/pnpm11/installing/env-installer/src/installConfigDeps.ts
-index 43e6227..4811959 100644
+index 43e6227..390484c 100644
 --- a/pnpm11/installing/env-installer/src/installConfigDeps.ts
 +++ b/pnpm11/installing/env-installer/src/installConfigDeps.ts
-@@ -2,6 +2,7 @@ import fs from 'node:fs'
+@@ -1,6 +1,7 @@
+ import fs from 'node:fs'
  import path from 'node:path'
  
- import { checkPackage } from '@pnpm/config.package-is-installable'
 +import { getRegistryServerType } from '@pnpm/config.normalize-registries'
+ import { checkPackage } from '@pnpm/config.package-is-installable'
  import { pickRegistryForPackage } from '@pnpm/config.pick-registry-for-package'
  import { installingConfigDepsLogger, skippedOptionalDependencyLogger } from '@pnpm/core-loggers'
- import { calcGlobalVirtualStorePathWithSubdeps, calcLeafGlobalVirtualStorePath } from '@pnpm/deps.graph-hasher'
 @@ -11,7 +12,7 @@ import { safeJoinModulesDir } from '@pnpm/fs.symlink-dependency'
  import { type EnvLockfile, readEnvLockfile } from '@pnpm/lockfile.fs'
  import { getNpmTarballUrl } from '@pnpm/resolving.tarball-url'
@@ -353,7 +375,7 @@ index 43e6227..4811959 100644
  export async function areConfigDepsInstalled (
    envLockfile: EnvLockfile,
 -  opts: Pick<InstallConfigDepsOpts, 'registriesByScope' | 'rootDir' | 'storeDir'>
-+  opts: Pick<InstallConfigDepsOpts, 'registriesByScope' | 'registryOptionsByUrl' | 'rootDir' | 'storeDir'>
++  opts: RegistryContext & Pick<InstallConfigDepsOpts, 'rootDir' | 'storeDir'>
  ): Promise<boolean> {
 -  const normalizedDeps = normalizeFromLockfile(envLockfile, opts.registriesByScope)
 +  const normalizedDeps = normalizeFromLockfile(envLockfile, opts)
@@ -666,3 +688,17 @@ index 2170165..a40f3d5 100644
 +  ).name).toBe('@pnpm.e2e/support-different-architectures')
 +  await freshOpts.store.close()
 +})
+diff --git a/pnpm11/installing/env-installer/tsconfig.json b/pnpm11/installing/env-installer/tsconfig.json
+index f15c88f..272d1e0 100644
+--- a/pnpm11/installing/env-installer/tsconfig.json
++++ b/pnpm11/installing/env-installer/tsconfig.json
+@@ -12,6 +12,9 @@
+     {
+       "path": "../../__utils__/prepare"
+     },
++    {
++      "path": "../../config/normalize-registries"
++    },
+     {
+       "path": "../../config/package-is-installable"
+     },
