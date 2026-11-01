@@ -10,7 +10,7 @@ index 0000000..43c21b7
 +
 +`pnpm store prune` now removes aliases of pruned packages.
 diff --git a/pnpm/crates/store-dir/src/prune_cas/tests.rs b/pnpm/crates/store-dir/src/prune_cas/tests.rs
-index d4c026d..8e2b121 100644
+index d4c026d..ffc7556 100644
 --- a/pnpm/crates/store-dir/src/prune_cas/tests.rs
 +++ b/pnpm/crates/store-dir/src/prune_cas/tests.rs
 @@ -1,5 +1,5 @@
@@ -30,7 +30,7 @@ index d4c026d..8e2b121 100644
      let root = tempfile::tempdir().unwrap();
      let store = StoreDir::new(root.path().join("store"));
      let orphan_digest = format!("01{}", "a".repeat(126));
-@@ -30,13 +29,18 @@ fn removes_unlinked_cas_files_and_their_package_rows() {
+@@ -30,13 +29,20 @@ fn removes_unlinked_cas_files_and_their_package_rows() {
      fs::create_dir_all(store.tmp()).unwrap();
      fs::write(store.tmp().join("partial"), "partial").unwrap();
  
@@ -43,19 +43,27 @@ index d4c026d..8e2b121 100644
      index
          .set("linked", &package_index(&linked_digest))
          .unwrap();
-+    index.set_aliases(&[
-+        ("orphan-alias".to_string(), "orphan".to_string()),
-+        ("linked-alias".to_string(), "linked".to_string()),
-+    ]).unwrap();
++    index
++        .set_aliases(&[
++            ("orphan-alias".to_string(), "orphan".to_string()),
++            ("linked-alias".to_string(), "linked".to_string()),
++        ])
++        .unwrap();
      drop(index);
  
      let stats = prune_cas(&store).unwrap();
-@@ -49,6 +53,18 @@ fn removes_unlinked_cas_files_and_their_package_rows() {
+@@ -49,6 +55,24 @@ fn removes_unlinked_cas_files_and_their_package_rows() {
      assert!(!store.tmp().exists());
      let index = StoreIndex::open_in(&store).unwrap();
      assert_eq!(index.keys().unwrap(), ["linked"]);
 +    assert_eq!(index.alias_target("orphan-alias").unwrap(), None);
-+    assert_eq!(index.alias_target("linked-alias").unwrap().as_deref(), Some("linked"));
++    assert_eq!(
++        index
++            .alias_target("linked-alias")
++            .unwrap()
++            .as_deref(),
++        Some("linked")
++    );
 +}
 +
 +#[test]
@@ -70,7 +78,7 @@ index d4c026d..8e2b121 100644
  
  #[test]
 diff --git a/pnpm/crates/store-dir/src/store_index/aliases.rs b/pnpm/crates/store-dir/src/store_index/aliases.rs
-index cc7b24b..ae90d65 100644
+index cc7b24b..4f53c64 100644
 --- a/pnpm/crates/store-dir/src/store_index/aliases.rs
 +++ b/pnpm/crates/store-dir/src/store_index/aliases.rs
 @@ -6,7 +6,10 @@
@@ -85,7 +93,7 @@ index cc7b24b..ae90d65 100644
  
  pub(super) const CREATE_ALIAS_TABLE: &str = "
      CREATE TABLE IF NOT EXISTS package_index_alias (
-@@ -108,5 +111,32 @@ fn is_missing_alias_table(error: &rusqlite::Error) -> bool {
+@@ -108,5 +111,35 @@ fn is_missing_alias_table(error: &rusqlite::Error) -> bool {
      matches!(error, rusqlite::Error::SqliteFailure(_, Some(message)) if message.contains("no such table"))
  }
  
@@ -106,7 +114,10 @@ index cc7b24b..ae90d65 100644
 +    files: &FilesIndex,
 +    keys: &[String],
 +) -> Result<(), StoreIndexError> {
-+    let targets: HashSet<&[u8]> = keys.iter().map(String::as_bytes).collect();
++    let targets: HashSet<&[u8]> = keys
++        .iter()
++        .map(String::as_bytes)
++        .collect();
 +    let aliases = files.aliases();
 +    aliases.for_each(|key, target| {
 +        if targets.contains(target.as_slice()) {
@@ -118,8 +129,71 @@ index cc7b24b..ae90d65 100644
 +
  #[cfg(test)]
  mod tests;
+diff --git a/pnpm/crates/store-dir/src/store_index/aliases/tests.rs b/pnpm/crates/store-dir/src/store_index/aliases/tests.rs
+index 31310ad..9de0b02 100644
+--- a/pnpm/crates/store-dir/src/store_index/aliases/tests.rs
++++ b/pnpm/crates/store-dir/src/store_index/aliases/tests.rs
+@@ -70,3 +70,58 @@ fn a_read_only_index_created_before_aliases_reads_no_alias() {
+     let index = StoreIndex::open_readonly(dir.path()).unwrap();
+     assert_eq!(index.get(TAR_KEY).unwrap(), None);
+ }
++
++fn assert_deleting_rows_removes_only_their_aliases(format: StoreIndexFormat) {
++    let dir = tempdir().unwrap();
++    StoreIndex::apply_format(dir.path(), format).unwrap();
++    let mut index = StoreIndex::open(dir.path()).unwrap();
++    index
++        .set(TGZ_KEY, &sample_index())
++        .unwrap();
++    index
++        .set("kept", &sample_index())
++        .unwrap();
++    index
++        .set_aliases(&[
++            (TAR_KEY.to_string(), TGZ_KEY.to_string()),
++            ("second-alias".to_string(), TGZ_KEY.to_string()),
++            ("kept-alias".to_string(), "kept".to_string()),
++        ])
++        .unwrap();
++
++    index.delete_many(&[]).unwrap();
++    assert_eq!(
++        index
++            .alias_target(TAR_KEY)
++            .unwrap()
++            .as_deref(),
++        Some(TGZ_KEY)
++    );
++    index
++        .delete_many(&[TGZ_KEY.to_string()])
++        .unwrap();
++    drop(index);
++
++    let index = StoreIndex::open(dir.path()).unwrap();
++    assert_eq!(index.alias_target(TAR_KEY).unwrap(), None);
++    assert_eq!(index.alias_target("second-alias").unwrap(), None);
++    assert_eq!(
++        index
++            .alias_target("kept-alias")
++            .unwrap()
++            .as_deref(),
++        Some("kept")
++    );
++    assert_eq!(index.get("kept-alias").unwrap(), Some(sample_index()));
++    assert_eq!(index.get(TGZ_KEY).unwrap(), None);
++}
++
++#[test]
++fn deleting_sqlite_rows_removes_their_aliases() {
++    assert_deleting_rows_removes_only_their_aliases(StoreIndexFormat::Sqlite);
++}
++
++#[test]
++fn deleting_files_rows_removes_their_aliases() {
++    assert_deleting_rows_removes_only_their_aliases(StoreIndexFormat::Files);
++}
 diff --git a/pnpm/crates/store-dir/src/store_index/queries.rs b/pnpm/crates/store-dir/src/store_index/queries.rs
-index 1194682..d7bedac 100644
+index 1194682..2ace4d6 100644
 --- a/pnpm/crates/store-dir/src/store_index/queries.rs
 +++ b/pnpm/crates/store-dir/src/store_index/queries.rs
 @@ -394,7 +394,7 @@ impl StoreIndex {
@@ -131,20 +205,20 @@ index 1194682..d7bedac 100644
      /// shrink `index.db`.
      ///
      /// `index.db` uses `auto_vacuum=NONE`, so freed pages stay in the file
-@@ -407,9 +407,10 @@ impl StoreIndex {
+@@ -407,9 +407,9 @@ impl StoreIndex {
          let conn = match &mut self.backend {
              Backend::Sqlite { conn, .. } => conn,
              Backend::Files(files) => {
 -                return keys
-+                keys
-                     .iter()
+-                    .iter()
 -                    .try_for_each(|key| files.remove(key));
++                keys.iter()
 +                    .try_for_each(|key| files.remove(key))?;
 +                return super::aliases::delete_files_aliases(files, keys);
              }
          };
          let tx = conn
-@@ -424,6 +425,7 @@ impl StoreIndex {
+@@ -424,6 +424,7 @@ impl StoreIndex {
                      .map_err(|source| StoreIndexError::Write { source })?;
              }
          }
@@ -152,3 +226,4 @@ index 1194682..d7bedac 100644
          tx.commit()
              .map_err(|source| StoreIndexError::Write { source })?;
          conn.execute_batch("VACUUM; PRAGMA wal_checkpoint(TRUNCATE);")
+
