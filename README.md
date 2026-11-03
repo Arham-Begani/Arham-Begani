@@ -10,8 +10,8 @@
 </div>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=18c5f5f2">
-  <img alt="3385 contributions in the last year" src="out/hero-light.svg?v=c30b6a7e">
+  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=d1794188">
+  <img alt="3385 contributions in the last year" src="out/hero-light.svg?v=94fad768">
 </picture>
 
 <p align="center"><a href="https://forze.in">forze.in</a> &nbsp;·&nbsp; <a href="https://linkedin.com/in/arhambegani">linkedin</a></p>
@@ -66,8 +66,8 @@ Contributions to public projects outside my own account, refreshed daily from Gi
 
 | Project | Contribution | Status |
 | --- | --- | --- |
-| [pyrefly](https://github.com/meta/pyrefly) | [Resolve identifiers inside quoted annotations in the LSP. · #5243](https://github.com/meta/pyrefly/pull/5243) | Open |
 | [pnpm](https://github.com/pnpm/pnpm) | [fix(store): remove aliases of pruned packages · #17541](https://github.com/pnpm/pnpm/pull/17541) | Open |
+| [pyrefly](https://github.com/meta/pyrefly) | [Resolve identifiers inside quoted annotations in the LSP. · #5243](https://github.com/meta/pyrefly/pull/5243) | Open |
 | [vite](https://github.com/vitejs/vite) | [fix(optimizer): preserve explicit asset queries in dependencies (fix #20285) · #23962](https://github.com/vitejs/vite/pull/23962) | Open |
 | [pytest-timeout](https://github.com/pytest-dev/pytest-timeout) | [fix: preserve capture fixture output on thread timeouts · #212](https://github.com/pytest-dev/pytest-timeout/pull/212) | Open |
 | [iggy](https://github.com/apache/iggy) | [feat(node): expose client lifecycle events through on and once · #4552](https://github.com/apache/iggy/pull/4552) | Open |
@@ -101,13 +101,13 @@ Contributions to public projects outside my own account, refreshed daily from Gi
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=05411229">
-  <img alt="language and repository stats" src="out/stats-light.svg?v=6fd652bc">
+  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=0cd7da82">
+  <img alt="language and repository stats" src="out/stats-light.svg?v=b1421dc0">
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=d07a25ae">
-  <img alt="138 active days in the last year" src="out/heatmap-light.svg?v=0599c498">
+  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=a8b86f84">
+  <img alt="138 active days in the last year" src="out/heatmap-light.svg?v=d5c3ef67">
 </picture>
 
 <picture>
