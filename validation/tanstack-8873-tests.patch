@@ -1,0 +1,81 @@
+diff --git a/packages/solid-query/src/__tests__/useQuery.test.tsx b/packages/solid-query/src/__tests__/useQuery.test.tsx
+index ebb97f8..4deeb8a 100644
+--- a/packages/solid-query/src/__tests__/useQuery.test.tsx
++++ b/packages/solid-query/src/__tests__/useQuery.test.tsx
+@@ -847,6 +847,76 @@ describe('useQuery', () => {
+     expect(states).toHaveLength(1)
+   })
+ 
++  it('should reconcile data only when the observer data changes', async () => {
++    const key = createKey()
++    const data = { value: 1 }
++    const reconcileData = vi.fn(
++      (_oldData: typeof data | undefined, newData: typeof data) => newData,
++    )
++
++    function Page() {
++      const query = useQuery(() => ({
++        queryKey: key,
++        queryFn: () => sleep(10).then(() => data),
++        reconcile: reconcileData,
++      }))
++
++      return (
++        <div>
++          <button onClick={() => query.refetch()}>refetch</button>
++          <span>data: {query.data?.value}</span>
++          <span>fetching: {String(query.isFetching)}</span>
++        </div>
++      )
++    }
++
++    const rendered = renderWithClient(queryClient, () => <Page />)
++    await vi.advanceTimersByTimeAsync(10)
++    expect(rendered.getByText('data: 1')).toBeInTheDocument()
++    expect(reconcileData).toHaveBeenCalledTimes(1)
++
++    fireEvent.click(rendered.getByRole('button', { name: 'refetch' }))
++    await vi.advanceTimersByTimeAsync(0)
++    expect(rendered.getByText('fetching: true')).toBeInTheDocument()
++    await vi.advanceTimersByTimeAsync(10)
++    expect(rendered.getByText('fetching: false')).toBeInTheDocument()
++    expect(reconcileData).toHaveBeenCalledTimes(1)
++  })
++
++  it('should reconcile consecutive new results when the store retains its data reference', async () => {
++    const key = createKey()
++    let value = 0
++    const reconcileData = vi.fn(
++      (oldData: { value: number } | undefined, newData: { value: number }) =>
++        reconcile(newData)(oldData),
++    )
++
++    function Page() {
++      const query = useQuery(() => ({
++        queryKey: key,
++        queryFn: () => sleep(10).then(() => ({ value: ++value })),
++        reconcile: reconcileData,
++      }))
++
++      return (
++        <div>
++          <button onClick={() => query.refetch()}>refetch</button>
++          data: {query.data?.value}
++        </div>
++      )
++    }
++
++    const rendered = renderWithClient(queryClient, () => <Page />)
++    await vi.advanceTimersByTimeAsync(10)
++    expect(rendered.getByText('data: 1')).toBeInTheDocument()
++    for (const expected of [2, 3]) {
++      fireEvent.click(rendered.getByRole('button', { name: 'refetch' }))
++      await vi.advanceTimersByTimeAsync(10)
++      expect(rendered.getByText(`data: ${expected}`)).toBeInTheDocument()
++    }
++    expect(reconcileData).toHaveBeenCalledTimes(3)
++  })
++
+   it('should share equal data structures between query results', async () => {
+     const key = createKey()
+     const result1 = [

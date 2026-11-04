@@ -1,0 +1,50 @@
+name: TanStack reconciliation regression
+on:
+  push:
+    branches: [oss-validation/tanstack-8873]
+permissions:
+  contents: read
+jobs:
+  baseline:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        with:
+          path: receipts
+          persist-credentials: false
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        with:
+          repository: TanStack/query
+          ref: f69b28a1dd2a2b4ca9b8f9117e0f60cc70443775
+          path: source
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.22.1
+      - name: Install pinned package manager
+        run: npm install --global pnpm@12.4.2
+      - name: Install scoped dependencies with repository policies
+        working-directory: source
+        run: pnpm install --filter '@tanstack/solid-query...' --frozen-lockfile
+      - name: Apply regression tests only
+        working-directory: source
+        run: git apply ../receipts/validation/tanstack-8873-tests.patch
+      - name: Run regression tests on unchanged production source
+        working-directory: source
+        env:
+          NX_DAEMON: 'false'
+          NX_NO_CLOUD: 'true'
+        run: |
+          set +e
+          pnpm nx run '@tanstack/solid-query:test:lib' --testNamePattern='should reconcile data only|should reconcile consecutive' > ../baseline.log 2>&1
+          result=$?
+          set -e
+          cat ../baseline.log
+          test "$result" -ne 0
+          grep -q 'AssertionError' ../baseline.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: tanstack-8873-baseline
+          path: baseline.log
