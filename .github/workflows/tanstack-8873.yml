@@ -1,11 +1,11 @@
-name: TanStack reconciliation regression
+name: TanStack reconciliation fix validation
 on:
   push:
     branches: [oss-validation/tanstack-8873]
 permissions:
   contents: read
 jobs:
-  baseline:
+  validation:
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     steps:
@@ -26,25 +26,26 @@ jobs:
         run: npm install --global pnpm@12.4.2
       - name: Install scoped dependencies with repository policies
         working-directory: source
-        run: pnpm install --filter '@tanstack/solid-query...' --frozen-lockfile
+        run: pnpm install --frozen-lockfile
       - name: Apply regression tests only
         working-directory: source
-        run: git apply ../receipts/validation/tanstack-8873-tests.patch
-      - name: Run regression tests on unchanged production source
+        run: git apply ../receipts/validation/tanstack-8873-fix.patch
+      - name: Run Solid Query suite and package checks
         working-directory: source
         env:
           NX_DAEMON: 'false'
           NX_NO_CLOUD: 'true'
         run: |
-          set +e
-          pnpm nx run '@tanstack/solid-query:test:lib' --testNamePattern=reconcile > ../baseline.log 2>&1
-          result=$?
-          set -e
-          cat ../baseline.log
-          test "$result" -ne 0
-          grep -q 'AssertionError' ../baseline.log
+          set -o pipefail
+          pnpm nx run '@tanstack/solid-query:test:lib' --output-style=static 2>&1 | tee ../suite.log
+          pnpm nx run '@tanstack/solid-query:test:types' --output-style=static 2>&1 | tee ../types.log
+          pnpm nx run '@tanstack/solid-query:test:oxlint' --output-style=static 2>&1 | tee ../lint.log
+          pnpm nx run '@tanstack/solid-query:build' --output-style=static 2>&1 | tee ../build.log
+          pnpm exec eslint packages/solid-query/src/useBaseQuery.ts packages/solid-query/src/__tests__/useQuery.test.tsx
+          pnpm exec oxfmt --check packages/solid-query/src/useBaseQuery.ts packages/solid-query/src/__tests__/useQuery.test.tsx
+          git diff --check
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: tanstack-8873-baseline
-          path: baseline.log
+          name: tanstack-8873-validation
+          path: '*.log'

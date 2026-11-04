@@ -1,0 +1,186 @@
+diff --git a/packages/solid-query/src/__tests__/useQuery.test.tsx b/packages/solid-query/src/__tests__/useQuery.test.tsx
+index ebb97f8..41e7425 100644
+--- a/packages/solid-query/src/__tests__/useQuery.test.tsx
++++ b/packages/solid-query/src/__tests__/useQuery.test.tsx
+@@ -847,6 +847,112 @@ describe('useQuery', () => {
+     expect(states).toHaveLength(1)
+   })
+ 
++  it('should reconcile data only when the observer data changes', async () => {
++    const key = createKey()
++    const data = { value: 1 }
++    const reconcileData = vi.fn(
++      (_oldData: typeof data | undefined, newData: typeof data) => newData,
++    )
++
++    function Page() {
++      const query = useQuery(() => ({
++        queryKey: key,
++        queryFn: () => sleep(10).then(() => data),
++        reconcile: reconcileData,
++      }))
++
++      return (
++        <div>
++          <button onClick={() => query.refetch()}>refetch</button>
++          <span>data: {query.data?.value}</span>
++          <span>fetching: {String(query.isFetching)}</span>
++        </div>
++      )
++    }
++
++    const rendered = renderWithClient(queryClient, () => <Page />)
++    await vi.advanceTimersByTimeAsync(10)
++    expect(rendered.getByText('data: 1')).toBeInTheDocument()
++    expect(reconcileData).toHaveBeenCalledTimes(1)
++
++    fireEvent.click(rendered.getByRole('button', { name: 'refetch' }))
++    await vi.advanceTimersByTimeAsync(0)
++    expect(rendered.getByText('fetching: true')).toBeInTheDocument()
++    await vi.advanceTimersByTimeAsync(10)
++    expect(rendered.getByText('fetching: false')).toBeInTheDocument()
++    expect(reconcileData).toHaveBeenCalledTimes(1)
++  })
++
++  it('should reconcile consecutive new results when the store retains its data reference', async () => {
++    const key = createKey()
++    let value = 0
++    const reconcileData = vi.fn(
++      (oldData: { value: number } | undefined, newData: { value: number }) =>
++        reconcile(newData)(oldData),
++    )
++
++    function Page() {
++      const query = useQuery(() => ({
++        queryKey: key,
++        queryFn: () => sleep(10).then(() => ({ value: ++value })),
++        reconcile: reconcileData,
++      }))
++
++      return (
++        <div>
++          <button onClick={() => query.refetch()}>refetch</button>
++          data: {query.data?.value}
++        </div>
++      )
++    }
++
++    const rendered = renderWithClient(queryClient, () => <Page />)
++    await vi.advanceTimersByTimeAsync(10)
++    expect(rendered.getByText('data: 1')).toBeInTheDocument()
++    for (const expected of [2, 3]) {
++      fireEvent.click(rendered.getByRole('button', { name: 'refetch' }))
++      await vi.advanceTimersByTimeAsync(10)
++      expect(rendered.getByText(`data: ${expected}`)).toBeInTheDocument()
++    }
++    expect(reconcileData).toHaveBeenCalledTimes(3)
++  })
++
++  it('should reconcile shared data again when the query key changes', async () => {
++    const keys = [createKey(), createKey()] as const
++    const data = { value: 1 }
++    for (const queryKey of keys) {
++      queryClient.setQueryData(queryKey, data)
++    }
++    const reconcileData = vi.fn(
++      (_oldData: typeof data | undefined, newData: typeof data) => newData,
++    )
++
++    function Page() {
++      const [index, setIndex] = createSignal<0 | 1>(0)
++      const query = useQuery(() => ({
++        queryKey: keys[index()],
++        queryFn: () => data,
++        staleTime: Infinity,
++        reconcile: reconcileData,
++      }))
++
++      return (
++        <div>
++          <button onClick={() => setIndex(1)}>next query</button>
++          data: {query.data?.value}
++        </div>
++      )
++    }
++
++    const rendered = renderWithClient(queryClient, () => <Page />)
++    await vi.advanceTimersByTimeAsync(0)
++    expect(reconcileData).toHaveBeenCalledTimes(1)
++    fireEvent.click(rendered.getByRole('button', { name: 'next query' }))
++    await vi.advanceTimersByTimeAsync(0)
++    expect(rendered.getByText('data: 1')).toBeInTheDocument()
++    expect(reconcileData).toHaveBeenCalledTimes(2)
++  })
++
+   it('should share equal data structures between query results', async () => {
+     const key = createKey()
+     const result1 = [
+diff --git a/packages/solid-query/src/useBaseQuery.ts b/packages/solid-query/src/useBaseQuery.ts
+index bcd9041..658cabd 100644
+--- a/packages/solid-query/src/useBaseQuery.ts
++++ b/packages/solid-query/src/useBaseQuery.ts
+@@ -167,6 +167,15 @@ export function useBaseQuery<
+   const [state, setState] =
+     createStore<QueryObserverResult<TData, TError>>(observerResult)
+ 
++  let lastReconciled:
++    | {
++        observer: ReturnType<typeof observer>
++        queryHash: string | undefined
++        data: TData | undefined
++        option: unknown
++      }
++    | undefined
++
+   const createServerSubscriber = (
+     resolve: (
+       data: ResourceData | PromiseLike<ResourceData | undefined> | undefined,
+@@ -213,17 +222,31 @@ export function useBaseQuery<
+    * @param res - The observer result to write.
+    */
+   function setStateWithReconciliation(res: typeof observerResult) {
+-    const opts = observer().options
++    const obs = observer()
++    const opts = obs.options
+     // @ts-expect-error - Reconcile option is not correctly typed internally
+     const reconcileOptions = opts.reconcile
++    const option = reconcileOptions === undefined ? false : reconcileOptions
+ 
+     setState((store) => {
+-      return reconcileFn(
+-        store,
+-        res,
+-        reconcileOptions === undefined ? false : reconcileOptions,
+-        opts.queryHash,
+-      )
++      let next = res
++      if (option !== false && res.data !== undefined) {
++        const unchanged =
++          lastReconciled?.observer === obs &&
++          lastReconciled.queryHash === opts.queryHash &&
++          lastReconciled.data === res.data &&
++          lastReconciled.option === option
++        next = unchanged
++          ? { ...res, data: store.data }
++          : reconcileFn(store, res, option, opts.queryHash)
++      }
++      lastReconciled = {
++        observer: obs,
++        queryHash: opts.queryHash,
++        data: res.data,
++        option,
++      }
++      return next
+     })
+   }
+ 
+diff --git a/.changeset/solid-reconcile-data-changes.md b/.changeset/solid-reconcile-data-changes.md
+new file mode 100644
+--- /dev/null
++++ b/.changeset/solid-reconcile-data-changes.md
+@@ -0,0 +1,5 @@
++---
++'@tanstack/solid-query': patch
++---
++
++Avoid repeating data reconciliation for query status updates when the data has not changed.
