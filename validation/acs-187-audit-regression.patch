@@ -1,0 +1,55 @@
+diff --git a/reference-implementations/agt-rust/tests/guardian.rs b/reference-implementations/agt-rust/tests/guardian.rs
+index 70d6018..7d71cfc 100644
+--- a/reference-implementations/agt-rust/tests/guardian.rs
++++ b/reference-implementations/agt-rust/tests/guardian.rs
+@@ -19,6 +19,50 @@ fn request(method: &str, payload: Value, request_id: &str) -> Value {
+     })
+ }
+ 
++#[test]
++fn refuses_to_start_when_an_audit_log_cannot_be_opened() {
++    let directory = tempfile::tempdir().expect("temporary log directory");
++    let mut config = GuardianConfig::from_repo();
++    config.envelope_log = Some(directory.path().to_owned());
++    assert!(Guardian::new(config).is_err(), "an unavailable audit log must stop startup");
++}
++
++#[cfg(target_os = "linux")]
++#[tokio::test]
++async fn audit_write_failure_returns_an_honored_deny_over_http() {
++    for fail_session_log in [false, true] {
++        let directory = tempfile::tempdir().expect("temporary log directory");
++        let mut config = GuardianConfig::from_repo();
++        config.envelope_log = Some(if fail_session_log {
++            directory.path().join("envelopes.jsonl")
++        } else {
++            "/dev/full".into()
++        });
++        config.session_log = Some(if fail_session_log {
++            "/dev/full".into()
++        } else {
++            directory.path().join("sessions.jsonl")
++        });
++        let guardian = Guardian::new(config).expect("pinned AGT manifest should load");
++        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
++        let address = listener.local_addr().unwrap();
++        let server = tokio::spawn(async move { axum::serve(listener, guardian.router()).await });
++        let client = reqwest::Client::new();
++        for _ in 0..2 {
++            let response: Value = client.post(format!("http://{address}/acs"))
++                .json(&request("steps/toolCallRequest", json!({
++                    "tool": {"name": "Bash"},
++                    "arguments": {"command": {"value": "ls -la"}},
++                    "raw_command": "ls -la"
++                }), "ff1c17fa-48e1-49dd-88c6-50796a504c14"))
++                .send().await.unwrap().json().await.unwrap();
++            assert_eq!(response["result"]["decision"], "deny", "{response}");
++            assert!(response.get("error").is_none(), "logging failure must not trigger fail-open");
++        }
++        server.abort();
++    }
++}
++
+ #[tokio::test]
+ async fn guardian_matches_the_two_tool_gates_and_refuses_invalid_steps() {
+     let mut config = GuardianConfig::from_repo();

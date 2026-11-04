@@ -1,0 +1,89 @@
+name: ACS audit regressions on unchanged source
+on:
+  push:
+    branches: [oss-validation/acs-187-audit]
+permissions:
+  contents: read
+jobs:
+  baseline:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    env:
+      CARGO_BUILD_JOBS: '2'
+      CARGO_PROFILE_DEV_DEBUG: '0'
+      CARGO_PROFILE_TEST_DEBUG: '0'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          path: receipts
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: GenAI-Security-Project/agent-control-standard
+          ref: 208698c09fac0523368793239fed5c0425af204d
+          path: source
+          persist-credentials: false
+      - name: Verify and apply tests-only patch
+        working-directory: source
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = 208698c09fac0523368793239fed5c0425af204d
+          test -z "$(git status --porcelain)"
+          printf '%s  %s\n' 'b7cb7d704aba0595a2588fdbf7482e15ff02eb32c3090c2957ec7efc6096edd8' '../receipts/validation/acs-187-audit-regression.patch' | sha256sum --check
+          git apply --check ../receipts/validation/acs-187-audit-regression.patch
+          git apply ../receipts/validation/acs-187-audit-regression.patch
+          test "$(git diff --name-only)" = reference-implementations/agt-rust/tests/guardian.rs
+          git diff --exit-code -- . ':(exclude)reference-implementations/agt-rust/tests/guardian.rs'
+          mkdir -p "$GITHUB_WORKSPACE/logs"
+      - name: Install pinned Rust toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.98.1 --profile minimal --component clippy,rustfmt
+          rustc +1.98.1 --version
+          cargo +1.98.1 --version
+      - name: Install pinned Bun
+        uses: oven-sh/setup-bun@735343b667d3e6f658f44d0eca948eb6282f2b76
+        with:
+          bun-version: '1.3.11'
+      - name: Install lockfile-integrity-pinned OPA via repository CI procedure
+        working-directory: source/reference-implementations/agt
+        shell: bash
+        run: |
+          set -euo pipefail
+          bun install --frozen-lockfile --linker=hoisted 2>&1 | tee "$GITHUB_WORKSPACE/logs/bun-install.log"
+          opa="$GITHUB_WORKSPACE/source/reference-implementations/agt/node_modules/agent-control-specification-opa-linux-x64/bin/opa"
+          "$opa" version | tee "$GITHUB_WORKSPACE/logs/opa-version.log"
+          grep -Fx 'Version: 0.70.0' "$GITHUB_WORKSPACE/logs/opa-version.log"
+          printf 'ACS_OPA_PATH=%s\n' "$opa" >> "$GITHUB_ENV"
+          git diff --exit-code -- bun.lock ../agt-rust/Cargo.lock
+      - name: Establish both real assertion failures on unchanged production source
+        working-directory: source/reference-implementations/agt-rust
+        shell: bash
+        env:
+          ACS_OPA_TIMEOUT_MS: '30000'
+        run: |
+          set -euo pipefail
+          set +e
+          cargo +1.98.1 test --workspace --all-features --locked --test guardian refuses_to_start_when_an_audit_log_cannot_be_opened -- --exact --nocapture 2>&1 | tee "$GITHUB_WORKSPACE/logs/baseline-startup.log"
+          startup_status=${PIPESTATUS[0]}
+          set -e
+          test "$startup_status" -ne 0
+          grep -F 'an unavailable audit log must stop startup' "$GITHUB_WORKSPACE/logs/baseline-startup.log"
+          grep -F 'test result: FAILED. 0 passed; 1 failed;' "$GITHUB_WORKSPACE/logs/baseline-startup.log"
+          set +e
+          cargo +1.98.1 test --workspace --all-features --locked --test guardian audit_write_failure_returns_an_honored_deny_over_http -- --exact --nocapture 2>&1 | tee "$GITHUB_WORKSPACE/logs/baseline-write.log"
+          write_status=${PIPESTATUS[0]}
+          set -e
+          test "$write_status" -ne 0
+          grep -F 'left: String("allow")' "$GITHUB_WORKSPACE/logs/baseline-write.log"
+          grep -F 'right: String("deny")' "$GITHUB_WORKSPACE/logs/baseline-write.log"
+          grep -F 'test result: FAILED. 0 passed; 1 failed;' "$GITHUB_WORKSPACE/logs/baseline-write.log"
+          git diff --exit-code -- Cargo.lock ../agt/bun.lock
+          test "$(git -C ../.. diff --name-only)" = reference-implementations/agt-rust/tests/guardian.rs
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: acs-audit-baseline-logs
+          path: logs/
