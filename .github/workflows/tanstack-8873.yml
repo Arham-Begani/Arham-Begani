@@ -37,7 +37,7 @@ jobs:
           NX_NO_CLOUD: 'true'
         run: |
           set +e
-          pnpm nx run '@tanstack/solid-query:test:lib' --testNamePattern='should reconcile data only|should reconcile consecutive' > ../baseline.log 2>&1
+          pnpm nx run '@tanstack/solid-query:test:lib' --testNamePattern=reconcile > ../baseline.log 2>&1
           result=$?
           set -e
           cat ../baseline.log
