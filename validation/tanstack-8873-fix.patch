@@ -116,7 +116,7 @@ index ebb97f8..41e7425 100644
      const key = createKey()
      const result1 = [
 diff --git a/packages/solid-query/src/useBaseQuery.ts b/packages/solid-query/src/useBaseQuery.ts
-index bcd9041..658cabd 100644
+index bcd9041..febc527 100644
 --- a/packages/solid-query/src/useBaseQuery.ts
 +++ b/packages/solid-query/src/useBaseQuery.ts
 @@ -167,6 +167,15 @@ export function useBaseQuery<
@@ -161,7 +161,7 @@ index bcd9041..658cabd 100644
 +          lastReconciled.data === res.data &&
 +          lastReconciled.option === option
 +        next = unchanged
-+          ? { ...res, data: store.data }
++          ? ({ ...res, data: store.data } as typeof res)
 +          : reconcileFn(store, res, option, opts.queryHash)
 +      }
 +      lastReconciled = {
