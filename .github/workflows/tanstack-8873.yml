@@ -24,10 +24,10 @@ jobs:
           node-version: 24.22.1
       - name: Install pinned package manager
         run: npm install --global pnpm@12.4.2
-      - name: Install scoped dependencies with repository policies
+      - name: Install dependencies with repository policies
         working-directory: source
         run: pnpm install --frozen-lockfile
-      - name: Apply regression tests only
+      - name: Apply focused fix and regression tests
         working-directory: source
         run: git apply ../receipts/validation/tanstack-8873-fix.patch
       - name: Run Solid Query suite and package checks
@@ -41,7 +41,6 @@ jobs:
           pnpm nx run '@tanstack/solid-query:test:types' --output-style=static 2>&1 | tee ../types.log
           pnpm nx run '@tanstack/solid-query:test:oxlint' --output-style=static 2>&1 | tee ../lint.log
           pnpm nx run '@tanstack/solid-query:build' --output-style=static 2>&1 | tee ../build.log
-          pnpm exec eslint packages/solid-query/src/useBaseQuery.ts packages/solid-query/src/__tests__/useQuery.test.tsx
           pnpm exec oxfmt --check packages/solid-query/src/useBaseQuery.ts packages/solid-query/src/__tests__/useQuery.test.tsx
           git diff --check
       - name: Run repository PR checks
