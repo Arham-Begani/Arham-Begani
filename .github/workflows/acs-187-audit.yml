@@ -1,17 +1,18 @@
-name: ACS audit regressions on unchanged source
+name: ACS bounded audit logging Linux checks
 on:
   push:
     branches: [oss-validation/acs-187-audit]
 permissions:
   contents: read
 jobs:
-  baseline:
+  validation:
     runs-on: ubuntu-24.04
-    timeout-minutes: 40
+    timeout-minutes: 60
     env:
       CARGO_BUILD_JOBS: '2'
       CARGO_PROFILE_DEV_DEBUG: '0'
       CARGO_PROFILE_TEST_DEBUG: '0'
+      ACS_OPA_TIMEOUT_MS: '30000'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -21,21 +22,29 @@ jobs:
         with:
           repository: GenAI-Security-Project/agent-control-standard
           ref: 208698c09fac0523368793239fed5c0425af204d
+          fetch-depth: 0
           path: source
           persist-credentials: false
-      - name: Verify and apply tests-only patch
+      - name: Prepare and verify exact merged candidate without a source commit
         working-directory: source
         shell: bash
         run: |
           set -euo pipefail
+          mkdir -p "$GITHUB_WORKSPACE/logs"
           test "$(git rev-parse HEAD)" = 208698c09fac0523368793239fed5c0425af204d
           test -z "$(git status --porcelain)"
-          printf '%s  %s\n' 'b7cb7d704aba0595a2588fdbf7482e15ff02eb32c3090c2957ec7efc6096edd8' '../receipts/validation/acs-187-audit-regression.patch' | sha256sum --check
-          git apply --check ../receipts/validation/acs-187-audit-regression.patch
-          git apply ../receipts/validation/acs-187-audit-regression.patch
-          test "$(git diff --name-only)" = reference-implementations/agt-rust/tests/guardian.rs
-          git diff --exit-code -- . ':(exclude)reference-implementations/agt-rust/tests/guardian.rs'
-          mkdir -p "$GITHUB_WORKSPACE/logs"
+          git config user.name 'Validation harness'
+          git config user.email 'validation@localhost'
+          git fetch --no-tags origin bba1b846fbe7511b0b6f876c61b1fe91b27b07da
+          git merge --no-commit --no-ff bba1b846fbe7511b0b6f876c61b1fe91b27b07da
+          test "$(git write-tree)" = 8b59ea8b9a6c40ca71449af377c0bf37c5cf4301
+          printf '%s  %s\n' '4cd78e8769fe4127dbf586e2eaea7b3fa7bd19848a80139e08471502b6841c26' '../receipts/validation/acs-187-bounded-audit.patch' | sha256sum --check
+          git apply --check --index ../receipts/validation/acs-187-bounded-audit.patch
+          git apply --index ../receipts/validation/acs-187-bounded-audit.patch
+          test "$(git write-tree)" = 55a8c17e21cecb4b70f769c91a2ec6b5796d65f7
+          git diff --exit-code
+          git diff --cached --check 8b59ea8b9a6c40ca71449af377c0bf37c5cf4301
+          git status --short | tee "$GITHUB_WORKSPACE/logs/candidate-source.log"
       - name: Install pinned Rust toolchain
         shell: bash
         run: |
@@ -47,7 +56,7 @@ jobs:
         uses: oven-sh/setup-bun@735343b667d3e6f658f44d0eca948eb6282f2b76
         with:
           bun-version: '1.3.11'
-      - name: Install lockfile-integrity-pinned OPA via repository CI procedure
+      - name: Install locked AGT dependencies and verify OPA version
         working-directory: source/reference-implementations/agt
         shell: bash
         run: |
@@ -58,32 +67,99 @@ jobs:
           grep -Fx 'Version: 0.70.0' "$GITHUB_WORKSPACE/logs/opa-version.log"
           printf 'ACS_OPA_PATH=%s\n' "$opa" >> "$GITHUB_ENV"
           git diff --exit-code -- bun.lock ../agt-rust/Cargo.lock
-      - name: Establish both real assertion failures on unchanged production source
+      - name: Rust formatting
         working-directory: source/reference-implementations/agt-rust
         shell: bash
-        env:
-          ACS_OPA_TIMEOUT_MS: '30000'
         run: |
           set -euo pipefail
-          set +e
-          cargo +1.98.1 test --workspace --all-features --locked --test guardian refuses_to_start_when_an_audit_log_cannot_be_opened -- --exact --nocapture 2>&1 | tee "$GITHUB_WORKSPACE/logs/baseline-startup.log"
-          startup_status=${PIPESTATUS[0]}
-          set -e
-          test "$startup_status" -ne 0
-          grep -F 'an unavailable audit log must stop startup' "$GITHUB_WORKSPACE/logs/baseline-startup.log"
-          grep -F 'test result: FAILED. 0 passed; 1 failed;' "$GITHUB_WORKSPACE/logs/baseline-startup.log"
-          set +e
-          cargo +1.98.1 test --workspace --all-features --locked --test guardian audit_write_failure_returns_an_honored_deny_over_http -- --exact --nocapture 2>&1 | tee "$GITHUB_WORKSPACE/logs/baseline-write.log"
-          write_status=${PIPESTATUS[0]}
-          set -e
-          test "$write_status" -ne 0
-          grep -F 'left: String("allow")' "$GITHUB_WORKSPACE/logs/baseline-write.log"
-          grep -F 'right: String("deny")' "$GITHUB_WORKSPACE/logs/baseline-write.log"
-          grep -F 'test result: FAILED. 0 passed; 1 failed;' "$GITHUB_WORKSPACE/logs/baseline-write.log"
-          git diff --exit-code -- Cargo.lock ../agt/bun.lock
-          test "$(git -C ../.. diff --name-only)" = reference-implementations/agt-rust/tests/guardian.rs
+          cargo +1.98.1 fmt --all -- --check 2>&1 | tee "$GITHUB_WORKSPACE/logs/rust-fmt.log"
+      - name: Rust workspace check
+        working-directory: source/reference-implementations/agt-rust
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo +1.98.1 check --workspace --locked 2>&1 | tee "$GITHUB_WORKSPACE/logs/rust-check.log"
+      - name: Rust clippy
+        working-directory: source/reference-implementations/agt-rust
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo +1.98.1 clippy --workspace --all-targets --all-features --locked -- -D warnings 2>&1 | tee "$GITHUB_WORKSPACE/logs/rust-clippy.log"
+      - name: All Rust tests with real pinned AGT policy
+        working-directory: source/reference-implementations/agt-rust
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo +1.98.1 test --workspace --all-features --locked -- --nocapture 2>&1 | tee "$GITHUB_WORKSPACE/logs/rust-tests.log"
+      - name: Compare live Rust and TypeScript Guardians
+        working-directory: source/reference-implementations/agt-rust
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo +1.98.1 run --locked > "$GITHUB_WORKSPACE/logs/rust-guardian.log" 2>&1 &
+          rust_pid=$!
+          (
+            cd ../agt
+            ACS_GUARDIAN_PORT=8788 bun run guardian
+          ) > "$GITHUB_WORKSPACE/logs/ts-guardian.log" 2>&1 &
+          ts_pid=$!
+          cleanup() {
+            kill "$rust_pid" "$ts_pid" 2>/dev/null || true
+            wait "$rust_pid" "$ts_pid" 2>/dev/null || true
+          }
+          trap cleanup EXIT
+          wait_for_guardian() {
+            local url="$1"
+            local log="$2"
+            for _ in {1..60}; do
+              if curl --silent --show-error --fail --request POST --header "content-type: application/json" --data '{}' "$url" >/dev/null; then
+                return 0
+              fi
+              sleep 1
+            done
+            cat "$log"
+            return 1
+          }
+          wait_for_guardian "http://127.0.0.1:8787/acs" "$GITHUB_WORKSPACE/logs/rust-guardian.log"
+          wait_for_guardian "http://127.0.0.1:8788/acs" "$GITHUB_WORKSPACE/logs/ts-guardian.log"
+          bun tests/compare-guardians.mjs 2>&1 | tee "$GITHUB_WORKSPACE/logs/live-comparison.log"
+      - name: Install pinned uv
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9
+        with:
+          version: '0.9.9'
+          github-token: ''
+      - name: Install locked guard and documentation dependencies
+        working-directory: source
+        shell: bash
+        run: |
+          set -euo pipefail
+          uv sync --locked 2>&1 | tee "$GITHUB_WORKSPACE/logs/uv-sync.log"
+      - name: Repository Python guards
+        working-directory: source
+        shell: bash
+        run: |
+          set -euo pipefail
+          uv run pytest -v 2>&1 | tee "$GITHUB_WORKSPACE/logs/python-guards.log"
+      - name: Strict documentation build
+        working-directory: source
+        shell: bash
+        env:
+          GITHUB_PAGES_URL: https://owaspacs.org/docs/
+        run: |
+          set -euo pipefail
+          uv run mkdocs build --strict -d _site/docs 2>&1 | tee "$GITHUB_WORKSPACE/logs/docs-build.log"
+      - name: Verify validated source remained unchanged
+        working-directory: source
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = 208698c09fac0523368793239fed5c0425af204d
+          test "$(git write-tree)" = 55a8c17e21cecb4b70f769c91a2ec6b5796d65f7
+          git diff --exit-code
+          git diff --cached --check 8b59ea8b9a6c40ca71449af377c0bf37c5cf4301
+          git status --short | tee "$GITHUB_WORKSPACE/logs/final-source.log"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
-          name: acs-audit-baseline-logs
+          name: acs-bounded-audit-linux-logs
           path: logs/

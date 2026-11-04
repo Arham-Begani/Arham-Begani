@@ -1,0 +1,966 @@
+diff --git a/reference-implementations/agt-rust/README.md b/reference-implementations/agt-rust/README.md
+index 1696ac5..97d5bbe 100644
+--- a/reference-implementations/agt-rust/README.md
++++ b/reference-implementations/agt-rust/README.md
+@@ -33,6 +33,43 @@ The Guardian reads `ACS_GUARDIAN_HOST`, `ACS_GUARDIAN_PORT`, `ACS_MANIFEST_PATH`
+ 
+ The AGT SDK reads `ACS_OPA_TIMEOUT_MS`, defaulting to 5000 milliseconds. The handshake advertises this evaluator timeout plus 1000 milliseconds for request handling and decision delivery. The default host deadline is therefore 6000 milliseconds; setting `ACS_OPA_TIMEOUT_MS=30000` advertises 31000 milliseconds. A timeout too large to represent with the delivery margin stops startup.
+ 
++## Audit log limits and failures
++
++Both audit logs are required. A missing or unopenable sink stops startup. Each sink
++has a maximum segment size of 8 MiB and retains at most five files, including the
++active file: 40 MiB per sink and 80 MiB in total. `ACS_LOG_MAX_BYTES` and
++`ACS_LOG_MAX_FILES` configure those positive limits. The newline counts towards
++the size limit, and a single record larger than a segment is refused.
++
++A full active file moves to `.1`, with older segments moving to `.2` and so on.
++Rotation never deletes or overwrites an audit record. When the retained segments
++are full, decisions are denied until an operator archives the segments and
++restarts the Guardian. Rotation uses same-directory hard links to prevent
++overwriting an existing destination; a filesystem that cannot make these links
++causes a denial rather than losing history.
++
++Each append is serialized, written, flushed and synchronized to the filesystem.
++A write, flush, sync or rotation failure latches the sink unavailable. A valid
++step receives a final `deny`, including when logging the response to an otherwise
++allowed request fails. It does not receive an error that could trigger the host's
++fail-open posture. Subsequent steps remain denied; the Guardian does not silently
++disable its audit logs and continue evaluating requests. The unrecordable denial
++itself cannot repair an unavailable sink: restore storage and inspect any partial
++last record before restarting.
++
++An adjacent `.lock` file holds an exclusive advisory lock for the lifetime of
++each sink, including across rotations. Reusing the same configured path in
++another sink or Guardian fails startup. The data file remains readable by the
++Inspector. Symlink or hard-link aliases and writers that ignore the advisory
++lock are not supported: configure distinct physical files for the two sinks and
++for separate instances. An incomplete final record prevents restart instead of
++appending new records to a partial JSON line.
++
++The session state is still in memory. This does not add crash recovery for that
++state or claim full ACS-Core conformance. Parsing and oversized-body errors that
++cannot identify a step retain their JSON-RPC error behavior; they cannot be
++turned into a step decision.
++
+ ## Test
+ 
+ ```sh
+@@ -42,7 +79,7 @@ cargo clippy --workspace --all-targets --all-features -- -D warnings
+ ACS_OPA_PATH=/absolute/path/to/opa ACS_OPA_TIMEOUT_MS=30000 cargo test --workspace --all-features
+ ```
+ 
+-Six unit tests cover verdict mapping, session state, OPA version validation, and host deadline calculation. The HTTP integration test starts a real Guardian and uses the pinned AGT bundle for handshake, allow, deny, request and result redaction, egress denial, WebFetch allowance, malformed payload, unknown method, parse error, oversized body, and log cases. It also checks the advertised deadline. It requires OPA. The test command gives slow test machines a longer OPA subprocess deadline and correspondingly extends the host deadline. The existing TypeScript tests are a separate baseline and can be run from `../agt` with Bun 1.3.11.
++Unit tests cover verdict mapping, session state, OPA version validation, host deadline calculation, and bounded audit logging. The HTTP integration test starts a real Guardian and uses the pinned AGT bundle for handshake, allow, deny, request and result redaction, egress denial, WebFetch allowance, malformed payload, unknown method, parse error, oversized body, and log cases. It also checks the advertised deadline. It requires OPA. The test command gives slow test machines a longer OPA subprocess deadline and correspondingly extends the host deadline. The existing TypeScript tests are a separate baseline and can be run from `../agt` with Bun 1.3.11.
+ 
+ For a direct wire comparison, start the Rust Guardian on port 8787 and the TypeScript Guardian on port 8788 with the same AGT policy bundle, then run `node tests/compare-guardians.mjs` from this directory. `RUST_GUARDIAN_URL` and `TS_GUARDIAN_URL` can override the endpoints. CI also runs these nine cases: eight complete response comparisons and one handshake comparison excluding the intentionally different `timeout_config.default_ms`.
+ 
+diff --git a/reference-implementations/agt-rust/src/audit.rs b/reference-implementations/agt-rust/src/audit.rs
+new file mode 100644
+index 0000000..ab4df7d
+--- /dev/null
++++ b/reference-implementations/agt-rust/src/audit.rs
+@@ -0,0 +1,439 @@
++use std::{
++    fs::{self, File, OpenOptions},
++    io::{self, Read, Seek, SeekFrom, Write},
++    path::{Path, PathBuf},
++    sync::Mutex,
++};
++
++/// A single-process audit sink. Retained segments are never overwritten or deleted.
++pub(crate) struct AuditLog {
++    state: Mutex<LogState>,
++    _lock: File,
++}
++
++struct LogState {
++    path: PathBuf,
++    file: Option<File>,
++    bytes: u64,
++    seq: u64,
++    max_bytes: u64,
++    max_files: usize,
++    failure: Option<String>,
++}
++
++impl AuditLog {
++    pub(crate) fn open(path: PathBuf, max_bytes: u64, max_files: usize) -> Result<Self, String> {
++        if max_bytes == 0 || max_files == 0 {
++            return Err("audit log limits must be positive".into());
++        }
++        if path.is_dir() {
++            return Err("audit log path is a directory".into());
++        }
++        let parent = path
++            .parent()
++            .filter(|path| !path.as_os_str().is_empty())
++            .unwrap_or(Path::new("."));
++        fs::create_dir_all(parent).map_err(|error| error.to_string())?;
++        let path = parent
++            .canonicalize()
++            .map_err(|error| error.to_string())?
++            .join(path.file_name().ok_or("audit log path has no filename")?);
++        let path = if path.is_file() && !path.is_symlink() {
++            path.canonicalize().map_err(|error| error.to_string())?
++        } else {
++            path
++        };
++        let mut lock_name = path.as_os_str().to_owned();
++        lock_name.push(".lock");
++        let mut lock_options = OpenOptions::new();
++        lock_options
++            .read(true)
++            .write(true)
++            .create(true)
++            .truncate(false);
++        #[cfg(unix)]
++        {
++            use std::os::unix::fs::OpenOptionsExt;
++            lock_options.mode(0o600);
++        }
++        let lock = lock_options
++            .open(PathBuf::from(lock_name))
++            .map_err(|error| error.to_string())?;
++        lock.try_lock()
++            .map_err(|error| format!("audit log is already owned or cannot be locked: {error}"))?;
++        let mut file = open_file(&path, false).map_err(|error| error.to_string())?;
++        let bytes = file.metadata().map_err(|error| error.to_string())?.len();
++        if bytes > max_bytes {
++            return Err("existing audit log exceeds its configured segment limit".into());
++        }
++        check_tail(&mut file, bytes).map_err(|error| error.to_string())?;
++        check_retained_segments(&path, max_bytes, max_files)?;
++        Ok(Self {
++            state: Mutex::new(LogState {
++                path,
++                file: Some(file),
++                bytes,
++                seq: 0,
++                max_bytes,
++                max_files,
++                failure: None,
++            }),
++            _lock: lock,
++        })
++    }
++
++    pub(crate) fn available(&self) -> bool {
++        self.state.lock().is_ok_and(|state| state.failure.is_none())
++    }
++
++    pub(crate) fn append(
++        &self,
++        record: impl FnOnce(u64) -> Result<Vec<u8>, String>,
++    ) -> Result<(), String> {
++        let mut state = self.state.lock().map_err(|error| error.to_string())?;
++        if let Some(failure) = &state.failure {
++            return Err(failure.clone());
++        }
++        let result = record(state.seq + 1).and_then(|record| state.append_record(record));
++        if let Err(error) = &result {
++            // Never resume after a partial write, failed flush or incomplete rotation.
++            state.failure = Some(error.clone());
++        }
++        result
++    }
++}
++
++impl LogState {
++    fn append_record(&mut self, mut record: Vec<u8>) -> Result<(), String> {
++        record.push(b'\n');
++        let bytes = u64::try_from(record.len()).map_err(|error| error.to_string())?;
++        if bytes > self.max_bytes {
++            return Err("audit record exceeds the log segment limit".into());
++        }
++        if self.bytes > self.max_bytes - bytes {
++            self.rotate().map_err(|error| error.to_string())?;
++        }
++        let file = self.file.as_mut().ok_or("audit log is unavailable")?;
++        write_record(file, &record).map_err(|error| error.to_string())?;
++        file.sync_data().map_err(|error| error.to_string())?;
++        self.bytes += bytes;
++        self.seq += 1;
++        Ok(())
++    }
++
++    fn rotate(&mut self) -> io::Result<()> {
++        if self.max_files == 1 || segment(&self.path, self.max_files - 1).try_exists()? {
++            return Err(io::Error::other(
++                "audit retention is full; archive retained segments first",
++            ));
++        }
++        let file = self
++            .file
++            .take()
++            .ok_or_else(|| io::Error::other("audit log is unavailable"))?;
++        file.sync_all()?;
++        drop(file);
++        for index in (1..self.max_files - 1).rev() {
++            let from = segment(&self.path, index);
++            if from.try_exists()? {
++                move_without_overwrite(&from, &segment(&self.path, index + 1))?;
++            }
++        }
++        move_without_overwrite(&self.path, &segment(&self.path, 1))?;
++        self.file = Some(open_file(&self.path, true)?);
++        self.bytes = 0;
++        Ok(())
++    }
++}
++
++fn segment(path: &Path, index: usize) -> PathBuf {
++    let mut name = path.as_os_str().to_owned();
++    name.push(format!(".{index}"));
++    PathBuf::from(name)
++}
++
++fn move_without_overwrite(from: &Path, to: &Path) -> io::Result<()> {
++    // hard_link atomically refuses an existing destination on Unix and Windows.
++    // If either operation fails, all existing records remain and the sink latches shut.
++    fs::hard_link(from, to)?;
++    fs::remove_file(from)
++}
++
++fn open_file(path: &Path, new: bool) -> io::Result<File> {
++    let mut options = OpenOptions::new();
++    options.read(true).append(true);
++    if new {
++        options.create_new(true);
++    } else {
++        options.create(true);
++    }
++    #[cfg(unix)]
++    {
++        use std::os::unix::fs::OpenOptionsExt;
++        options.mode(0o600);
++    }
++    options.open(path)
++}
++
++fn write_record(writer: &mut impl Write, record: &[u8]) -> io::Result<()> {
++    writer.write_all(record)?;
++    writer.flush()
++}
++
++fn check_tail(file: &mut File, bytes: u64) -> io::Result<()> {
++    if bytes != 0 {
++        file.seek(SeekFrom::End(-1))?;
++        let mut last = [0];
++        file.read_exact(&mut last)?;
++        if last != [b'\n'] {
++            return Err(io::Error::other(
++                "audit log has an incomplete last record; preserve and repair it before restart",
++            ));
++        }
++    }
++    Ok(())
++}
++
++fn check_retained_segments(path: &Path, max_bytes: u64, max_files: usize) -> Result<(), String> {
++    let mut prefix = path
++        .file_name()
++        .ok_or("audit log has no filename")?
++        .as_encoded_bytes()
++        .to_vec();
++    prefix.push(b'.');
++    for entry in fs::read_dir(path.parent().ok_or("audit log has no parent")?)
++        .map_err(|error| error.to_string())?
++    {
++        let entry = entry.map_err(|error| error.to_string())?;
++        let name = entry.file_name();
++        let Some(suffix) = name.as_encoded_bytes().strip_prefix(prefix.as_slice()) else {
++            continue;
++        };
++        if suffix.is_empty() || !suffix.iter().all(u8::is_ascii_digit) {
++            continue;
++        }
++        let index = std::str::from_utf8(suffix)
++            .unwrap()
++            .parse::<usize>()
++            .map_err(|_| "retained audit segment exceeds its configured file limit")?;
++        if index == 0 || index >= max_files || index.to_string().as_bytes() != suffix {
++            return Err("retained audit segment exceeds its configured file limit".into());
++        }
++        let metadata = entry.metadata().map_err(|error| error.to_string())?;
++        if !metadata.is_file() || metadata.len() > max_bytes {
++            return Err(
++                "retained audit segment is not a file within its configured size limit".into(),
++            );
++        }
++        let mut file = File::open(entry.path()).map_err(|error| error.to_string())?;
++        check_tail(&mut file, metadata.len()).map_err(|error| error.to_string())?;
++    }
++    Ok(())
++}
++
++#[cfg(test)]
++mod tests {
++    use super::{segment, write_record, AuditLog};
++    use std::{
++        fs, io,
++        io::Write,
++        path::PathBuf,
++        sync::{
++            atomic::{AtomicU64, Ordering},
++            Arc,
++        },
++    };
++
++    struct Directory(PathBuf);
++
++    impl Directory {
++        fn new() -> Self {
++            static NEXT: AtomicU64 = AtomicU64::new(0);
++            let path = std::env::temp_dir().join(format!(
++                "acs-audit-{}-{}",
++                std::process::id(),
++                NEXT.fetch_add(1, Ordering::Relaxed)
++            ));
++            fs::create_dir(&path).unwrap();
++            Self(path)
++        }
++
++        fn path(&self) -> PathBuf {
++            self.0.join("audit.jsonl")
++        }
++    }
++
++    impl Drop for Directory {
++        fn drop(&mut self) {
++            fs::remove_dir_all(&self.0).unwrap();
++        }
++    }
++
++    #[test]
++    fn rotates_without_losing_records_then_refuses_to_overwrite_retained_history() {
++        let dir = Directory::new();
++        let log = AuditLog::open(dir.path(), 4, 3).unwrap();
++        for record in [b"one", b"two", b"tri"] {
++            log.append(|_| Ok(record.to_vec())).unwrap();
++        }
++        assert_eq!(fs::read(segment(&dir.path(), 2)).unwrap(), b"one\n");
++        assert_eq!(fs::read(segment(&dir.path(), 1)).unwrap(), b"two\n");
++        assert_eq!(fs::read(dir.path()).unwrap(), b"tri\n");
++        assert!(log.append(|_| Ok(b"end".to_vec())).is_err());
++        assert!(!log.available());
++        assert_eq!(fs::read(segment(&dir.path(), 2)).unwrap(), b"one\n");
++        assert_eq!(fs::read(dir.path()).unwrap(), b"tri\n");
++        drop(log);
++    }
++
++    #[test]
++    fn counts_existing_bytes_and_the_record_separator_in_the_limit() {
++        let dir = Directory::new();
++        fs::write(dir.path(), b"old\n").unwrap();
++        let log = AuditLog::open(dir.path(), 4, 2).unwrap();
++        log.append(|_| Ok(b"new".to_vec())).unwrap();
++        assert_eq!(fs::read(segment(&dir.path(), 1)).unwrap(), b"old\n");
++        assert_eq!(fs::read(dir.path()).unwrap(), b"new\n");
++        drop(log);
++    }
++
++    #[test]
++    fn rejects_open_errors_invalid_limits_and_records_larger_than_a_segment() {
++        let dir = Directory::new();
++        assert!(AuditLog::open(dir.0.clone(), 4, 2).is_err());
++        assert!(AuditLog::open(dir.path(), 0, 2).is_err());
++        assert!(AuditLog::open(dir.path(), 4, 0).is_err());
++        let log = AuditLog::open(dir.path(), 4, 2).unwrap();
++        assert!(log.append(|_| Ok(b"large".to_vec())).is_err());
++        assert!(fs::read(dir.path()).unwrap().is_empty());
++        assert!(!log.available());
++        drop(log);
++    }
++
++    #[test]
++    fn rotation_errors_latch_without_removing_the_active_log() {
++        let dir = Directory::new();
++        let log = AuditLog::open(dir.path(), 4, 3).unwrap();
++        log.append(|_| Ok(b"one".to_vec())).unwrap();
++        fs::create_dir(segment(&dir.path(), 1)).unwrap();
++        assert!(log.append(|_| Ok(b"two".to_vec())).is_err());
++        assert_eq!(fs::read(dir.path()).unwrap(), b"one\n");
++        assert!(!log.available());
++        drop(log);
++    }
++
++    #[test]
++    fn serializes_concurrent_writes_and_sequence_numbers() {
++        let dir = Directory::new();
++        let log = Arc::new(AuditLog::open(dir.path(), 16, 100).unwrap());
++        std::thread::scope(|scope| {
++            for _ in 0..16 {
++                let log = Arc::clone(&log);
++                scope.spawn(move || {
++                    for _ in 0..16 {
++                        log.append(|seq| Ok(seq.to_string().into_bytes())).unwrap();
++                    }
++                });
++            }
++        });
++        let mut text = String::new();
++        for index in (1..100).rev() {
++            let path = segment(&dir.path(), index);
++            if path.exists() {
++                assert!(fs::metadata(&path).unwrap().len() <= 16);
++                text.push_str(&fs::read_to_string(path).unwrap());
++            }
++        }
++        text.push_str(&fs::read_to_string(dir.path()).unwrap());
++        let values: Vec<_> = text
++            .lines()
++            .map(|line| line.parse::<u64>().unwrap())
++            .collect();
++        assert_eq!(values, (1..=256).collect::<Vec<_>>());
++        drop(log);
++    }
++
++    #[test]
++    fn propagates_both_write_and_flush_failures() {
++        struct FailingWriter(bool);
++        impl Write for FailingWriter {
++            fn write(&mut self, bytes: &[u8]) -> io::Result<usize> {
++                if self.0 {
++                    Ok(bytes.len())
++                } else {
++                    Err(io::Error::other("write failed"))
++                }
++            }
++            fn flush(&mut self) -> io::Result<()> {
++                Err(io::Error::other("flush failed"))
++            }
++        }
++        for accepts_write in [false, true] {
++            assert!(write_record(&mut FailingWriter(accepts_write), b"record\n").is_err());
++        }
++    }
++
++    #[cfg(target_os = "linux")]
++    #[test]
++    fn a_real_write_failure_latches_the_sink_closed() {
++        let dir = Directory::new();
++        std::os::unix::fs::symlink("/dev/full", dir.path()).unwrap();
++        let log = AuditLog::open(dir.path(), 1024, 2).unwrap();
++        assert!(log.append(|_| Ok(b"one".to_vec())).is_err());
++        assert!(!log.available());
++        assert!(log.append(|_| Ok(b"two".to_vec())).is_err());
++    }
++
++    #[cfg(target_os = "linux")]
++    #[test]
++    fn a_sync_failure_after_a_successful_write_latches_the_sink_closed() {
++        let dir = Directory::new();
++        std::os::unix::fs::symlink("/dev/null", dir.path()).unwrap();
++        let log = AuditLog::open(dir.path(), 1024, 2).unwrap();
++        assert!(log.append(|_| Ok(b"one".to_vec())).is_err());
++        assert!(!log.available());
++    }
++
++    #[test]
++    fn rejects_existing_history_that_exceeds_the_configured_limit() {
++        let dir = Directory::new();
++        fs::write(dir.path(), b"too large\n").unwrap();
++        assert!(AuditLog::open(dir.path(), 4, 2).is_err());
++        fs::write(dir.path(), b"").unwrap();
++        fs::write(segment(&dir.path(), 1), b"too large\n").unwrap();
++        assert!(AuditLog::open(dir.path(), 4, 2).is_err());
++    }
++
++    #[test]
++    fn refuses_to_append_to_an_incomplete_record_after_restart() {
++        let dir = Directory::new();
++        fs::write(dir.path(), b"{\"part").unwrap();
++        assert!(AuditLog::open(dir.path(), 1024, 2).is_err());
++        assert_eq!(fs::read(dir.path()).unwrap(), b"{\"part");
++    }
++
++    #[test]
++    fn refuses_shared_paths_even_across_distinct_sink_instances() {
++        let dir = Directory::new();
++        let log = AuditLog::open(dir.path(), 1024, 2).unwrap();
++        assert!(AuditLog::open(dir.path(), 1024, 2).is_err());
++        drop(log);
++        assert!(AuditLog::open(dir.path(), 1024, 2).is_ok());
++    }
++
++    #[test]
++    fn lowering_retention_refuses_existing_segments_outside_the_new_budget() {
++        let dir = Directory::new();
++        let log = AuditLog::open(dir.path(), 4, 3).unwrap();
++        for record in [b"one", b"two", b"tri"] {
++            log.append(|_| Ok(record.to_vec())).unwrap();
++        }
++        drop(log);
++        for max_files in [1, 2] {
++            assert!(AuditLog::open(dir.path(), 4, max_files).is_err());
++        }
++        assert_eq!(fs::read(segment(&dir.path(), 2)).unwrap(), b"one\n");
++        assert_eq!(fs::read(segment(&dir.path(), 1)).unwrap(), b"two\n");
++        assert_eq!(fs::read(dir.path()).unwrap(), b"tri\n");
++    }
++}
+diff --git a/reference-implementations/agt-rust/src/lib.rs b/reference-implementations/agt-rust/src/lib.rs
+index a69f366..88ec8f3 100644
+--- a/reference-implementations/agt-rust/src/lib.rs
++++ b/reference-implementations/agt-rust/src/lib.rs
+@@ -1,5 +1,6 @@
+ //! Rust Guardian for the AGT ACS reference implementation.
+ 
++mod audit;
+ mod mapping;
+ mod policy;
+ mod schema;
+diff --git a/reference-implementations/agt-rust/src/main.rs b/reference-implementations/agt-rust/src/main.rs
+index 891dd48..7cc4f8e 100644
+--- a/reference-implementations/agt-rust/src/main.rs
++++ b/reference-implementations/agt-rust/src/main.rs
+@@ -13,6 +13,20 @@ async fn main() -> Result<(), String> {
+     if let Some(value) = env::var_os("ACS_SESSION_CONTEXT_LOG") {
+         config.session_log = Some(PathBuf::from(value));
+     }
++    if let Some(value) = env::var_os("ACS_LOG_MAX_BYTES") {
++        config.log_max_bytes = value
++            .to_str()
++            .ok_or("ACS_LOG_MAX_BYTES is not UTF-8")?
++            .parse()
++            .map_err(|_| "ACS_LOG_MAX_BYTES must be a positive integer")?;
++    }
++    if let Some(value) = env::var_os("ACS_LOG_MAX_FILES") {
++        config.log_max_files = value
++            .to_str()
++            .ok_or("ACS_LOG_MAX_FILES is not UTF-8")?
++            .parse()
++            .map_err(|_| "ACS_LOG_MAX_FILES must be a positive integer")?;
++    }
+     config.on_decision_failure =
+         env::var("ACS_ON_DECISION_FAILURE").unwrap_or_else(|_| "proceed".into());
+     let host = env::var("ACS_GUARDIAN_HOST").unwrap_or_else(|_| "127.0.0.1".into());
+diff --git a/reference-implementations/agt-rust/src/server.rs b/reference-implementations/agt-rust/src/server.rs
+index f502df0..c1af4ad 100644
+--- a/reference-implementations/agt-rust/src/server.rs
++++ b/reference-implementations/agt-rust/src/server.rs
+@@ -1,4 +1,6 @@
+-use crate::{mapping::Mapping, policy::Policy, schema::Schemas, session::SessionStore};
++use crate::{
++    audit::AuditLog, mapping::Mapping, policy::Policy, schema::Schemas, session::SessionStore,
++};
+ use axum::{
+     body::{to_bytes, Body},
+     extract::State,
+@@ -9,11 +11,10 @@ use axum::{
+ use chrono::Utc;
+ use serde_json::{json, Map, Value};
+ use std::{
+-    fs::{self, File, OpenOptions},
+     io::{self, Write},
+     net::SocketAddr,
+     path::PathBuf,
+-    sync::{Arc, Mutex},
++    sync::Arc,
+ };
+ 
+ const MAX_REQUEST_BYTES: usize = 1_048_576;
+@@ -25,6 +26,10 @@ pub struct GuardianConfig {
+     pub schemas: PathBuf,
+     pub envelope_log: Option<PathBuf>,
+     pub session_log: Option<PathBuf>,
++    /// Maximum bytes in each audit log segment, including line separators.
++    pub log_max_bytes: u64,
++    /// Maximum retained files per sink, including its active segment.
++    pub log_max_files: usize,
+     pub on_decision_failure: String,
+ }
+ 
+@@ -38,6 +43,8 @@ impl GuardianConfig {
+             schemas: root.join("../../specification/v0.1.0"),
+             envelope_log: Some(root.join("../agt/.acs/envelopes-rust.jsonl")),
+             session_log: Some(root.join("../agt/.acs/session-context-rust.jsonl")),
++            log_max_bytes: 8 * 1024 * 1024,
++            log_max_files: 5,
+             on_decision_failure: "proceed".into(),
+         }
+     }
+@@ -49,16 +56,11 @@ pub struct Guardian {
+     mapping: Mapping,
+     schemas: Schemas,
+     sessions: SessionStore,
+-    envelope_log: Option<Mutex<EnvelopeLog>>,
+-    session_log: Option<Mutex<Option<File>>>,
++    envelope_log: AuditLog,
++    session_log: AuditLog,
+     posture: String,
+ }
+ 
+-struct EnvelopeLog {
+-    file: Option<File>,
+-    seq: u64,
+-}
+-
+ impl Guardian {
+     /// Validate configuration and initialize AGT before accepting requests.
+     pub fn new(config: GuardianConfig) -> Result<Arc<Self>, String> {
+@@ -68,15 +70,20 @@ impl Guardian {
+         let policy = Policy::load(&config.manifest)?;
+         let mapping = Mapping::load(&config.mapping)?;
+         let schemas = Schemas::load(&config.schemas)?;
+-        let envelope_log = config.envelope_log.map(|path| {
+-            Mutex::new(EnvelopeLog {
+-                file: open_log_best_effort(&path),
+-                seq: 0,
+-            })
+-        });
+-        let session_log = config
+-            .session_log
+-            .map(|path| Mutex::new(open_log_best_effort(&path)));
++        let envelope_log = AuditLog::open(
++            config
++                .envelope_log
++                .ok_or("the envelope audit log is required")?,
++            config.log_max_bytes,
++            config.log_max_files,
++        )?;
++        let session_log = AuditLog::open(
++            config
++                .session_log
++                .ok_or("the session audit log is required")?,
++            config.log_max_bytes,
++            config.log_max_files,
++        )?;
+         Ok(Arc::new(Self {
+             policy,
+             mapping,
+@@ -95,15 +102,29 @@ impl Guardian {
+ 
+     fn respond(&self, raw: Value) -> Value {
+         let method = raw.get("method").and_then(Value::as_str).map(str::to_owned);
+-        self.write_envelope("request", &raw, method.as_deref());
+-        let response = self.dispatch(&raw);
++        if !self.session_log.available()
++            || self
++                .write_envelope("request", &raw, method.as_deref())
++                .is_err()
++        {
++            return audit_failure(&raw);
++        }
++        let mut response = self.dispatch(&raw);
++        if !self.session_log.available() {
++            response = audit_failure(&raw);
++        }
+         if let Err(error) = self.schemas.validate_response(&response) {
+             let _ = writeln!(
+                 io::stderr().lock(),
+                 "guardian sent a response that fails response-envelope.json: {error}"
+             );
+         }
+-        self.write_envelope("response", &response, method.as_deref());
++        if self
++            .write_envelope("response", &response, method.as_deref())
++            .is_err()
++        {
++            return audit_failure(&raw);
++        }
+         response
+     }
+ 
+@@ -169,7 +190,7 @@ impl Guardian {
+         let (entry, labels) = self
+             .sessions
+             .append(session_id, method, request_id, tool_name)?;
+-        self.write_session(&entry);
++        self.write_session(&entry)?;
+ 
+         let point = self.mapping.point(method)?;
+         let target_argument = self.mapping.target_argument(point, tool_name);
+@@ -230,41 +251,28 @@ impl Guardian {
+         Ok(Value::Object(decision))
+     }
+ 
+-    fn write_envelope(&self, direction: &str, envelope: &Value, method: Option<&str>) {
+-        let Some(log) = &self.envelope_log else {
+-            return;
+-        };
+-        let Ok(mut log) = log.lock() else { return };
+-        let entry = json!({
+-            "seq": log.seq + 1,
+-            "recorded_at": timestamp(),
+-            "direction": direction,
+-            "method": method,
+-            "rpc_id": rpc_id(envelope),
+-            "envelope": envelope,
+-        });
+-        let Some(file) = log.file.as_mut() else {
+-            return;
+-        };
+-        if let Err(error) = write_line(file, &entry) {
+-            let _ = writeln!(io::stderr().lock(), "envelope log write failed: {error}");
+-            log.file = None;
+-        } else {
+-            log.seq += 1;
+-        }
++    fn write_envelope(
++        &self,
++        direction: &str,
++        envelope: &Value,
++        method: Option<&str>,
++    ) -> Result<(), String> {
++        self.envelope_log.append(|seq| {
++            serde_json::to_vec(&json!({
++                "seq": seq,
++                "recorded_at": timestamp(),
++                "direction": direction,
++                "method": method,
++                "rpc_id": rpc_id(envelope),
++                "envelope": envelope,
++            }))
++            .map_err(|error| error.to_string())
++        })
+     }
+ 
+-    fn write_session(&self, entry: &crate::session::ChainEntry) {
+-        let Some(log) = &self.session_log else { return };
+-        let Ok(mut guard) = log.lock() else { return };
+-        let Some(file) = guard.as_mut() else { return };
+-        if let Err(error) = write_line(file, entry) {
+-            let _ = writeln!(
+-                io::stderr().lock(),
+-                "session context log write failed: {error}"
+-            );
+-            *guard = None;
+-        }
++    fn write_session(&self, entry: &crate::session::ChainEntry) -> Result<(), String> {
++        self.session_log
++            .append(|_| serde_json::to_vec(entry).map_err(|error| error.to_string()))
+     }
+ }
+ 
+@@ -289,7 +297,7 @@ async fn handle(State(guardian): State<Arc<Guardian>>, request: Request<Body>) -
+                 "request body exceeds the 1048576-byte limit",
+                 None,
+             );
+-            guardian.write_envelope("response", &response, None);
++            let _ = guardian.write_envelope("response", &response, None);
+             return Json(response);
+         }
+     };
+@@ -297,7 +305,7 @@ async fn handle(State(guardian): State<Arc<Guardian>>, request: Request<Body>) -
+         Ok(raw) => raw,
+         Err(_) => {
+             let response = failure(Value::Null, -32700, "Parse error", None);
+-            guardian.write_envelope("response", &response, None);
++            let _ = guardian.write_envelope("response", &response, None);
+             return Json(response);
+         }
+     };
+@@ -313,7 +321,7 @@ async fn handle(State(guardian): State<Arc<Guardian>>, request: Request<Body>) -
+                 &format!("guardian failed to handle the request: {error}"),
+                 None,
+             );
+-            on_failure.write_envelope("response", &response, method.as_deref());
++            let _ = on_failure.write_envelope("response", &response, method.as_deref());
+             Json(response)
+         }
+     }
+@@ -361,6 +369,14 @@ fn deny_on_failure(raw: &Value, message: &str, reason: &str) -> Option<Value> {
+     }))
+ }
+ 
++fn audit_failure(raw: &Value) -> Value {
++    let message = "the required audit record could not be kept";
++    match deny_on_failure(raw, message, "audit_unavailable") {
++        Some(decision) => success(rpc_id(raw), decision),
++        None => failure(rpc_id(raw), -32020, message, None),
++    }
++}
++
+ fn timestamp() -> String {
+     Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Millis, true)
+ }
+@@ -368,37 +384,3 @@ fn timestamp() -> String {
+ fn sanitize(message: &str) -> String {
+     message.replace(env!("CARGO_MANIFEST_DIR"), "")
+ }
+-
+-fn open_log(path: &PathBuf) -> Result<File, String> {
+-    if let Some(parent) = path.parent() {
+-        fs::create_dir_all(parent).map_err(|error| format!("{}: {error}", parent.display()))?;
+-    }
+-    let mut options = OpenOptions::new();
+-    options.create(true).append(true);
+-    #[cfg(unix)]
+-    {
+-        use std::os::unix::fs::OpenOptionsExt;
+-        options.mode(0o600);
+-    }
+-    options
+-        .open(path)
+-        .map_err(|error| format!("{}: {error}", path.display()))
+-}
+-
+-fn open_log_best_effort(path: &PathBuf) -> Option<File> {
+-    match open_log(path) {
+-        Ok(file) => Some(file),
+-        Err(error) => {
+-            let _ = writeln!(
+-                io::stderr().lock(),
+-                "log sink disabled after open failure: {error}"
+-            );
+-            None
+-        }
+-    }
+-}
+-
+-fn write_line(file: &mut File, value: &impl serde::Serialize) -> Result<(), String> {
+-    serde_json::to_writer(&mut *file, value).map_err(|error| error.to_string())?;
+-    file.write_all(b"\n").map_err(|error| error.to_string())
+-}
+diff --git a/reference-implementations/agt-rust/tests/guardian.rs b/reference-implementations/agt-rust/tests/guardian.rs
+index 70d6018..9fdab5c 100644
+--- a/reference-implementations/agt-rust/tests/guardian.rs
++++ b/reference-implementations/agt-rust/tests/guardian.rs
+@@ -19,6 +19,139 @@ fn request(method: &str, payload: Value, request_id: &str) -> Value {
+     })
+ }
+ 
++#[test]
++fn refuses_to_start_when_an_audit_log_cannot_be_opened() {
++    let directory = tempfile::tempdir().expect("temporary log directory");
++    let mut config = GuardianConfig::from_repo();
++    config.envelope_log = Some(directory.path().to_owned());
++    let Err(error) = Guardian::new(config) else {
++        panic!("an unavailable audit log must stop startup");
++    };
++    assert_eq!(error, "audit log path is a directory");
++}
++
++#[cfg(target_os = "linux")]
++#[tokio::test]
++async fn audit_write_failure_returns_an_honored_deny_over_http() {
++    for fail_session_log in [false, true] {
++        let directory = tempfile::tempdir().expect("temporary log directory");
++        let failing_log = directory.path().join("failing.jsonl");
++        std::os::unix::fs::symlink("/dev/full", &failing_log).unwrap();
++        let mut config = GuardianConfig::from_repo();
++        config.envelope_log = Some(if fail_session_log {
++            directory.path().join("envelopes.jsonl")
++        } else {
++            failing_log.clone()
++        });
++        config.session_log = Some(if fail_session_log {
++            failing_log
++        } else {
++            directory.path().join("sessions.jsonl")
++        });
++        let guardian = Guardian::new(config).expect("pinned AGT manifest should load");
++        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
++        let address = listener.local_addr().unwrap();
++        let server = tokio::spawn(async move { axum::serve(listener, guardian.router()).await });
++        let client = reqwest::Client::new();
++        for _ in 0..2 {
++            let response: Value = client
++                .post(format!("http://{address}/acs"))
++                .json(&request(
++                    "steps/toolCallRequest",
++                    json!({
++                        "tool": {"name": "Bash"},
++                        "arguments": {"command": {"value": "ls -la"}},
++                        "raw_command": "ls -la"
++                    }),
++                    "ff1c17fa-48e1-49dd-88c6-50796a504c14",
++                ))
++                .send()
++                .await
++                .unwrap()
++                .json()
++                .await
++                .unwrap();
++            assert_eq!(response["result"]["decision"], "deny", "{response}");
++            assert!(
++                response.get("error").is_none(),
++                "logging failure must not trigger fail-open"
++            );
++        }
++        server.abort();
++        let _ = server.await;
++    }
++}
++
++#[tokio::test]
++async fn a_response_log_failure_replaces_an_allow_with_an_honored_deny() {
++    let directory = tempfile::tempdir().unwrap();
++    let raw = request(
++        "steps/toolCallRequest",
++        json!({
++            "tool": {"name": "Bash"},
++            "arguments": {"command": {"value": "ls -la"}},
++            "raw_command": "ls -la"
++        }),
++        "ff1c17fa-48e1-49dd-88c6-50796a504c14",
++    );
++    let request_record = json!({
++        "seq": 1, "recorded_at": "2000-01-01T00:00:00.000Z",
++        "direction": "request", "method": "steps/toolCallRequest",
++        "rpc_id": raw["id"], "envelope": raw,
++    });
++    for audit_full in [false, true] {
++        let mut config = GuardianConfig::from_repo();
++        let envelopes = directory
++            .path()
++            .join(format!("envelopes-{audit_full}.jsonl"));
++        let sessions = directory
++            .path()
++            .join(format!("sessions-{audit_full}.jsonl"));
++        config.envelope_log = Some(envelopes.clone());
++        config.session_log = Some(sessions.clone());
++        if audit_full {
++            config.log_max_bytes = serde_json::to_vec(&request_record).unwrap().len() as u64 + 1;
++            config.log_max_files = 1;
++        }
++        let guardian = Guardian::new(config).unwrap();
++        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
++        let address = listener.local_addr().unwrap();
++        let server = tokio::spawn(async move { axum::serve(listener, guardian.router()).await });
++        let response: Value = reqwest::Client::new()
++            .post(format!("http://{address}/acs"))
++            .json(&raw)
++            .send()
++            .await
++            .unwrap()
++            .json()
++            .await
++            .unwrap();
++        assert_eq!(
++            response["result"]["decision"],
++            if audit_full { "deny" } else { "allow" },
++            "{response}"
++        );
++        if audit_full {
++            assert_eq!(
++                response["result"]["reason_codes"],
++                json!(["audit_unavailable"])
++            );
++        }
++        assert!(response.get("error").is_none());
++        // Both requests reached policy evaluation; only the capped response cannot fit.
++        assert_eq!(
++            std::fs::read_to_string(envelopes).unwrap().lines().count(),
++            if audit_full { 1 } else { 2 }
++        );
++        assert_eq!(
++            std::fs::read_to_string(sessions).unwrap().lines().count(),
++            1
++        );
++        server.abort();
++        let _ = server.await;
++    }
++}
++
+ #[tokio::test]
+ async fn guardian_matches_the_two_tool_gates_and_refuses_invalid_steps() {
+     let mut config = GuardianConfig::from_repo();
+@@ -224,4 +357,5 @@ async fn guardian_matches_the_two_tool_gates_and_refuses_invalid_steps() {
+     assert!(chain.contains("steps/toolCallResult"));
+ 
+     server.abort();
++    let _ = server.await;
+ }
