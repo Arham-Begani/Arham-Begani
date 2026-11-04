@@ -44,6 +44,15 @@ jobs:
           pnpm exec eslint packages/solid-query/src/useBaseQuery.ts packages/solid-query/src/__tests__/useQuery.test.tsx
           pnpm exec oxfmt --check packages/solid-query/src/useBaseQuery.ts packages/solid-query/src/__tests__/useQuery.test.tsx
           git diff --check
+      - name: Run repository PR checks
+        working-directory: source
+        env:
+          NX_DAEMON: 'false'
+          NX_NO_CLOUD: 'true'
+        run: |
+          set -o pipefail
+          git add packages/solid-query/src/useBaseQuery.ts packages/solid-query/src/__tests__/useQuery.test.tsx .changeset/solid-reconcile-data-changes.md
+          pnpm run test:pr --uncommitted --parallel=2 2>&1 | tee ../pr-checks.log
       - uses: actions/upload-artifact@v4
         if: always()
         with:
