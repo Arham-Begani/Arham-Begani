@@ -10,8 +10,8 @@
 </div>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=d1794188">
-  <img alt="3385 contributions in the last year" src="out/hero-light.svg?v=94fad768">
+  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=83e50215">
+  <img alt="3386 contributions in the last year" src="out/hero-light.svg?v=432b6e15">
 </picture>
 
 <p align="center"><a href="https://forze.in">forze.in</a> &nbsp;·&nbsp; <a href="https://linkedin.com/in/arhambegani">linkedin</a></p>
@@ -57,6 +57,7 @@ Contributions to public projects outside my own account, refreshed daily from Gi
 
 | Project | Contribution | Status |
 | --- | --- | --- |
+| [pnpm](https://github.com/pnpm/pnpm) | [fix(store): remove aliases of pruned packages · #17541](https://github.com/pnpm/pnpm/pull/17541) | Merged · 2026-11-03 |
 | [aiperf](https://github.com/ai-dynamo/aiperf) | [fix(config): preserve YAML network-latency calibration · #1587](https://github.com/ai-dynamo/aiperf/pull/1587) | Merged · 2026-10-28 |
 | [kvpress](https://github.com/NVIDIA/kvpress) | [Stop pipeline generation at an immediate EOS 🤖🤖🤖 · #307](https://github.com/NVIDIA/kvpress/pull/307) | Merged · 2026-10-19 |
 | [pytest-env](https://github.com/pytest-dev/pytest-env) | [fix: respect Windows key casing when preserving existing env values · #278](https://github.com/pytest-dev/pytest-env/pull/278) | Merged · 2026-10-18 |
@@ -66,7 +67,6 @@ Contributions to public projects outside my own account, refreshed daily from Gi
 
 | Project | Contribution | Status |
 | --- | --- | --- |
-| [pnpm](https://github.com/pnpm/pnpm) | [fix(store): remove aliases of pruned packages · #17541](https://github.com/pnpm/pnpm/pull/17541) | Open |
 | [pyrefly](https://github.com/meta/pyrefly) | [Resolve identifiers inside quoted annotations in the LSP. · #5243](https://github.com/meta/pyrefly/pull/5243) | Open |
 | [vite](https://github.com/vitejs/vite) | [fix(optimizer): preserve explicit asset queries in dependencies (fix #20285) · #23962](https://github.com/vitejs/vite/pull/23962) | Open |
 | [pytest-timeout](https://github.com/pytest-dev/pytest-timeout) | [fix: preserve capture fixture output on thread timeouts · #212](https://github.com/pytest-dev/pytest-timeout/pull/212) | Open |
@@ -101,13 +101,13 @@ Contributions to public projects outside my own account, refreshed daily from Gi
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=0cd7da82">
-  <img alt="language and repository stats" src="out/stats-light.svg?v=b1421dc0">
+  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=4a6afdd8">
+  <img alt="language and repository stats" src="out/stats-light.svg?v=ccba18f9">
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=a8b86f84">
-  <img alt="138 active days in the last year" src="out/heatmap-light.svg?v=d5c3ef67">
+  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=04518a90">
+  <img alt="139 active days in the last year" src="out/heatmap-light.svg?v=53f3aadf">
 </picture>
 
 <picture>
