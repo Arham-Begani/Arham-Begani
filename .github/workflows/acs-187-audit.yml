@@ -1,4 +1,8 @@
-name: ACS bounded audit logging Linux checks
+# Rust subtree b06908ab was already validated in run41867260272: fmt/check/Clippy,
+# 18 unit tests, 4 HTTP integration tests, and the 9-case live comparison passed.
+# This follow-up changes only the unsupported Cargo Dependabot label; assert the
+# identical Rust subtree and rerun full repository guards, strict docs and source checks.
+name: ACS audit final guards and docs
 on:
   push:
     branches: [oss-validation/acs-187-audit]
@@ -7,12 +11,7 @@ permissions:
 jobs:
   validation:
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
-    env:
-      CARGO_BUILD_JOBS: '2'
-      CARGO_PROFILE_DEV_DEBUG: '0'
-      CARGO_PROFILE_TEST_DEBUG: '0'
-      ACS_OPA_TIMEOUT_MS: '30000'
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -38,91 +37,15 @@ jobs:
           git fetch --no-tags origin bba1b846fbe7511b0b6f876c61b1fe91b27b07da
           git merge --no-commit --no-ff bba1b846fbe7511b0b6f876c61b1fe91b27b07da
           test "$(git write-tree)" = 8b59ea8b9a6c40ca71449af377c0bf37c5cf4301
-          printf '%s  %s\n' '98b4e435f999c87dcd8d9627f675a13440787f1b4c5ed3a2a43059ec6cd206fc' '../receipts/validation/acs-187-bounded-audit.patch' | sha256sum --check
+          printf '%s  %s\n' '28106f9ff9fe9bd719fba3a0e4d2ebeedefe6035525956e0929aae24afe67202' '../receipts/validation/acs-187-bounded-audit.patch' | sha256sum --check
           git apply --check --index ../receipts/validation/acs-187-bounded-audit.patch
           git apply --index ../receipts/validation/acs-187-bounded-audit.patch
-          test "$(git write-tree)" = aaa22597a18307ce6ef1e0a1fa9ba9eacf51d6b6
+          test "$(git write-tree)" = ead511f87bdeeefbd56089ff9b3d466b6b89ba95
           git diff --exit-code
           git diff --cached --check 8b59ea8b9a6c40ca71449af377c0bf37c5cf4301
+          candidate_tree="$(git write-tree)"
+          test "$(git rev-parse "$candidate_tree:reference-implementations/agt-rust")" = b06908ab0aa798284d3131967d4a04843ab0fe3b
           git status --short | tee "$GITHUB_WORKSPACE/logs/candidate-source.log"
-      - name: Install pinned Rust toolchain
-        shell: bash
-        run: |
-          set -euo pipefail
-          rustup toolchain install 1.98.1 --profile minimal --component clippy,rustfmt
-          rustc +1.98.1 --version
-          cargo +1.98.1 --version
-      - name: Install pinned Bun
-        uses: oven-sh/setup-bun@735343b667d3e6f658f44d0eca948eb6282f2b76
-        with:
-          bun-version: '1.3.11'
-      - name: Install locked AGT dependencies and verify OPA version
-        working-directory: source/reference-implementations/agt
-        shell: bash
-        run: |
-          set -euo pipefail
-          bun install --frozen-lockfile --linker=hoisted 2>&1 | tee "$GITHUB_WORKSPACE/logs/bun-install.log"
-          opa="$GITHUB_WORKSPACE/source/reference-implementations/agt/node_modules/agent-control-specification-opa-linux-x64/bin/opa"
-          "$opa" version | tee "$GITHUB_WORKSPACE/logs/opa-version.log"
-          grep -Fx 'Version: 0.70.0' "$GITHUB_WORKSPACE/logs/opa-version.log"
-          printf 'ACS_OPA_PATH=%s\n' "$opa" >> "$GITHUB_ENV"
-          git diff --exit-code -- bun.lock ../agt-rust/Cargo.lock
-      - name: Rust formatting
-        working-directory: source/reference-implementations/agt-rust
-        shell: bash
-        run: |
-          set -euo pipefail
-          cargo +1.98.1 fmt --all -- --check 2>&1 | tee "$GITHUB_WORKSPACE/logs/rust-fmt.log"
-      - name: Rust workspace check
-        working-directory: source/reference-implementations/agt-rust
-        shell: bash
-        run: |
-          set -euo pipefail
-          cargo +1.98.1 check --workspace --locked 2>&1 | tee "$GITHUB_WORKSPACE/logs/rust-check.log"
-      - name: Rust clippy
-        working-directory: source/reference-implementations/agt-rust
-        shell: bash
-        run: |
-          set -euo pipefail
-          cargo +1.98.1 clippy --workspace --all-targets --all-features --locked -- -D warnings 2>&1 | tee "$GITHUB_WORKSPACE/logs/rust-clippy.log"
-      - name: All Rust tests with real pinned AGT policy
-        working-directory: source/reference-implementations/agt-rust
-        shell: bash
-        run: |
-          set -euo pipefail
-          cargo +1.98.1 test --workspace --all-features --locked -- --nocapture 2>&1 | tee "$GITHUB_WORKSPACE/logs/rust-tests.log"
-      - name: Compare live Rust and TypeScript Guardians
-        working-directory: source/reference-implementations/agt-rust
-        shell: bash
-        run: |
-          set -euo pipefail
-          cargo +1.98.1 run --locked > "$GITHUB_WORKSPACE/logs/rust-guardian.log" 2>&1 &
-          rust_pid=$!
-          (
-            cd ../agt
-            ACS_GUARDIAN_PORT=8788 bun run guardian
-          ) > "$GITHUB_WORKSPACE/logs/ts-guardian.log" 2>&1 &
-          ts_pid=$!
-          cleanup() {
-            kill "$rust_pid" "$ts_pid" 2>/dev/null || true
-            wait "$rust_pid" "$ts_pid" 2>/dev/null || true
-          }
-          trap cleanup EXIT
-          wait_for_guardian() {
-            local url="$1"
-            local log="$2"
-            for _ in {1..60}; do
-              if curl --silent --show-error --fail --request POST --header "content-type: application/json" --data '{}' "$url" >/dev/null; then
-                return 0
-              fi
-              sleep 1
-            done
-            cat "$log"
-            return 1
-          }
-          wait_for_guardian "http://127.0.0.1:8787/acs" "$GITHUB_WORKSPACE/logs/rust-guardian.log"
-          wait_for_guardian "http://127.0.0.1:8788/acs" "$GITHUB_WORKSPACE/logs/ts-guardian.log"
-          bun tests/compare-guardians.mjs 2>&1 | tee "$GITHUB_WORKSPACE/logs/live-comparison.log"
       - name: Install pinned uv
         uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9
         with:
@@ -154,12 +77,12 @@ jobs:
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = 208698c09fac0523368793239fed5c0425af204d
-          test "$(git write-tree)" = aaa22597a18307ce6ef1e0a1fa9ba9eacf51d6b6
+          test "$(git write-tree)" = ead511f87bdeeefbd56089ff9b3d466b6b89ba95
           git diff --exit-code
           git diff --cached --check 8b59ea8b9a6c40ca71449af377c0bf37c5cf4301
           git status --short | tee "$GITHUB_WORKSPACE/logs/final-source.log"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
-          name: acs-bounded-audit-linux-logs
+          name: acs-audit-final-guards-docs
           path: logs/

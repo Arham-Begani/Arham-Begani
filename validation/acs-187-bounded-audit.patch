@@ -1,3 +1,15 @@
+diff --git a/.github/dependabot.yml b/.github/dependabot.yml
+index 8eecb7d..f3aad9f 100644
+--- a/.github/dependabot.yml
++++ b/.github/dependabot.yml
+@@ -29,7 +29,6 @@ updates:
+       prefix: "deps"
+     labels:
+       - "dependencies"
+-      - "rust"
+ 
+   # GitHub Actions run with write access to the repository. Actions are pinned
+   # to commit SHAs in the workflows, and Dependabot understands SHA pins and
 diff --git a/reference-implementations/agt-rust/README.md b/reference-implementations/agt-rust/README.md
 index 1696ac5..97d5bbe 100644
 --- a/reference-implementations/agt-rust/README.md
