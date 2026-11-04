@@ -57,7 +57,7 @@ index 1696ac5..97d5bbe 100644
  
 diff --git a/reference-implementations/agt-rust/src/audit.rs b/reference-implementations/agt-rust/src/audit.rs
 new file mode 100644
-index 0000000..ab4df7d
+index 0000000..dc29361
 --- /dev/null
 +++ b/reference-implementations/agt-rust/src/audit.rs
 @@ -0,0 +1,439 @@
@@ -248,7 +248,7 @@ index 0000000..ab4df7d
 +        file.seek(SeekFrom::End(-1))?;
 +        let mut last = [0];
 +        file.read_exact(&mut last)?;
-+        if last != [b'\n'] {
++        if last != *b"\n" {
 +            return Err(io::Error::other(
 +                "audit log has an incomplete last record; preserve and repair it before restart",
 +            ));

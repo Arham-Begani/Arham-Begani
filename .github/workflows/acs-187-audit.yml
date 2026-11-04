@@ -38,10 +38,10 @@ jobs:
           git fetch --no-tags origin bba1b846fbe7511b0b6f876c61b1fe91b27b07da
           git merge --no-commit --no-ff bba1b846fbe7511b0b6f876c61b1fe91b27b07da
           test "$(git write-tree)" = 8b59ea8b9a6c40ca71449af377c0bf37c5cf4301
-          printf '%s  %s\n' '4cd78e8769fe4127dbf586e2eaea7b3fa7bd19848a80139e08471502b6841c26' '../receipts/validation/acs-187-bounded-audit.patch' | sha256sum --check
+          printf '%s  %s\n' '98b4e435f999c87dcd8d9627f675a13440787f1b4c5ed3a2a43059ec6cd206fc' '../receipts/validation/acs-187-bounded-audit.patch' | sha256sum --check
           git apply --check --index ../receipts/validation/acs-187-bounded-audit.patch
           git apply --index ../receipts/validation/acs-187-bounded-audit.patch
-          test "$(git write-tree)" = 55a8c17e21cecb4b70f769c91a2ec6b5796d65f7
+          test "$(git write-tree)" = aaa22597a18307ce6ef1e0a1fa9ba9eacf51d6b6
           git diff --exit-code
           git diff --cached --check 8b59ea8b9a6c40ca71449af377c0bf37c5cf4301
           git status --short | tee "$GITHUB_WORKSPACE/logs/candidate-source.log"
@@ -154,7 +154,7 @@ jobs:
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = 208698c09fac0523368793239fed5c0425af204d
-          test "$(git write-tree)" = 55a8c17e21cecb4b70f769c91a2ec6b5796d65f7
+          test "$(git write-tree)" = aaa22597a18307ce6ef1e0a1fa9ba9eacf51d6b6
           git diff --exit-code
           git diff --cached --check 8b59ea8b9a6c40ca71449af377c0bf37c5cf4301
           git status --short | tee "$GITHUB_WORKSPACE/logs/final-source.log"
