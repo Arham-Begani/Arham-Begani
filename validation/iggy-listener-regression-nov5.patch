@@ -1,0 +1,81 @@
+diff --git a/foreign/node/src/client/client.test.ts b/foreign/node/src/client/client.test.ts
+index 89798ac3..a0fe5a50 100644
+--- a/foreign/node/src/client/client.test.ts
++++ b/foreign/node/src/client/client.test.ts
+@@ -27,7 +27,7 @@ import type { ClientConfig } from './client.type.js';
+ import { ResponseFrameDecoder } from './client.frame.js';
+ import { ResponseError } from '../wire/error.utils.js';
+ import { COMMAND_CODE } from '../wire/command.code.js';
+-import { Command, HEADER_SIZE, REPLY_OFFSET, REQUEST_OFFSET } from '../wire/vsr/header.js';
++import { Command, EVICTION_OFFSET, EvictionReason, HEADER_SIZE, REPLY_OFFSET, REQUEST_OFFSET } from '../wire/vsr/header.js';
+ 
+ const startServer = async (reply = true) => {
+   const peers = new Set<Socket>();
+@@ -412,6 +412,67 @@ describe('Client lifecycle events', () => {
+     assert.equal(result.status, 0, result.stderr || String(result.error));
+   });
+ 
++  for (const ClientClass of [Client, SingleClient]) {
++    it(`keeps ${ClientClass.name} error listener exceptions outside eviction handling`, () => {
++      const result = spawnSync(process.execPath, [
++        '--import', '@swc-node/register/esm-register', '--input-type=module', '--eval', `
++          import { createServer } from 'node:net';
++          import { once } from 'node:events';
++          import { ${ClientClass.name} } from ${JSON.stringify(new URL('./client.ts', import.meta.url).href)};
++          const server = createServer((socket) => {
++            socket.on('error', () => undefined);
++            socket.once('data', () => {
++              const frame = Buffer.alloc(${HEADER_SIZE});
++              frame.writeUInt32LE(${HEADER_SIZE}, ${REPLY_OFFSET.size});
++              frame[${REPLY_OFFSET.command}] = ${Command.Eviction};
++              frame[${EVICTION_OFFSET.reason}] = ${EvictionReason.SessionError};
++              socket.write(frame);
++            });
++          });
++          server.listen(0, '127.0.0.1');
++          await once(server, 'listening');
++          const client = new ${ClientClass.name}({
++            transport: 'TCP',
++            options: { host: '127.0.0.1', port: server.address().port },
++            reconnect: { enabled: false, interval: 0, maxRetries: 0 },
++            heartbeatInterval: 0
++          });
++          let calls = 0;
++          process.once('uncaughtException', (error, origin) => {
++            process.exit(error.message === 'listener failed' && origin === 'uncaughtException'
++              && calls === 1 ? 0 : 3);
++          });
++          process.on('unhandledRejection', () => process.exit(4));
++          client.on('error', () => { calls += 1; throw new Error('listener failed'); });
++          client.system.ping().catch(() => undefined);
++          setTimeout(() => process.exit(calls === 1 ? 5 : 6), 2000);
++        `
++      ], { encoding: 'utf8', timeout: 10_000 });
++      assert.equal(result.status, 0, result.stderr || String(result.error));
++    });
++  }
++
++  it('does not dispatch a queued connection error after destruction', async () => {
++    const server = await startServer();
++    const client = new CommandResponseStream(clientConfig(server.server));
++    let failures = 0;
++    client.on('connectionError', () => { failures += 1; });
++    try {
++      await client.sendCommand(COMMAND_CODE.Ping, Buffer.alloc(0));
++      const ended = once(client, 'end');
++      const socket = client.getReadStream() as Socket;
++      socket.emit('error', new Error('connection failed'));
++      client.destroy();
++      const failuresAtDestroy = failures;
++      await ended;
++      await nextTick();
++      assert.equal(failures, failuresAtDestroy);
++    } finally {
++      client.destroy();
++      await server.close();
++    }
++  });
++
+   it('supports JavaScript node:events.once and removes its temporary listeners', async () => {
+     const server = await startServer();
+     const client = new Client(clientConfig(server.server));
