@@ -1,13 +1,22 @@
-name: Iggy public listener regression baseline
+name: Iggy reviewed listener correction
 on:
   push:
     branches: [oss-validation/iggy-listener-nov5]
 permissions:
   contents: read
 jobs:
-  baseline:
+  sdk:
+    name: SDK and hooks (Node ${{ matrix.node }})
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['24.22.1', '26.13.0']
+    defaults:
+      run:
+        shell: bash
+        working-directory: source
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -21,49 +30,90 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
-          node-version: '24.22.1'
-      - name: Apply only the regression tests to unchanged production
-        working-directory: source
-        shell: bash
+          node-version: ${{ matrix.node }}
+      - name: Verify and apply the exact reviewed correction without a source commit
         run: |
           set -euo pipefail
+          mkdir -p "$GITHUB_WORKSPACE/logs"
           test "$(git rev-parse HEAD)" = 4f0b105e9420010ebcc90cf246a231da10b2a53b
           test -z "$(git status --porcelain)"
-          printf '%s  %s\n' 'e5703cd1ff305b328101cb3b9ae247bcaf861fd6de2e9d6a0d4bfb78fbc49d88' '../receipts/validation/iggy-listener-regression-nov5.patch' | sha256sum --check
-          git apply --check ../receipts/validation/iggy-listener-regression-nov5.patch
-          git apply ../receipts/validation/iggy-listener-regression-nov5.patch
-          test "$(git diff --name-only)" = foreign/node/src/client/client.test.ts
-          git diff --exit-code -- . ':(exclude)foreign/node/src/client/client.test.ts'
-          mkdir -p "$GITHUB_WORKSPACE/logs"
-      - name: Install locked Node dependencies
-        working-directory: source/foreign/node
-        shell: bash
+          printf '%s  %s\n' '53e06ffb0606c43fa1def11054d06f1805233dcf5f4c927b82736f6ee789f37d' '../receipts/validation/iggy-listener-fix-nov5.patch' | sha256sum --check
+          git apply --check --index ../receipts/validation/iggy-listener-fix-nov5.patch
+          git apply --index ../receipts/validation/iggy-listener-fix-nov5.patch
+          test "$(git write-tree)" = 0ec08b140d0d130a0f1bbb9006846ba00c9dda38
+          git diff --exit-code
+          git diff --cached --check
+          git status --short | tee "$GITHUB_WORKSPACE/logs/source-before.log"
+      - name: Install locked SDK dependencies
         run: |
           set -euo pipefail
           node --version
           npm --version
-          npm ci --no-audit --no-fund 2>&1 | tee "$GITHUB_WORKSPACE/logs/npm-ci.log"
-          git diff --exit-code -- package-lock.json
-      - name: Verify two actual swallowed-listener regressions and the lifetime control
-        working-directory: source/foreign/node
-        shell: bash
+          npm --prefix foreign/node ci --no-audit --no-fund 2>&1 | tee "$GITHUB_WORKSPACE/logs/npm-install.log"
+          git diff --exit-code -- foreign/node/package-lock.json
+      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9
+        if: matrix.node == '24.22.1'
+        with:
+          version: '0.9.9'
+          enable-cache: false
+          github-token: ''
+      - name: Install the existing pinned hook tools
+        if: matrix.node == '24.22.1'
         run: |
           set -euo pipefail
-          set +e
-          node --import @swc-node/register/esm-register --test --test-reporter=tap --test-name-pattern='error listener exceptions|queued connection error' ./src/client/client.test.ts 2>&1 | tee "$GITHUB_WORKSPACE/logs/listener-baseline.log"
-          status=${PIPESTATUS[0]}
-          set -e
-          test "$status" -ne 0
-          grep -Fx '# tests 3' "$GITHUB_WORKSPACE/logs/listener-baseline.log"
-          grep -Fx '# pass 1' "$GITHUB_WORKSPACE/logs/listener-baseline.log"
-          grep -Fx '# fail 2' "$GITHUB_WORKSPACE/logs/listener-baseline.log"
-          test "$(grep -Ec 'actual: 5$' "$GITHUB_WORKSPACE/logs/listener-baseline.log")" -eq 2
-          if grep -q 'ETIMEDOUT\|ERR_MODULE_NOT_FOUND' "$GITHUB_WORKSPACE/logs/listener-baseline.log"; then
-            exit 1
-          fi
-          git diff --exit-code -- src/client/client.socket.ts package-lock.json
+          uv tool install prek==0.5.6
+          uv tool install typos==1.51.1
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          npm install --prefix "$RUNNER_TEMP/hook-tools" markdownlint-cli@0.49.1 --no-audit --no-fund
+          echo "$RUNNER_TEMP/hook-tools/node_modules/.bin" >> "$GITHUB_PATH"
+          mkdir -p "$RUNNER_TEMP/hawkeye" "$RUNNER_TEMP/hook-bin"
+          version=$(cat .github/config/hawkeye.version)
+          archive=hawkeye-x86_64-unknown-linux-gnu.tar.xz
+          cd "$RUNNER_TEMP/hawkeye"
+          curl -fSL --retry 3 "https://github.com/fast/hawkeye/releases/download/v${version}/${archive}" -o "$archive"
+          curl -fSL --retry 3 "https://github.com/fast/hawkeye/releases/download/v${version}/${archive}.sha256" -o "${archive}.sha256"
+          sha256sum -c "${archive}.sha256"
+          tar -xJf "$archive"
+          find . -type f -name hawkeye -exec install -m755 {} "$RUNNER_TEMP/hook-bin/hawkeye" \;
+          echo "$RUNNER_TEMP/hook-bin" >> "$GITHUB_PATH"
+      - name: Run every applicable unmodified prek hook on the staged correction
+        if: matrix.node == '24.22.1'
+        run: |
+          set -euo pipefail
+          prek run 2>&1 | tee "$GITHUB_WORKSPACE/logs/prek.log"
+      - name: Check source after hooks
+        run: |
+          set -euo pipefail
+          test "$(git write-tree)" = 0ec08b140d0d130a0f1bbb9006846ba00c9dda38
+          git diff --exit-code
+          test -z "$(git ls-files --others --exclude-standard)"
+      - name: SDK lint and build
+        working-directory: source/foreign/node
+        run: |
+          set -euo pipefail
+          npm run lint 2>&1 | tee "$GITHUB_WORKSPACE/logs/lint.log"
+          npm run build 2>&1 | tee "$GITHUB_WORKSPACE/logs/build.log"
+      - name: Focused lifecycle regressions
+        working-directory: source/foreign/node
+        run: |
+          set -euo pipefail
+          node --import @swc-node/register/esm-register --test --test-reporter=tap --test-name-pattern='error listener exceptions|queued connection error' ./src/client/client.test.ts 2>&1 | tee "$GITHUB_WORKSPACE/logs/listener-focused.log"
+      - name: Complete SDK unit suite
+        working-directory: source/foreign/node
+        run: |
+          set -euo pipefail
+          npm run test:unit 2>&1 | tee "$GITHUB_WORKSPACE/logs/unit.log"
+      - name: Verify final tested source
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = 4f0b105e9420010ebcc90cf246a231da10b2a53b
+          test "$(git write-tree)" = 0ec08b140d0d130a0f1bbb9006846ba00c9dda38
+          git diff --exit-code
+          git diff --cached --check
+          test -z "$(git ls-files --others --exclude-standard)"
+          git status --short | tee "$GITHUB_WORKSPACE/logs/source-after.log"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
-          name: iggy-listener-baseline-nov5
+          name: iggy-listener-node-${{ matrix.node }}
           path: logs/
