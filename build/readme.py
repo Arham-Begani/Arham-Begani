@@ -50,25 +50,54 @@ def _title(value: str) -> str:
     return value
 
 
-def contributions(prs: list[PullRequest], login: str) -> str:
+def _stars(count: int) -> str:
+    """GitHub-style short star counts: 950, 1.2k, 48k, 1.1M."""
+    if count >= 1_000_000:
+        return f"{count / 1_000_000:.1f}".rstrip("0").rstrip(".") + "M"
+    if count >= 10_000:
+        return f"{round(count / 1_000)}k"
+    if count >= 1_000:
+        return f"{count / 1_000:.1f}".rstrip("0").rstrip(".") + "k"
+    return str(count)
+
+
+def _hidden(pr: PullRequest, hide: set[str]) -> bool:
+    """`owner/repo` hides a whole repository; `owner/repo#123` hides one pull request."""
+    repo = pr.repository.casefold()
+    return repo in hide or f"{repo}#{pr.number}" in hide
+
+
+def contributions(prs: list[PullRequest], login: str, hide: list[str] | tuple[str, ...] = ()) -> str:
+    hidden = {h.casefold() for h in hide}
+    prs = [pr for pr in prs if not _hidden(pr, hidden)]
     merged = sorted((pr for pr in prs if pr.state == "MERGED" and pr.merged_at),
                     key=lambda pr: pr.merged_at, reverse=True)
-    ongoing = [pr for pr in prs if pr.state == "OPEN"]
+    # Ready PRs before drafts, then the most widely used projects first.
+    ongoing = sorted((pr for pr in prs if pr.state == "OPEN"),
+                     key=lambda pr: (pr.draft, -pr.stars))
     closed = [pr for pr in prs if pr.state == "CLOSED"]
 
     def table(rows: list[PullRequest]) -> str:
-        lines = ["| Project | Contribution | Status |", "| --- | --- | --- |"]
+        lines = ["| Project | ★ | Contribution | Status |", "| --- | --: | --- | --- |"]
         for pr in rows:
             status = (f"Merged · {pr.merged_at[:10]}" if pr.merged_at
                       else "Draft" if pr.draft and pr.state == "OPEN"
                       else "Open" if pr.state == "OPEN" else "Closed without merge")
             lines.append(
                 f"| [{pr.repository.split('/')[-1]}](https://github.com/{pr.repository}) "
+                f"| {_stars(pr.stars)} "
                 f"| [{_title(pr.title)} · #{pr.number}]({pr.url}) | {status} |"
             )
         return "\n".join(lines)
 
     parts = ["Contributions to public projects outside my own account, refreshed daily from GitHub."]
+    if merged or ongoing:
+        projects = len({pr.repository for pr in merged + ongoing})
+        summary = [f"**{len(merged)} merged**"] if merged else []
+        if ongoing:
+            summary.append(f"**{len(ongoing)} in review**")
+        parts.append(" · ".join(summary) + f" across {projects} "
+                     + ("project" if projects == 1 else "projects") + ".")
     if merged:
         parts.extend(["**Merged**", table(merged)])
     if ongoing:
@@ -113,7 +142,7 @@ def build(cfg: Config, s: Stats, ver: dict[str, str]) -> str:
 
     if cfg.contributions:
         p.append(_pic("h-contributions", ver, "open source contributions"))
-        p.append(contributions(s.pull_requests, cfg.username))
+        p.append(contributions(s.pull_requests, cfg.username, cfg.contributions_hide))
 
     p.append(_pic("h-stats", ver, "stats"))
     p.append(_pic("stats", ver, "language and repository stats"))

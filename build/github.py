@@ -24,8 +24,9 @@ query($login:String!, $from:DateTime!, $to:DateTime!) {
     followers { totalCount }
     pullRequests(first:100, orderBy:{field:UPDATED_AT, direction:DESC}) {
       nodes {
-        number title url state isDraft mergedAt
-        repository { nameWithOwner isPrivate owner { login } }
+        number title url state isDraft mergedAt closedAt
+        labels(first:20) { nodes { name } }
+        repository { nameWithOwner isPrivate stargazerCount owner { login } }
       }
       pageInfo { hasNextPage endCursor }
     }
@@ -61,8 +62,9 @@ query($login:String!, $after:String!) {
   user(login:$login) {
     pullRequests(first:100, after:$after, orderBy:{field:UPDATED_AT, direction:DESC}) {
       nodes {
-        number title url state isDraft mergedAt
-        repository { nameWithOwner isPrivate owner { login } }
+        number title url state isDraft mergedAt closedAt
+        labels(first:20) { nodes { name } }
+        repository { nameWithOwner isPrivate stargazerCount owner { login } }
       }
       pageInfo { hasNextPage endCursor }
     }
@@ -86,6 +88,7 @@ class PullRequest:
     state: str
     draft: bool = False
     merged_at: str | None = None
+    stars: int = 0
 
 
 @dataclass
@@ -177,10 +180,17 @@ def _pull_requests(token: str, login: str, page: dict) -> list[PullRequest]:
             repo = pr["repository"]
             if repo["isPrivate"] or repo["owner"]["login"].casefold() == login.casefold():
                 continue
+            state, merged_at = pr["state"], pr["mergedAt"]
+            # Projects that land pull requests through an internal system (Meta's
+            # pyrefly, PyTorch, ...) close them on GitHub and add a "Merged" label.
+            labels = {l["name"].casefold() for l in (pr.get("labels") or {}).get("nodes", [])}
+            if state == "CLOSED" and "merged" in labels:
+                state, merged_at = "MERGED", pr.get("closedAt")
             result.append(PullRequest(
                 repository=repo["nameWithOwner"], number=pr["number"],
-                title=pr["title"], url=pr["url"], state=pr["state"],
-                draft=pr["isDraft"], merged_at=pr["mergedAt"],
+                title=pr["title"], url=pr["url"], state=state,
+                draft=pr["isDraft"], merged_at=merged_at,
+                stars=repo.get("stargazerCount") or 0,
             ))
         if not page["pageInfo"]["hasNextPage"]:
             return result

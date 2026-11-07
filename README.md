@@ -53,44 +53,45 @@ The editor side of Forze.
 
 Contributions to public projects outside my own account, refreshed daily from GitHub.
 
+**6 merged** · **13 in review** across 18 projects.
+
 **Merged**
 
-| Project | Contribution | Status |
-| --- | --- | --- |
-| [pytest-timeout](https://github.com/pytest-dev/pytest-timeout) | [fix: preserve capture fixture output on thread timeouts · #212](https://github.com/pytest-dev/pytest-timeout/pull/212) | Merged · 2026-11-06 |
-| [pnpm](https://github.com/pnpm/pnpm) | [fix(store): remove aliases of pruned packages · #17541](https://github.com/pnpm/pnpm/pull/17541) | Merged · 2026-11-03 |
-| [aiperf](https://github.com/ai-dynamo/aiperf) | [fix(config): preserve YAML network-latency calibration · #1587](https://github.com/ai-dynamo/aiperf/pull/1587) | Merged · 2026-10-28 |
-| [kvpress](https://github.com/NVIDIA/kvpress) | [Stop pipeline generation at an immediate EOS 🤖🤖🤖 · #307](https://github.com/NVIDIA/kvpress/pull/307) | Merged · 2026-10-19 |
-| [pytest-env](https://github.com/pytest-dev/pytest-env) | [fix: respect Windows key casing when preserving existing env values · #278](https://github.com/pytest-dev/pytest-env/pull/278) | Merged · 2026-10-18 |
-| [first-contributions](https://github.com/firstcontributions/first-contributions) | [arham · #86678](https://github.com/firstcontributions/first-contributions/pull/86678) | Merged · 2024-07-20 |
+| Project | ★ | Contribution | Status |
+| --- | --: | --- | --- |
+| [pyrefly](https://github.com/meta/pyrefly) | 7.2k | [Resolve identifiers inside quoted annotations in the LSP. · #5243](https://github.com/meta/pyrefly/pull/5243) | Merged · 2026-11-07 |
+| [pytest-timeout](https://github.com/pytest-dev/pytest-timeout) | 261 | [fix: preserve capture fixture output on thread timeouts · #212](https://github.com/pytest-dev/pytest-timeout/pull/212) | Merged · 2026-11-06 |
+| [pnpm](https://github.com/pnpm/pnpm) | 37k | [fix(store): remove aliases of pruned packages · #17541](https://github.com/pnpm/pnpm/pull/17541) | Merged · 2026-11-03 |
+| [aiperf](https://github.com/ai-dynamo/aiperf) | 857 | [fix(config): preserve YAML network-latency calibration · #1587](https://github.com/ai-dynamo/aiperf/pull/1587) | Merged · 2026-10-28 |
+| [kvpress](https://github.com/NVIDIA/kvpress) | 1.2k | [Stop pipeline generation at an immediate EOS 🤖🤖🤖 · #307](https://github.com/NVIDIA/kvpress/pull/307) | Merged · 2026-10-19 |
+| [pytest-env](https://github.com/pytest-dev/pytest-env) | 236 | [fix: respect Windows key casing when preserving existing env values · #278](https://github.com/pytest-dev/pytest-env/pull/278) | Merged · 2026-10-18 |
 
 **In progress**
 
-| Project | Contribution | Status |
-| --- | --- | --- |
-| [pyrefly](https://github.com/meta/pyrefly) | [Resolve identifiers inside quoted annotations in the LSP. · #5243](https://github.com/meta/pyrefly/pull/5243) | Open |
-| [oxc](https://github.com/oxc-project/oxc) | [feat(linter): add \`node/require-child-process-timeout\` rule · #28926](https://github.com/oxc-project/oxc/pull/28926) | Open |
-| [iggy](https://github.com/apache/iggy) | [feat(node): expose client lifecycle events through on and once · #4552](https://github.com/apache/iggy/pull/4552) | Open |
-| [awesome-ai-apps](https://github.com/Arindam200/awesome-ai-apps) | [feat: add A2A collaboration example with Agno and LangGraph · #368](https://github.com/Arindam200/awesome-ai-apps/pull/368) | Open |
-| [prettier](https://github.com/prettier/prettier) | [Fix unstable comments before generic function type parameters · #20374](https://github.com/prettier/prettier/pull/20374) | Open |
-| [agent-control-standard](https://github.com/GenAI-Security-Project/agent-control-standard) | [refimpl: add first-stage Rust AGT Guardian · #187](https://github.com/GenAI-Security-Project/agent-control-standard/pull/187) | Open |
-| [vite](https://github.com/vitejs/vite) | [fix(optimizer): preserve explicit asset queries in dependencies (fix #20285) · #23962](https://github.com/vitejs/vite/pull/23962) | Open |
-| [pytest-rerunfailures](https://github.com/pytest-dev/pytest-rerunfailures) | [fix: prevent internal errors from non-finite rerun delays · #391](https://github.com/pytest-dev/pytest-rerunfailures/pull/391) | Open |
-| [browser-use](https://github.com/browser-use/browser-use) | [fix(dom): preserve omitted select option counts · #6212](https://github.com/browser-use/browser-use/pull/6212) | Draft |
-| [langchainjs](https://github.com/langchain-ai/langchainjs) | [fix(anthropic): default ChatAnthropic to claude-sonnet-5-5 · #11943](https://github.com/langchain-ai/langchainjs/pull/11943) | Draft |
-| [llama_index](https://github.com/run-llama/llama_index) | [fix(core): repair streamed partial JSON inside arrays and escaped strings · #23470](https://github.com/run-llama/llama_index/pull/23470) | Open |
-| [deno](https://github.com/denoland/deno) | [fix(ext/http): honor Connection: close in HTTP/1 responses · #37067](https://github.com/denoland/deno/pull/37067) | Open |
-| [vscode](https://github.com/microsoft/vscode) | [Fix save locations for untitled custom editors in virtual workspaces · #343326](https://github.com/microsoft/vscode/pull/343326) | Open |
-| [langchainjs](https://github.com/langchain-ai/langchainjs) | [fix(openai): require an explicit model in ChatOpenAI · #11955](https://github.com/langchain-ai/langchainjs/pull/11955) | Open |
+| Project | ★ | Contribution | Status |
+| --- | --: | --- | --- |
+| [vscode](https://github.com/microsoft/vscode) | 195k | [Fix save locations for untitled custom editors in virtual workspaces · #343326](https://github.com/microsoft/vscode/pull/343326) | Open |
+| [deno](https://github.com/denoland/deno) | 109k | [fix(ext/http): honor Connection: close in HTTP/1 responses · #37067](https://github.com/denoland/deno/pull/37067) | Open |
+| [vite](https://github.com/vitejs/vite) | 84k | [fix(optimizer): preserve explicit asset queries in dependencies (fix #20285) · #23962](https://github.com/vitejs/vite/pull/23962) | Open |
+| [llama_index](https://github.com/run-llama/llama_index) | 53k | [fix(core): repair streamed partial JSON inside arrays and escaped strings · #23470](https://github.com/run-llama/llama_index/pull/23470) | Open |
+| [prettier](https://github.com/prettier/prettier) | 52k | [Fix unstable comments before generic function type parameters · #20374](https://github.com/prettier/prettier/pull/20374) | Open |
+| [oxc](https://github.com/oxc-project/oxc) | 23k | [feat(linter): add \`node/require-child-process-timeout\` rule · #28926](https://github.com/oxc-project/oxc/pull/28926) | Open |
+| [langchainjs](https://github.com/langchain-ai/langchainjs) | 18k | [fix(openai): require an explicit model in ChatOpenAI · #11955](https://github.com/langchain-ai/langchainjs/pull/11955) | Open |
+| [awesome-ai-apps](https://github.com/Arindam200/awesome-ai-apps) | 17k | [feat: add A2A collaboration example with Agno and LangGraph · #368](https://github.com/Arindam200/awesome-ai-apps/pull/368) | Open |
+| [iggy](https://github.com/apache/iggy) | 5.2k | [feat(node): expose client lifecycle events through on and once · #4552](https://github.com/apache/iggy/pull/4552) | Open |
+| [pytest-rerunfailures](https://github.com/pytest-dev/pytest-rerunfailures) | 482 | [fix: prevent internal errors from non-finite rerun delays · #391](https://github.com/pytest-dev/pytest-rerunfailures/pull/391) | Open |
+| [agent-control-standard](https://github.com/GenAI-Security-Project/agent-control-standard) | 246 | [refimpl: add first-stage Rust AGT Guardian · #187](https://github.com/GenAI-Security-Project/agent-control-standard/pull/187) | Open |
+| [browser-use](https://github.com/browser-use/browser-use) | 120k | [fix(dom): preserve omitted select option counts · #6212](https://github.com/browser-use/browser-use/pull/6212) | Draft |
+| [langchainjs](https://github.com/langchain-ai/langchainjs) | 18k | [fix(anthropic): default ChatAnthropic to claude-sonnet-5-5 · #11943](https://github.com/langchain-ai/langchainjs/pull/11943) | Draft |
 
 <details>
 <summary>Closed without merging · 3</summary>
 
-| Project | Contribution | Status |
-| --- | --- | --- |
-| [uv](https://github.com/astral-sh/uv) | [Move UV\_GIT\_LFS handling into environment settings · #22002](https://github.com/astral-sh/uv/pull/22002) | Closed without merge |
-| [trio](https://github.com/python-trio/trio) | [Preserve nursery cleanup when exception repr raises · #3548](https://github.com/python-trio/trio/pull/3548) | Closed without merge |
-| [python-gitlab](https://github.com/python-gitlab/python-gitlab) | [fix(cli): resolve parent IDs when creating commit statuses · #3453](https://github.com/python-gitlab/python-gitlab/pull/3453) | Closed without merge |
+| Project | ★ | Contribution | Status |
+| --- | --: | --- | --- |
+| [python-gitlab](https://github.com/python-gitlab/python-gitlab) | 2.5k | [fix(cli): resolve parent IDs when creating commit statuses · #3453](https://github.com/python-gitlab/python-gitlab/pull/3453) | Closed without merge |
+| [trio](https://github.com/python-trio/trio) | 7.4k | [Preserve nursery cleanup when exception repr raises · #3548](https://github.com/python-trio/trio/pull/3548) | Closed without merge |
+| [uv](https://github.com/astral-sh/uv) | 92k | [Move UV\_GIT\_LFS handling into environment settings · #22002](https://github.com/astral-sh/uv/pull/22002) | Closed without merge |
 
 </details>
 

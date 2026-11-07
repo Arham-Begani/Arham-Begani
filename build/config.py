@@ -45,6 +45,7 @@ class Config:
     exclude_langs: list[str] = field(default_factory=list)
     colophon: bool = True
     contributions: bool = True
+    contributions_hide: list[str] = field(default_factory=list)
 
     @property
     def photo_path(self) -> Path:
@@ -76,6 +77,7 @@ def load(path: Path | None = None) -> Config:
         exclude_langs=[s.lower() for s in p.get("exclude_langs", [])],
         colophon=bool(p.get("colophon", True)),
         contributions=bool(p.get("contributions", True)),
+        contributions_hide=[s.strip() for s in p.get("contributions_hide", [])],
     )
     cfg.links = [Link(l["label"], l["url"]) for l in raw.get("links", [])]
     cfg.projects = [

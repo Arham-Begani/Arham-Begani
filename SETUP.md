@@ -49,6 +49,11 @@ field. Private repository details are excluded even when the token can see them.
 It refreshes with the existing daily workflow, so new PRs and merges appear
 automatically. Set `contributions = false` under `[profile]` to hide it.
 
+Each row shows the project's star count. A summary line counts merged and in-review
+pull requests, and open ones are listed most-starred first, with drafts last. To leave
+something out, add it to `contributions_hide`: `"owner/repo"` hides a whole repository,
+`"owner/repo#123"` hides one pull request.
+
 ### Private contributions (optional)
 
 The workflow's built-in token sees public activity only. For the full number:

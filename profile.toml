@@ -22,6 +22,9 @@ portrait_duration = 2.2         # seconds, start to last straggler
 exclude_langs = ["html", "css", "jupyter notebook"]
 colophon = true
 contributions = true            # public upstream PRs, refreshed from GitHub daily
+# Leave these out of the open source section: "owner/repo" for a whole repo,
+# "owner/repo#123" for a single pull request.
+contributions_hide = ["firstcontributions/first-contributions"]
 
 # --- rewrite these two lines in your own voice --------------------------------
 about = [
