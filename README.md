@@ -10,8 +10,8 @@
 </div>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=78881153">
-  <img alt="3387 contributions in the last year" src="out/hero-light.svg?v=b313dee8">
+  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=cb8d17bd">
+  <img alt="3408 contributions in the last year" src="out/hero-light.svg?v=16e5f906">
 </picture>
 
 <p align="center"><a href="https://forze.in">forze.in</a> &nbsp;·&nbsp; <a href="https://linkedin.com/in/arhambegani">linkedin</a></p>
@@ -68,8 +68,9 @@ Contributions to public projects outside my own account, refreshed daily from Gi
 
 | Project | Contribution | Status |
 | --- | --- | --- |
-| [iggy](https://github.com/apache/iggy) | [feat(node): expose client lifecycle events through on and once · #4552](https://github.com/apache/iggy/pull/4552) | Open |
 | [pyrefly](https://github.com/meta/pyrefly) | [Resolve identifiers inside quoted annotations in the LSP. · #5243](https://github.com/meta/pyrefly/pull/5243) | Open |
+| [oxc](https://github.com/oxc-project/oxc) | [feat(linter): add \`node/require-child-process-timeout\` rule · #28926](https://github.com/oxc-project/oxc/pull/28926) | Open |
+| [iggy](https://github.com/apache/iggy) | [feat(node): expose client lifecycle events through on and once · #4552](https://github.com/apache/iggy/pull/4552) | Open |
 | [awesome-ai-apps](https://github.com/Arindam200/awesome-ai-apps) | [feat: add A2A collaboration example with Agno and LangGraph · #368](https://github.com/Arindam200/awesome-ai-apps/pull/368) | Open |
 | [prettier](https://github.com/prettier/prettier) | [Fix unstable comments before generic function type parameters · #20374](https://github.com/prettier/prettier/pull/20374) | Open |
 | [agent-control-standard](https://github.com/GenAI-Security-Project/agent-control-standard) | [refimpl: add first-stage Rust AGT Guardian · #187](https://github.com/GenAI-Security-Project/agent-control-standard/pull/187) | Open |
@@ -101,13 +102,13 @@ Contributions to public projects outside my own account, refreshed daily from Gi
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=376099cd">
-  <img alt="language and repository stats" src="out/stats-light.svg?v=dec3f723">
+  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=627998a1">
+  <img alt="language and repository stats" src="out/stats-light.svg?v=ae52770e">
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=f2e87978">
-  <img alt="140 active days in the last year" src="out/heatmap-light.svg?v=da1699f6">
+  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=d54ef906">
+  <img alt="141 active days in the last year" src="out/heatmap-light.svg?v=6ee6ad8a">
 </picture>
 
 <picture>
