@@ -10,8 +10,8 @@
 </div>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=cb8d17bd">
-  <img alt="3408 contributions in the last year" src="out/hero-light.svg?v=16e5f906">
+  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=0f34622c">
+  <img alt="3409 contributions in the last year" src="out/hero-light.svg?v=1f7198b7">
 </picture>
 
 <p align="center"><a href="https://forze.in">forze.in</a> &nbsp;·&nbsp; <a href="https://linkedin.com/in/arhambegani">linkedin</a></p>
@@ -68,7 +68,6 @@ Contributions to public projects outside my own account, refreshed daily from Gi
 
 | Project | Contribution | Status |
 | --- | --- | --- |
-| [pyrefly](https://github.com/meta/pyrefly) | [Resolve identifiers inside quoted annotations in the LSP. · #5243](https://github.com/meta/pyrefly/pull/5243) | Open |
 | [oxc](https://github.com/oxc-project/oxc) | [feat(linter): add \`node/require-child-process-timeout\` rule · #28926](https://github.com/oxc-project/oxc/pull/28926) | Open |
 | [iggy](https://github.com/apache/iggy) | [feat(node): expose client lifecycle events through on and once · #4552](https://github.com/apache/iggy/pull/4552) | Open |
 | [awesome-ai-apps](https://github.com/Arindam200/awesome-ai-apps) | [feat: add A2A collaboration example with Agno and LangGraph · #368](https://github.com/Arindam200/awesome-ai-apps/pull/368) | Open |
@@ -84,10 +83,11 @@ Contributions to public projects outside my own account, refreshed daily from Gi
 | [langchainjs](https://github.com/langchain-ai/langchainjs) | [fix(openai): require an explicit model in ChatOpenAI · #11955](https://github.com/langchain-ai/langchainjs/pull/11955) | Open |
 
 <details>
-<summary>Closed without merging · 3</summary>
+<summary>Closed without merging · 4</summary>
 
 | Project | Contribution | Status |
 | --- | --- | --- |
+| [pyrefly](https://github.com/meta/pyrefly) | [Resolve identifiers inside quoted annotations in the LSP. · #5243](https://github.com/meta/pyrefly/pull/5243) | Closed without merge |
 | [uv](https://github.com/astral-sh/uv) | [Move UV\_GIT\_LFS handling into environment settings · #22002](https://github.com/astral-sh/uv/pull/22002) | Closed without merge |
 | [trio](https://github.com/python-trio/trio) | [Preserve nursery cleanup when exception repr raises · #3548](https://github.com/python-trio/trio/pull/3548) | Closed without merge |
 | [python-gitlab](https://github.com/python-gitlab/python-gitlab) | [fix(cli): resolve parent IDs when creating commit statuses · #3453](https://github.com/python-gitlab/python-gitlab/pull/3453) | Closed without merge |
