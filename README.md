@@ -10,8 +10,8 @@
 </div>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=cb8d17bd">
-  <img alt="3408 contributions in the last year" src="out/hero-light.svg?v=16e5f906">
+  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=0f34622c">
+  <img alt="3409 contributions in the last year" src="out/hero-light.svg?v=1f7198b7">
 </picture>
 
 <p align="center"><a href="https://forze.in">forze.in</a> &nbsp;·&nbsp; <a href="https://linkedin.com/in/arhambegani">linkedin</a></p>
@@ -89,9 +89,9 @@ Contributions to public projects outside my own account, refreshed daily from Gi
 
 | Project | ★ | Contribution | Status |
 | --- | --: | --- | --- |
-| [python-gitlab](https://github.com/python-gitlab/python-gitlab) | 2.5k | [fix(cli): resolve parent IDs when creating commit statuses · #3453](https://github.com/python-gitlab/python-gitlab/pull/3453) | Closed without merge |
-| [trio](https://github.com/python-trio/trio) | 7.4k | [Preserve nursery cleanup when exception repr raises · #3548](https://github.com/python-trio/trio/pull/3548) | Closed without merge |
 | [uv](https://github.com/astral-sh/uv) | 92k | [Move UV\_GIT\_LFS handling into environment settings · #22002](https://github.com/astral-sh/uv/pull/22002) | Closed without merge |
+| [trio](https://github.com/python-trio/trio) | 7.4k | [Preserve nursery cleanup when exception repr raises · #3548](https://github.com/python-trio/trio/pull/3548) | Closed without merge |
+| [python-gitlab](https://github.com/python-gitlab/python-gitlab) | 2.5k | [fix(cli): resolve parent IDs when creating commit statuses · #3453](https://github.com/python-gitlab/python-gitlab/pull/3453) | Closed without merge |
 
 </details>
 
