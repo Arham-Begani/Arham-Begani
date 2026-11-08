@@ -76,11 +76,11 @@ Historical landings, manually verified against upstream commits. These receipts 
 
 | Project | Contribution | Status |
 | --- | --- | --- |
+| [agent-control-standard](https://github.com/GenAI-Security-Project/agent-control-standard) | [refimpl: add first-stage Rust AGT Guardian · #187](https://github.com/GenAI-Security-Project/agent-control-standard/pull/187) | Open |
 | [iggy](https://github.com/apache/iggy) | [feat(node): expose client lifecycle events through on and once · #4552](https://github.com/apache/iggy/pull/4552) | Open |
 | [oxc](https://github.com/oxc-project/oxc) | [feat(linter): add \`node/require-child-process-timeout\` rule · #28926](https://github.com/oxc-project/oxc/pull/28926) | Open |
 | [awesome-ai-apps](https://github.com/Arindam200/awesome-ai-apps) | [feat: add A2A collaboration example with Agno and LangGraph · #368](https://github.com/Arindam200/awesome-ai-apps/pull/368) | Open |
 | [prettier](https://github.com/prettier/prettier) | [Fix unstable comments before generic function type parameters · #20374](https://github.com/prettier/prettier/pull/20374) | Open |
-| [agent-control-standard](https://github.com/GenAI-Security-Project/agent-control-standard) | [refimpl: add first-stage Rust AGT Guardian · #187](https://github.com/GenAI-Security-Project/agent-control-standard/pull/187) | Open |
 | [vite](https://github.com/vitejs/vite) | [fix(optimizer): preserve explicit asset queries in dependencies (fix #20285) · #23962](https://github.com/vitejs/vite/pull/23962) | Open |
 | [pytest-rerunfailures](https://github.com/pytest-dev/pytest-rerunfailures) | [fix: prevent internal errors from non-finite rerun delays · #391](https://github.com/pytest-dev/pytest-rerunfailures/pull/391) | Open |
 | [browser-use](https://github.com/browser-use/browser-use) | [fix(dom): preserve omitted select option counts · #6212](https://github.com/browser-use/browser-use/pull/6212) | Draft |
@@ -109,8 +109,8 @@ Historical landings, manually verified against upstream commits. These receipts 
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=b9d30d30">
-  <img alt="language and repository stats" src="out/stats-light.svg?v=0c3d9fd8">
+  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=ae8ebcfc">
+  <img alt="language and repository stats" src="out/stats-light.svg?v=6780cdf7">
 </picture>
 
 <picture>
