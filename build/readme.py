@@ -9,6 +9,14 @@ from .github import PullRequest, Stats
 
 CACHE_BUST = True
 
+# Manually verified upstream landings whose GitHub PR remains CLOSED, not MERGED.
+# Receipt: https://github.com/meta/pyrefly/pull/5243#issuecomment-6701919366
+# Commit authorship and ancestry on main verified 2026-11-08. Do not infer
+# acceptance from a closed PR or an import notification alone.
+VERIFIED_IMPORTS = {
+    ("meta/pyrefly", 5243): ("2026-11-07", "29adbaca3539e2e36f59ca2449198e139d4e9f54"),
+}
+
 COLOPHON = """Every graphic on this page is generated here, not borrowed from a third-party
 badge service. `portrait.svg` is a photo pushed through a character ramp; the stat
 block, the language bars and the year grid are drawn straight from the GitHub
@@ -54,7 +62,10 @@ def contributions(prs: list[PullRequest], login: str) -> str:
     merged = sorted((pr for pr in prs if pr.state == "MERGED" and pr.merged_at),
                     key=lambda pr: pr.merged_at, reverse=True)
     ongoing = [pr for pr in prs if pr.state == "OPEN"]
-    closed = [pr for pr in prs if pr.state == "CLOSED"]
+    imported = [pr for pr in prs if pr.state == "CLOSED"
+                and (pr.repository, pr.number) in VERIFIED_IMPORTS]
+    closed = [pr for pr in prs if pr.state == "CLOSED"
+              and (pr.repository, pr.number) not in VERIFIED_IMPORTS]
 
     def table(rows: list[PullRequest]) -> str:
         lines = ["| Project | Contribution | Status |", "| --- | --- | --- |"]
@@ -62,6 +73,9 @@ def contributions(prs: list[PullRequest], login: str) -> str:
             status = (f"Merged · {pr.merged_at[:10]}" if pr.merged_at
                       else "Draft" if pr.draft and pr.state == "OPEN"
                       else "Open" if pr.state == "OPEN" else "Closed without merge")
+            if pr in imported:
+                date, commit = VERIFIED_IMPORTS[(pr.repository, pr.number)]
+                status = f"[Landed · {date}](https://github.com/{pr.repository}/commit/{commit})"
             lines.append(
                 f"| [{pr.repository.split('/')[-1]}](https://github.com/{pr.repository}) "
                 f"| [{_title(pr.title)} · #{pr.number}]({pr.url}) | {status} |"
@@ -71,6 +85,10 @@ def contributions(prs: list[PullRequest], login: str) -> str:
     parts = ["Contributions to public projects outside my own account, refreshed daily from GitHub."]
     if merged:
         parts.extend(["**Merged**", table(merged)])
+    if imported:
+        parts.extend(["**Landed through upstream import**",
+                      "Historical landings, manually verified against upstream commits. These receipts are not rechecked daily. GitHub records the PRs as closed rather than merged.",
+                      table(imported)])
     if ongoing:
         parts.extend(["**In progress**", table(ongoing)])
     if closed:
