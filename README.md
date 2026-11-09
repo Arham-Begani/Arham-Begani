@@ -10,8 +10,8 @@
 </div>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=156aa19c">
-  <img alt="3450 contributions in the last year" src="out/hero-light.svg?v=032bc570">
+  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=db692d2a">
+  <img alt="3459 contributions in the last year" src="out/hero-light.svg?v=08d564f9">
 </picture>
 
 <p align="center"><a href="https://forze.in">forze.in</a> &nbsp;·&nbsp; <a href="https://linkedin.com/in/arhambegani">linkedin</a></p>
@@ -76,8 +76,8 @@ Historical landings, manually verified against upstream commits. These receipts 
 
 | Project | Contribution | Status |
 | --- | --- | --- |
-| [deno](https://github.com/denoland/deno) | [fix(ext/http): honor Connection: close in HTTP/1 responses · #37067](https://github.com/denoland/deno/pull/37067) | Open |
 | [agent-control-standard](https://github.com/GenAI-Security-Project/agent-control-standard) | [refimpl: add first-stage Rust AGT Guardian · #187](https://github.com/GenAI-Security-Project/agent-control-standard/pull/187) | Open |
+| [deno](https://github.com/denoland/deno) | [fix(ext/http): honor Connection: close in HTTP/1 responses · #37067](https://github.com/denoland/deno/pull/37067) | Open |
 | [iggy](https://github.com/apache/iggy) | [feat(node): expose client lifecycle events through on and once · #4552](https://github.com/apache/iggy/pull/4552) | Open |
 | [oxc](https://github.com/oxc-project/oxc) | [feat(linter): add \`node/require-child-process-timeout\` rule · #28926](https://github.com/oxc-project/oxc/pull/28926) | Open |
 | [awesome-ai-apps](https://github.com/Arindam200/awesome-ai-apps) | [feat: add A2A collaboration example with Agno and LangGraph · #368](https://github.com/Arindam200/awesome-ai-apps/pull/368) | Open |
@@ -109,13 +109,13 @@ Historical landings, manually verified against upstream commits. These receipts 
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=ec93e95a">
-  <img alt="language and repository stats" src="out/stats-light.svg?v=04fc911b">
+  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=b1e64b17">
+  <img alt="language and repository stats" src="out/stats-light.svg?v=d72c313b">
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=54e66026">
-  <img alt="142 active days in the last year" src="out/heatmap-light.svg?v=ee5ed84a">
+  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=b1cde2c3">
+  <img alt="142 active days in the last year" src="out/heatmap-light.svg?v=77826f3d">
 </picture>
 
 <picture>
