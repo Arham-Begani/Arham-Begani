@@ -10,8 +10,8 @@
 </div>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=c9064652">
-  <img alt="3465 contributions in the last year" src="out/hero-light.svg?v=f15908e5">
+  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=fa1a8c66">
+  <img alt="3465 contributions in the last year" src="out/hero-light.svg?v=30c68a86">
 </picture>
 
 <p align="center"><a href="https://forze.in">forze.in</a> &nbsp;·&nbsp; <a href="https://linkedin.com/in/arhambegani">linkedin</a></p>
@@ -109,13 +109,13 @@ Historical landings, manually verified against upstream commits. These receipts 
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=62e022a0">
-  <img alt="language and repository stats" src="out/stats-light.svg?v=44f14b39">
+  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=77fe4f1d">
+  <img alt="language and repository stats" src="out/stats-light.svg?v=4c285970">
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=672364b8">
-  <img alt="143 active days in the last year" src="out/heatmap-light.svg?v=138bc067">
+  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=52b0cec2">
+  <img alt="143 active days in the last year" src="out/heatmap-light.svg?v=45d762cf">
 </picture>
 
 <picture>
