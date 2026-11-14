@@ -76,10 +76,11 @@ Historical landings, manually verified against upstream commits. These receipts 
 
 | Project | Contribution | Status |
 | --- | --- | --- |
+| [github-mcp-server](https://github.com/github/github-mcp-server) | [feat: Support choosing the merge commit author email · #3852](https://github.com/github/github-mcp-server/pull/3852) | Open |
+| [awesome-ai-apps](https://github.com/Arindam200/awesome-ai-apps) | [feat: add A2A collaboration example with Agno and LangGraph · #368](https://github.com/Arindam200/awesome-ai-apps/pull/368) | Open |
 | [langchainjs](https://github.com/langchain-ai/langchainjs) | [fix(anthropic): default ChatAnthropic to claude-sonnet-5-5 · #11943](https://github.com/langchain-ai/langchainjs/pull/11943) | Draft |
 | [langchainjs](https://github.com/langchain-ai/langchainjs) | [fix(openai): require an explicit model in ChatOpenAI · #11955](https://github.com/langchain-ai/langchainjs/pull/11955) | Open |
 | [llama_index](https://github.com/run-llama/llama_index) | [fix(core): repair streamed partial JSON inside arrays and escaped strings · #23470](https://github.com/run-llama/llama_index/pull/23470) | Open |
-| [awesome-ai-apps](https://github.com/Arindam200/awesome-ai-apps) | [feat: add A2A collaboration example with Agno and LangGraph · #368](https://github.com/Arindam200/awesome-ai-apps/pull/368) | Open |
 | [vite](https://github.com/vitejs/vite) | [fix(optimizer): preserve explicit asset queries in dependencies (fix #20285) · #23962](https://github.com/vitejs/vite/pull/23962) | Open |
 | [prettier](https://github.com/prettier/prettier) | [Fix unstable comments before generic function type parameters · #20374](https://github.com/prettier/prettier/pull/20374) | Open |
 | [iggy](https://github.com/apache/iggy) | [feat(node): expose client lifecycle events through on and once · #4552](https://github.com/apache/iggy/pull/4552) | Open |
@@ -109,8 +110,8 @@ Historical landings, manually verified against upstream commits. These receipts 
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=5c2e6c02">
-  <img alt="language and repository stats" src="out/stats-light.svg?v=995e6890">
+  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=c0daef7c">
+  <img alt="language and repository stats" src="out/stats-light.svg?v=9aeba510">
 </picture>
 
 <picture>
