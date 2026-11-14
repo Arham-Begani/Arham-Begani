@@ -15,6 +15,16 @@ def node(owner, *, private=False, number=1, state="OPEN", merged_at=None):
 
 
 class ContributionTests(unittest.TestCase):
+    def test_verified_import_survives_repository_transfer(self):
+        pr = PullRequest("pyrefly-org/pyrefly", 5243, "Quoted annotations",
+                         "https://github.com/pyrefly-org/pyrefly/pull/5243", "CLOSED")
+        result = contributions([pr], "Arham-Begani")
+        self.assertIn("**Landed through upstream import**", result)
+        self.assertIn("https://github.com/pyrefly-org/pyrefly/commit/29adbaca3539e2e36f59ca2449198e139d4e9f54", result)
+        self.assertIn("2026-11-07", result)
+        self.assertNotIn("Closed without merge", result)
+        self.assertIsNone(pr.merged_at)
+
     def test_verified_import_landing_is_not_a_closed_unmerged_pr(self):
         pr = PullRequest("meta/pyrefly", 5243, "Quoted annotations", "https://github.com/meta/pyrefly/pull/5243", "CLOSED")
         result = contributions([pr], "Arham-Begani")

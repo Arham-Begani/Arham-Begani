@@ -10,11 +10,13 @@ from .github import PullRequest, Stats
 CACHE_BUST = True
 
 # Manually verified upstream landings whose GitHub PR remains CLOSED, not MERGED.
-# Receipt: https://github.com/meta/pyrefly/pull/5243#issuecomment-6701919366
-# Commit authorship and ancestry on main verified 2026-11-08. Do not infer
-# acceptance from a closed PR or an import notification alone.
+# Receipt: https://github.com/pyrefly-org/pyrefly/pull/5243#issuecomment-6701919366
+# Commit authorship verified 2026-11-08; main ancestry rechecked after the
+# repository transfer on 2026-11-14. Retain the old name for historical inputs.
+# Do not infer acceptance from a closed PR or an import notification alone.
 VERIFIED_IMPORTS = {
     ("meta/pyrefly", 5243): ("2026-11-07", "29adbaca3539e2e36f59ca2449198e139d4e9f54"),
+    ("pyrefly-org/pyrefly", 5243): ("2026-11-07", "29adbaca3539e2e36f59ca2449198e139d4e9f54"),
 }
 
 COLOPHON = """Every graphic on this page is generated here, not borrowed from a third-party
