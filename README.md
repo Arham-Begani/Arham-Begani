@@ -109,8 +109,8 @@ Historical landings, manually verified against upstream commits. These receipts 
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=52bbfacc">
-  <img alt="language and repository stats" src="out/stats-light.svg?v=60e59daf">
+  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=9a2f7752">
+  <img alt="language and repository stats" src="out/stats-light.svg?v=0c431b9d">
 </picture>
 
 <picture>
