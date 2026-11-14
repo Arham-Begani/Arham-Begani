@@ -10,8 +10,8 @@
 </div>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=b9c81f79">
-  <img alt="3465 contributions in the last year" src="out/hero-light.svg?v=4e2ccd96">
+  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=300e6a57">
+  <img alt="3465 contributions in the last year" src="out/hero-light.svg?v=067b16af">
 </picture>
 
 <p align="center"><a href="https://forze.in">forze.in</a> &nbsp;·&nbsp; <a href="https://linkedin.com/in/arhambegani">linkedin</a></p>
@@ -64,18 +64,13 @@ Contributions to public projects outside my own account, refreshed daily from Gi
 | [pytest-env](https://github.com/pytest-dev/pytest-env) | [fix: respect Windows key casing when preserving existing env values · #278](https://github.com/pytest-dev/pytest-env/pull/278) | Merged · 2026-10-18 |
 | [first-contributions](https://github.com/firstcontributions/first-contributions) | [arham · #86678](https://github.com/firstcontributions/first-contributions/pull/86678) | Merged · 2024-07-20 |
 
-**Landed through upstream import**
-
-Historical landings, manually verified against upstream commits. These receipts are not rechecked daily. GitHub records the PRs as closed rather than merged.
-
-| Project | Contribution | Status |
-| --- | --- | --- |
-| [pyrefly](https://github.com/meta/pyrefly) | [Resolve identifiers inside quoted annotations in the LSP. · #5243](https://github.com/meta/pyrefly/pull/5243) | [Landed · 2026-11-07](https://github.com/meta/pyrefly/commit/29adbaca3539e2e36f59ca2449198e139d4e9f54) |
-
 **In progress**
 
 | Project | Contribution | Status |
 | --- | --- | --- |
+| [langchainjs](https://github.com/langchain-ai/langchainjs) | [fix(anthropic): default ChatAnthropic to claude-sonnet-5-5 · #11943](https://github.com/langchain-ai/langchainjs/pull/11943) | Draft |
+| [langchainjs](https://github.com/langchain-ai/langchainjs) | [fix(openai): require an explicit model in ChatOpenAI · #11955](https://github.com/langchain-ai/langchainjs/pull/11955) | Open |
+| [llama_index](https://github.com/run-llama/llama_index) | [fix(core): repair streamed partial JSON inside arrays and escaped strings · #23470](https://github.com/run-llama/llama_index/pull/23470) | Open |
 | [awesome-ai-apps](https://github.com/Arindam200/awesome-ai-apps) | [feat: add A2A collaboration example with Agno and LangGraph · #368](https://github.com/Arindam200/awesome-ai-apps/pull/368) | Open |
 | [vite](https://github.com/vitejs/vite) | [fix(optimizer): preserve explicit asset queries in dependencies (fix #20285) · #23962](https://github.com/vitejs/vite/pull/23962) | Open |
 | [prettier](https://github.com/prettier/prettier) | [Fix unstable comments before generic function type parameters · #20374](https://github.com/prettier/prettier/pull/20374) | Open |
@@ -84,17 +79,15 @@ Historical landings, manually verified against upstream commits. These receipts 
 | [agent-control-standard](https://github.com/GenAI-Security-Project/agent-control-standard) | [refimpl: add first-stage Rust AGT Guardian · #187](https://github.com/GenAI-Security-Project/agent-control-standard/pull/187) | Open |
 | [deno](https://github.com/denoland/deno) | [fix(ext/http): honor Connection: close in HTTP/1 responses · #37067](https://github.com/denoland/deno/pull/37067) | Open |
 | [pytest-rerunfailures](https://github.com/pytest-dev/pytest-rerunfailures) | [fix: prevent internal errors from non-finite rerun delays · #391](https://github.com/pytest-dev/pytest-rerunfailures/pull/391) | Open |
-| [langchainjs](https://github.com/langchain-ai/langchainjs) | [fix(anthropic): default ChatAnthropic to claude-sonnet-5-5 · #11943](https://github.com/langchain-ai/langchainjs/pull/11943) | Draft |
-| [llama_index](https://github.com/run-llama/llama_index) | [fix(core): repair streamed partial JSON inside arrays and escaped strings · #23470](https://github.com/run-llama/llama_index/pull/23470) | Open |
 | [vscode](https://github.com/microsoft/vscode) | [Fix save locations for untitled custom editors in virtual workspaces · #343326](https://github.com/microsoft/vscode/pull/343326) | Open |
-| [langchainjs](https://github.com/langchain-ai/langchainjs) | [fix(openai): require an explicit model in ChatOpenAI · #11955](https://github.com/langchain-ai/langchainjs/pull/11955) | Open |
 
 <details>
-<summary>Closed without merging · 4</summary>
+<summary>Closed without merging · 5</summary>
 
 | Project | Contribution | Status |
 | --- | --- | --- |
 | [browser-use](https://github.com/browser-use/browser-use) | [fix(dom): preserve omitted select option counts · #6212](https://github.com/browser-use/browser-use/pull/6212) | Closed without merge |
+| [pyrefly](https://github.com/pyrefly-org/pyrefly) | [Resolve identifiers inside quoted annotations in the LSP. · #5243](https://github.com/pyrefly-org/pyrefly/pull/5243) | Closed without merge |
 | [uv](https://github.com/astral-sh/uv) | [Move UV\_GIT\_LFS handling into environment settings · #22002](https://github.com/astral-sh/uv/pull/22002) | Closed without merge |
 | [trio](https://github.com/python-trio/trio) | [Preserve nursery cleanup when exception repr raises · #3548](https://github.com/python-trio/trio/pull/3548) | Closed without merge |
 | [python-gitlab](https://github.com/python-gitlab/python-gitlab) | [fix(cli): resolve parent IDs when creating commit statuses · #3453](https://github.com/python-gitlab/python-gitlab/pull/3453) | Closed without merge |
@@ -109,13 +102,13 @@ Historical landings, manually verified against upstream commits. These receipts 
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=d68e5541">
-  <img alt="language and repository stats" src="out/stats-light.svg?v=3b2fb03a">
+  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=f56cf2d8">
+  <img alt="language and repository stats" src="out/stats-light.svg?v=67716815">
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=535395b3">
-  <img alt="143 active days in the last year" src="out/heatmap-light.svg?v=6c7df9e9">
+  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=8c5dbafc">
+  <img alt="143 active days in the last year" src="out/heatmap-light.svg?v=ec121877">
 </picture>
 
 <picture>
