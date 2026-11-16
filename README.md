@@ -10,8 +10,8 @@
 </div>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=2869ab53">
-  <img alt="3488 contributions in the last year" src="out/hero-light.svg?v=195d6d9d">
+  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=d9125b4a">
+  <img alt="3488 contributions in the last year" src="out/hero-light.svg?v=ebbd5d17">
 </picture>
 
 <p align="center"><a href="https://forze.in">forze.in</a> &nbsp;·&nbsp; <a href="https://linkedin.com/in/arhambegani">linkedin</a></p>
@@ -115,8 +115,8 @@ Historical landings, manually verified against upstream commits. These receipts 
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=d4e14ec8">
-  <img alt="145 active days in the last year" src="out/heatmap-light.svg?v=6588eb74">
+  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=8b4af80f">
+  <img alt="145 active days in the last year" src="out/heatmap-light.svg?v=3ac8a2fd">
 </picture>
 
 <picture>
