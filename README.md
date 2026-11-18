@@ -10,8 +10,8 @@
 </div>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=21205bee">
-  <img alt="3507 contributions in the last year" src="out/hero-light.svg?v=a9290bec">
+  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=3c8d49da">
+  <img alt="3516 contributions in the last year" src="out/hero-light.svg?v=cfa83af2">
 </picture>
 
 <p align="center"><a href="https://forze.in">forze.in</a> &nbsp;·&nbsp; <a href="https://linkedin.com/in/arhambegani">linkedin</a></p>
@@ -76,6 +76,9 @@ Historical landings, manually verified against upstream commits. These receipts 
 
 | Project | Contribution | Status |
 | --- | --- | --- |
+| [tldr](https://github.com/tldr-pages/tldr) | [flatpak-ps: add page · #25327](https://github.com/tldr-pages/tldr/pull/25327) | Open |
+| [pandas](https://github.com/pandas-dev/pandas) | [BUG: support percent-style float formats for nullable floats in to\_st… · #72205](https://github.com/pandas-dev/pandas/pull/72205) | Open |
+| [recharts](https://github.com/recharts/recharts) | [refactor(types): remove non-null assertions from matchBy.ts · #8255](https://github.com/recharts/recharts/pull/8255) | Open |
 | [excalidraw](https://github.com/excalidraw/excalidraw) | [fix(app): show recovery instructions when the editor cannot load · #12668](https://github.com/excalidraw/excalidraw/pull/12668) | Open |
 | [awesome-ai-apps](https://github.com/Arindam200/awesome-ai-apps) | [feat: add A2A collaboration example with Agno and LangGraph · #368](https://github.com/Arindam200/awesome-ai-apps/pull/368) | Open |
 | [github-mcp-server](https://github.com/github/github-mcp-server) | [feat: Support choosing the merge commit author email · #3852](https://github.com/github/github-mcp-server/pull/3852) | Open |
@@ -111,8 +114,8 @@ Historical landings, manually verified against upstream commits. These receipts 
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=bfc0d1b1">
-  <img alt="language and repository stats" src="out/stats-light.svg?v=d34743c6">
+  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=4e182ef7">
+  <img alt="language and repository stats" src="out/stats-light.svg?v=6de041ed">
 </picture>
 
 <picture>
