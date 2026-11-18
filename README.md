@@ -10,8 +10,8 @@
 </div>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=4b1ee487">
-  <img alt="3488 contributions in the last year" src="out/hero-light.svg?v=ef432a20">
+  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=21205bee">
+  <img alt="3507 contributions in the last year" src="out/hero-light.svg?v=a9290bec">
 </picture>
 
 <p align="center"><a href="https://forze.in">forze.in</a> &nbsp;·&nbsp; <a href="https://linkedin.com/in/arhambegani">linkedin</a></p>
@@ -76,10 +76,9 @@ Historical landings, manually verified against upstream commits. These receipts 
 
 | Project | Contribution | Status |
 | --- | --- | --- |
+| [excalidraw](https://github.com/excalidraw/excalidraw) | [fix(app): show recovery instructions when the editor cannot load · #12668](https://github.com/excalidraw/excalidraw/pull/12668) | Open |
 | [awesome-ai-apps](https://github.com/Arindam200/awesome-ai-apps) | [feat: add A2A collaboration example with Agno and LangGraph · #368](https://github.com/Arindam200/awesome-ai-apps/pull/368) | Open |
 | [github-mcp-server](https://github.com/github/github-mcp-server) | [feat: Support choosing the merge commit author email · #3852](https://github.com/github/github-mcp-server/pull/3852) | Open |
-| [langchainjs](https://github.com/langchain-ai/langchainjs) | [fix(anthropic): default ChatAnthropic to claude-sonnet-5-5 · #11943](https://github.com/langchain-ai/langchainjs/pull/11943) | Draft |
-| [langchainjs](https://github.com/langchain-ai/langchainjs) | [fix(openai): require an explicit model in ChatOpenAI · #11955](https://github.com/langchain-ai/langchainjs/pull/11955) | Open |
 | [llama_index](https://github.com/run-llama/llama_index) | [fix(core): repair streamed partial JSON inside arrays and escaped strings · #23470](https://github.com/run-llama/llama_index/pull/23470) | Open |
 | [vite](https://github.com/vitejs/vite) | [fix(optimizer): preserve explicit asset queries in dependencies (fix #20285) · #23962](https://github.com/vitejs/vite/pull/23962) | Open |
 | [prettier](https://github.com/prettier/prettier) | [Fix unstable comments before generic function type parameters · #20374](https://github.com/prettier/prettier/pull/20374) | Open |
@@ -87,14 +86,16 @@ Historical landings, manually verified against upstream commits. These receipts 
 | [oxc](https://github.com/oxc-project/oxc) | [feat(linter): add \`node/require-child-process-timeout\` rule · #28926](https://github.com/oxc-project/oxc/pull/28926) | Open |
 | [agent-control-standard](https://github.com/GenAI-Security-Project/agent-control-standard) | [refimpl: add first-stage Rust AGT Guardian · #187](https://github.com/GenAI-Security-Project/agent-control-standard/pull/187) | Open |
 | [deno](https://github.com/denoland/deno) | [fix(ext/http): honor Connection: close in HTTP/1 responses · #37067](https://github.com/denoland/deno/pull/37067) | Open |
-| [pytest-rerunfailures](https://github.com/pytest-dev/pytest-rerunfailures) | [fix: prevent internal errors from non-finite rerun delays · #391](https://github.com/pytest-dev/pytest-rerunfailures/pull/391) | Open |
-| [vscode](https://github.com/microsoft/vscode) | [Fix save locations for untitled custom editors in virtual workspaces · #343326](https://github.com/microsoft/vscode/pull/343326) | Open |
 
 <details>
-<summary>Closed without merging · 4</summary>
+<summary>Closed without merging · 8</summary>
 
 | Project | Contribution | Status |
 | --- | --- | --- |
+| [langchainjs](https://github.com/langchain-ai/langchainjs) | [fix(anthropic): default ChatAnthropic to claude-sonnet-5-5 · #11943](https://github.com/langchain-ai/langchainjs/pull/11943) | Closed without merge |
+| [langchainjs](https://github.com/langchain-ai/langchainjs) | [fix(openai): require an explicit model in ChatOpenAI · #11955](https://github.com/langchain-ai/langchainjs/pull/11955) | Closed without merge |
+| [pytest-rerunfailures](https://github.com/pytest-dev/pytest-rerunfailures) | [fix: prevent internal errors from non-finite rerun delays · #391](https://github.com/pytest-dev/pytest-rerunfailures/pull/391) | Closed without merge |
+| [vscode](https://github.com/microsoft/vscode) | [Fix save locations for untitled custom editors in virtual workspaces · #343326](https://github.com/microsoft/vscode/pull/343326) | Closed without merge |
 | [browser-use](https://github.com/browser-use/browser-use) | [fix(dom): preserve omitted select option counts · #6212](https://github.com/browser-use/browser-use/pull/6212) | Closed without merge |
 | [uv](https://github.com/astral-sh/uv) | [Move UV\_GIT\_LFS handling into environment settings · #22002](https://github.com/astral-sh/uv/pull/22002) | Closed without merge |
 | [trio](https://github.com/python-trio/trio) | [Preserve nursery cleanup when exception repr raises · #3548](https://github.com/python-trio/trio/pull/3548) | Closed without merge |
@@ -110,13 +111,13 @@ Historical landings, manually verified against upstream commits. These receipts 
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=34a367e8">
-  <img alt="language and repository stats" src="out/stats-light.svg?v=3b175fe5">
+  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=bfc0d1b1">
+  <img alt="language and repository stats" src="out/stats-light.svg?v=d34743c6">
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=2cc2faf2">
-  <img alt="145 active days in the last year" src="out/heatmap-light.svg?v=0b1db658">
+  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=2800e349">
+  <img alt="146 active days in the last year" src="out/heatmap-light.svg?v=fc6e410e">
 </picture>
 
 <picture>
