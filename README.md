@@ -10,8 +10,8 @@
 </div>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=3c8d49da">
-  <img alt="3516 contributions in the last year" src="out/hero-light.svg?v=cfa83af2">
+  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=e98f2ef0">
+  <img alt="3522 contributions in the last year" src="out/hero-light.svg?v=914d3b2b">
 </picture>
 
 <p align="center"><a href="https://forze.in">forze.in</a> &nbsp;·&nbsp; <a href="https://linkedin.com/in/arhambegani">linkedin</a></p>
@@ -57,6 +57,7 @@ Contributions to public projects outside my own account, refreshed daily from Gi
 
 | Project | Contribution | Status |
 | --- | --- | --- |
+| [librosa](https://github.com/librosa/librosa) | [Forward rng to Griffin-Lim in feature inverters · #2132](https://github.com/librosa/librosa/pull/2132) | Merged · 2026-11-19 |
 | [pytest-timeout](https://github.com/pytest-dev/pytest-timeout) | [fix: preserve capture fixture output on thread timeouts · #212](https://github.com/pytest-dev/pytest-timeout/pull/212) | Merged · 2026-11-06 |
 | [pnpm](https://github.com/pnpm/pnpm) | [fix(store): remove aliases of pruned packages · #17541](https://github.com/pnpm/pnpm/pull/17541) | Merged · 2026-11-03 |
 | [aiperf](https://github.com/ai-dynamo/aiperf) | [fix(config): preserve YAML network-latency calibration · #1587](https://github.com/ai-dynamo/aiperf/pull/1587) | Merged · 2026-10-28 |
@@ -76,25 +77,26 @@ Historical landings, manually verified against upstream commits. These receipts 
 
 | Project | Contribution | Status |
 | --- | --- | --- |
-| [tldr](https://github.com/tldr-pages/tldr) | [flatpak-ps: add page · #25327](https://github.com/tldr-pages/tldr/pull/25327) | Open |
-| [pandas](https://github.com/pandas-dev/pandas) | [BUG: support percent-style float formats for nullable floats in to\_st… · #72205](https://github.com/pandas-dev/pandas/pull/72205) | Open |
+| [deno](https://github.com/denoland/deno) | [fix(ext/http): honor Connection: close in HTTP/1 responses · #37067](https://github.com/denoland/deno/pull/37067) | Open |
+| [iggy](https://github.com/apache/iggy) | [feat(node): expose client lifecycle events through on and once · #4552](https://github.com/apache/iggy/pull/4552) | Open |
 | [recharts](https://github.com/recharts/recharts) | [refactor(types): remove non-null assertions from matchBy.ts · #8255](https://github.com/recharts/recharts/pull/8255) | Open |
+| [pandas](https://github.com/pandas-dev/pandas) | [BUG: support percent-style float formats for nullable floats in to\_st… · #72205](https://github.com/pandas-dev/pandas/pull/72205) | Open |
+| [vite](https://github.com/vitejs/vite) | [fix(optimizer): preserve explicit asset queries in dependencies (fix #20285) · #23962](https://github.com/vitejs/vite/pull/23962) | Open |
+| [tldr](https://github.com/tldr-pages/tldr) | [flatpak-ps: add page · #25327](https://github.com/tldr-pages/tldr/pull/25327) | Open |
 | [excalidraw](https://github.com/excalidraw/excalidraw) | [fix(app): show recovery instructions when the editor cannot load · #12668](https://github.com/excalidraw/excalidraw/pull/12668) | Open |
 | [awesome-ai-apps](https://github.com/Arindam200/awesome-ai-apps) | [feat: add A2A collaboration example with Agno and LangGraph · #368](https://github.com/Arindam200/awesome-ai-apps/pull/368) | Open |
 | [github-mcp-server](https://github.com/github/github-mcp-server) | [feat: Support choosing the merge commit author email · #3852](https://github.com/github/github-mcp-server/pull/3852) | Open |
 | [llama_index](https://github.com/run-llama/llama_index) | [fix(core): repair streamed partial JSON inside arrays and escaped strings · #23470](https://github.com/run-llama/llama_index/pull/23470) | Open |
-| [vite](https://github.com/vitejs/vite) | [fix(optimizer): preserve explicit asset queries in dependencies (fix #20285) · #23962](https://github.com/vitejs/vite/pull/23962) | Open |
 | [prettier](https://github.com/prettier/prettier) | [Fix unstable comments before generic function type parameters · #20374](https://github.com/prettier/prettier/pull/20374) | Open |
-| [iggy](https://github.com/apache/iggy) | [feat(node): expose client lifecycle events through on and once · #4552](https://github.com/apache/iggy/pull/4552) | Open |
 | [oxc](https://github.com/oxc-project/oxc) | [feat(linter): add \`node/require-child-process-timeout\` rule · #28926](https://github.com/oxc-project/oxc/pull/28926) | Open |
 | [agent-control-standard](https://github.com/GenAI-Security-Project/agent-control-standard) | [refimpl: add first-stage Rust AGT Guardian · #187](https://github.com/GenAI-Security-Project/agent-control-standard/pull/187) | Open |
-| [deno](https://github.com/denoland/deno) | [fix(ext/http): honor Connection: close in HTTP/1 responses · #37067](https://github.com/denoland/deno/pull/37067) | Open |
 
 <details>
-<summary>Closed without merging · 8</summary>
+<summary>Closed without merging · 9</summary>
 
 | Project | Contribution | Status |
 | --- | --- | --- |
+| [astropy](https://github.com/astropy/astropy) | [Add lightday to astrophysical length units · #20912](https://github.com/astropy/astropy/pull/20912) | Closed without merge |
 | [langchainjs](https://github.com/langchain-ai/langchainjs) | [fix(anthropic): default ChatAnthropic to claude-sonnet-5-5 · #11943](https://github.com/langchain-ai/langchainjs/pull/11943) | Closed without merge |
 | [langchainjs](https://github.com/langchain-ai/langchainjs) | [fix(openai): require an explicit model in ChatOpenAI · #11955](https://github.com/langchain-ai/langchainjs/pull/11955) | Closed without merge |
 | [pytest-rerunfailures](https://github.com/pytest-dev/pytest-rerunfailures) | [fix: prevent internal errors from non-finite rerun delays · #391](https://github.com/pytest-dev/pytest-rerunfailures/pull/391) | Closed without merge |
@@ -114,13 +116,13 @@ Historical landings, manually verified against upstream commits. These receipts 
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=4e182ef7">
-  <img alt="language and repository stats" src="out/stats-light.svg?v=6de041ed">
+  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=efa2bee4">
+  <img alt="language and repository stats" src="out/stats-light.svg?v=71f710a1">
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=2800e349">
-  <img alt="146 active days in the last year" src="out/heatmap-light.svg?v=fc6e410e">
+  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=ed91a790">
+  <img alt="147 active days in the last year" src="out/heatmap-light.svg?v=11ca6484">
 </picture>
 
 <picture>
