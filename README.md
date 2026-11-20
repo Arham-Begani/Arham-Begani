@@ -10,8 +10,8 @@
 </div>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=e98f2ef0">
-  <img alt="3522 contributions in the last year" src="out/hero-light.svg?v=914d3b2b">
+  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=091b9cbb">
+  <img alt="3529 contributions in the last year" src="out/hero-light.svg?v=49d62315">
 </picture>
 
 <p align="center"><a href="https://forze.in">forze.in</a> &nbsp;·&nbsp; <a href="https://linkedin.com/in/arhambegani">linkedin</a></p>
@@ -77,8 +77,8 @@ Historical landings, manually verified against upstream commits. These receipts 
 
 | Project | Contribution | Status |
 | --- | --- | --- |
-| [deno](https://github.com/denoland/deno) | [fix(ext/http): honor Connection: close in HTTP/1 responses · #37067](https://github.com/denoland/deno/pull/37067) | Open |
 | [iggy](https://github.com/apache/iggy) | [feat(node): expose client lifecycle events through on and once · #4552](https://github.com/apache/iggy/pull/4552) | Open |
+| [deno](https://github.com/denoland/deno) | [fix(ext/http): honor Connection: close in HTTP/1 responses · #37067](https://github.com/denoland/deno/pull/37067) | Open |
 | [recharts](https://github.com/recharts/recharts) | [refactor(types): remove non-null assertions from matchBy.ts · #8255](https://github.com/recharts/recharts/pull/8255) | Open |
 | [pandas](https://github.com/pandas-dev/pandas) | [BUG: support percent-style float formats for nullable floats in to\_st… · #72205](https://github.com/pandas-dev/pandas/pull/72205) | Open |
 | [vite](https://github.com/vitejs/vite) | [fix(optimizer): preserve explicit asset queries in dependencies (fix #20285) · #23962](https://github.com/vitejs/vite/pull/23962) | Open |
@@ -116,13 +116,13 @@ Historical landings, manually verified against upstream commits. These receipts 
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=efa2bee4">
-  <img alt="language and repository stats" src="out/stats-light.svg?v=71f710a1">
+  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=23cc1b1a">
+  <img alt="language and repository stats" src="out/stats-light.svg?v=83f3e8ed">
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=ed91a790">
-  <img alt="147 active days in the last year" src="out/heatmap-light.svg?v=11ca6484">
+  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=155c1058">
+  <img alt="147 active days in the last year" src="out/heatmap-light.svg?v=c9d8fc79">
 </picture>
 
 <picture>
