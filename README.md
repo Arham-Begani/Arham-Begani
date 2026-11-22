@@ -10,8 +10,8 @@
 </div>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=30977ddb">
-  <img alt="3569 contributions in the last year" src="out/hero-light.svg?v=afab0dae">
+  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=4c23b6b4">
+  <img alt="3573 contributions in the last year" src="out/hero-light.svg?v=6bacc332">
 </picture>
 
 <p align="center"><a href="https://forze.in">forze.in</a> &nbsp;·&nbsp; <a href="https://linkedin.com/in/arhambegani">linkedin</a></p>
@@ -24,6 +24,8 @@
 Python and frontend. I'd rather take on something too big than something too safe.
 
 Right now that's **[Forze](https://forze.in)** — an agentic system that turns a founder's concept into shipped work instead of another to-do list.
+
+I also contribute to scientific Python. I fixed a plotting bug in xarray so plots respect the user's Matplotlib grid settings, and updated librosa so callers can seed audio reconstruction. [xarray PR](https://github.com/pydata/xarray/pull/11923) · [librosa PR](https://github.com/librosa/librosa/pull/2132)
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="out/h-stack-dark.svg?v=d2320db7">
@@ -57,6 +59,7 @@ Contributions to public projects outside my own account, refreshed daily from Gi
 
 | Project | Contribution | Status |
 | --- | --- | --- |
+| [xarray](https://github.com/pydata/xarray) | [Preserve Matplotlib grid settings in pcolormesh · #11923](https://github.com/pydata/xarray/pull/11923) | Merged · 2026-11-21 |
 | [tldr](https://github.com/tldr-pages/tldr) | [flatpak-ps: add page · #25327](https://github.com/tldr-pages/tldr/pull/25327) | Merged · 2026-11-20 |
 | [librosa](https://github.com/librosa/librosa) | [Forward rng to Griffin-Lim in feature inverters · #2132](https://github.com/librosa/librosa/pull/2132) | Merged · 2026-11-19 |
 | [pytest-timeout](https://github.com/pytest-dev/pytest-timeout) | [fix: preserve capture fixture output on thread timeouts · #212](https://github.com/pytest-dev/pytest-timeout/pull/212) | Merged · 2026-11-06 |
@@ -78,10 +81,9 @@ Historical landings, manually verified against upstream commits. These receipts 
 
 | Project | Contribution | Status |
 | --- | --- | --- |
-| [iggy](https://github.com/apache/iggy) | [feat(node): expose client lifecycle events through on and once · #4552](https://github.com/apache/iggy/pull/4552) | Open |
-| [xarray](https://github.com/pydata/xarray) | [Preserve Matplotlib grid settings in pcolormesh · #11923](https://github.com/pydata/xarray/pull/11923) | Open |
-| [mne-python](https://github.com/mne-tools/mne-python) | [Align complex Welch coefficient scaling with multitaper · #14574](https://github.com/mne-tools/mne-python/pull/14574) | Open |
 | [napari](https://github.com/napari/napari) | [Display channel-first RGB images as a single layer · #9945](https://github.com/napari/napari/pull/9945) | Open |
+| [iggy](https://github.com/apache/iggy) | [feat(node): expose client lifecycle events through on and once · #4552](https://github.com/apache/iggy/pull/4552) | Open |
+| [mne-python](https://github.com/mne-tools/mne-python) | [Align complex Welch coefficient scaling with multitaper · #14574](https://github.com/mne-tools/mne-python/pull/14574) | Open |
 | [bokeh](https://github.com/bokeh/bokeh) | [Accept categorical coordinates in glyph type hints · #15810](https://github.com/bokeh/bokeh/pull/15810) | Open |
 | [deno](https://github.com/denoland/deno) | [fix(ext/http): honor Connection: close in HTTP/1 responses · #37067](https://github.com/denoland/deno/pull/37067) | Open |
 | [recharts](https://github.com/recharts/recharts) | [refactor(types): remove non-null assertions from matchBy.ts · #8255](https://github.com/recharts/recharts/pull/8255) | Open |
@@ -120,13 +122,13 @@ Historical landings, manually verified against upstream commits. These receipts 
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=207992f6">
-  <img alt="language and repository stats" src="out/stats-light.svg?v=beed6202">
+  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=7217c4fa">
+  <img alt="language and repository stats" src="out/stats-light.svg?v=4c4364fe">
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=8b3a75a7">
-  <img alt="148 active days in the last year" src="out/heatmap-light.svg?v=1e55b571">
+  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=52935be5">
+  <img alt="150 active days in the last year" src="out/heatmap-light.svg?v=b8f5cacf">
 </picture>
 
 <picture>
