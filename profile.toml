@@ -23,10 +23,11 @@ exclude_langs = ["html", "css", "jupyter notebook"]
 colophon = true
 contributions = true            # public upstream PRs, refreshed from GitHub daily
 
-# --- rewrite these two lines in your own voice --------------------------------
+# --- profile introduction -----------------------------------------------------
 about = [
   "Python and frontend. I'd rather take on something too big than something too safe.",
   "Right now that's **[Forze](https://forze.in)** — an agentic system that turns a founder's concept into shipped work instead of another to-do list.",
+  "I also contribute to scientific Python. I fixed a plotting bug in xarray so plots respect the user's Matplotlib grid settings, and updated librosa so callers can seed audio reconstruction. [xarray PR](https://github.com/pydata/xarray/pull/11923) · [librosa PR](https://github.com/librosa/librosa/pull/2132)",
 ]
 
 stack = [
