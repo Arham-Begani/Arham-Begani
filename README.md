@@ -10,8 +10,8 @@
 </div>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=011700a6">
-  <img alt="3576 contributions in the last year" src="out/hero-light.svg?v=ce0bfeec">
+  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=b0b1ac71">
+  <img alt="3587 contributions in the last year" src="out/hero-light.svg?v=c4a8cb55">
 </picture>
 
 <p align="center"><a href="https://forze.in">forze.in</a> &nbsp;·&nbsp; <a href="https://linkedin.com/in/arhambegani">linkedin</a></p>
@@ -59,6 +59,7 @@ Contributions to public projects outside my own account, refreshed daily from Gi
 
 | Project | Contribution | Status |
 | --- | --- | --- |
+| [petl](https://github.com/petl-developers/petl) | [Allow configuring the temporary directory for sorts and fromdicts · #838](https://github.com/petl-developers/petl/pull/838) | Merged · 2026-11-23 |
 | [xarray](https://github.com/pydata/xarray) | [Preserve Matplotlib grid settings in pcolormesh · #11923](https://github.com/pydata/xarray/pull/11923) | Merged · 2026-11-21 |
 | [tldr](https://github.com/tldr-pages/tldr) | [flatpak-ps: add page · #25327](https://github.com/tldr-pages/tldr/pull/25327) | Merged · 2026-11-20 |
 | [librosa](https://github.com/librosa/librosa) | [Forward rng to Griffin-Lim in feature inverters · #2132](https://github.com/librosa/librosa/pull/2132) | Merged · 2026-11-19 |
@@ -81,9 +82,11 @@ Historical landings, manually verified against upstream commits. These receipts 
 
 | Project | Contribution | Status |
 | --- | --- | --- |
-| [bokeh](https://github.com/bokeh/bokeh) | [Accept categorical coordinates in glyph type hints · #15810](https://github.com/bokeh/bokeh/pull/15810) | Open |
 | [oxc](https://github.com/oxc-project/oxc) | [feat(linter): add \`node/require-child-process-timeout\` rule · #28926](https://github.com/oxc-project/oxc/pull/28926) | Open |
+| [bokeh](https://github.com/bokeh/bokeh) | [Accept categorical coordinates in glyph type hints · #15810](https://github.com/bokeh/bokeh/pull/15810) | Open |
 | [iggy](https://github.com/apache/iggy) | [feat(node): expose client lifecycle events through on and once · #4552](https://github.com/apache/iggy/pull/4552) | Open |
+| [pygments](https://github.com/pygments/pygments) | [Recognize regular expression literals in the Vala lexer · #3497](https://github.com/pygments/pygments/pull/3497) | Open |
+| [xarray](https://github.com/pydata/xarray) | [Document map\_over\_datasets callback outputs · #11931](https://github.com/pydata/xarray/pull/11931) | Open |
 | [github-mcp-server](https://github.com/github/github-mcp-server) | [feat: Support choosing the merge commit author email · #3852](https://github.com/github/github-mcp-server/pull/3852) | Open |
 | [llama_index](https://github.com/run-llama/llama_index) | [fix(core): repair streamed partial JSON inside arrays and escaped strings · #23470](https://github.com/run-llama/llama_index/pull/23470) | Open |
 | [vite](https://github.com/vitejs/vite) | [fix(optimizer): preserve explicit asset queries in dependencies (fix #20285) · #23962](https://github.com/vitejs/vite/pull/23962) | Open |
@@ -122,13 +125,13 @@ Historical landings, manually verified against upstream commits. These receipts 
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=0705f177">
-  <img alt="language and repository stats" src="out/stats-light.svg?v=1716055e">
+  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=07bc0f50">
+  <img alt="language and repository stats" src="out/stats-light.svg?v=db31c4d1">
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=ef8bdcb1">
-  <img alt="150 active days in the last year" src="out/heatmap-light.svg?v=82051299">
+  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=15e8e6a6">
+  <img alt="151 active days in the last year" src="out/heatmap-light.svg?v=5d125e7b">
 </picture>
 
 <picture>
