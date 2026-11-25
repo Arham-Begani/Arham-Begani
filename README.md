@@ -10,8 +10,8 @@
 </div>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=43b22037">
-  <img alt="3588 contributions in the last year" src="out/hero-light.svg?v=b83ad9f4">
+  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=00f153f7">
+  <img alt="3590 contributions in the last year" src="out/hero-light.svg?v=57774b9d">
 </picture>
 
 <p align="center"><a href="https://forze.in">forze.in</a> &nbsp;·&nbsp; <a href="https://linkedin.com/in/arhambegani">linkedin</a></p>
@@ -82,6 +82,7 @@ Historical landings, manually verified against upstream commits. These receipts 
 
 | Project | Contribution | Status |
 | --- | --- | --- |
+| [mne-python](https://github.com/mne-tools/mne-python) | [Align complex Welch coefficient scaling with multitaper · #14574](https://github.com/mne-tools/mne-python/pull/14574) | Open |
 | [oxc](https://github.com/oxc-project/oxc) | [feat(linter): add \`node/require-child-process-timeout\` rule · #28926](https://github.com/oxc-project/oxc/pull/28926) | Open |
 | [bokeh](https://github.com/bokeh/bokeh) | [Accept categorical coordinates in glyph type hints · #15810](https://github.com/bokeh/bokeh/pull/15810) | Open |
 | [iggy](https://github.com/apache/iggy) | [feat(node): expose client lifecycle events through on and once · #4552](https://github.com/apache/iggy/pull/4552) | Open |
@@ -92,7 +93,6 @@ Historical landings, manually verified against upstream commits. These receipts 
 | [vite](https://github.com/vitejs/vite) | [fix(optimizer): preserve explicit asset queries in dependencies (fix #20285) · #23962](https://github.com/vitejs/vite/pull/23962) | Open |
 | [deno](https://github.com/denoland/deno) | [fix(ext/http): honor Connection: close in HTTP/1 responses · #37067](https://github.com/denoland/deno/pull/37067) | Open |
 | [napari](https://github.com/napari/napari) | [Display channel-first RGB images as a single layer · #9945](https://github.com/napari/napari/pull/9945) | Open |
-| [mne-python](https://github.com/mne-tools/mne-python) | [Align complex Welch coefficient scaling with multitaper · #14574](https://github.com/mne-tools/mne-python/pull/14574) | Open |
 | [recharts](https://github.com/recharts/recharts) | [refactor(types): remove non-null assertions from matchBy.ts · #8255](https://github.com/recharts/recharts/pull/8255) | Open |
 | [pandas](https://github.com/pandas-dev/pandas) | [BUG: support percent-style float formats for nullable floats in to\_st… · #72205](https://github.com/pandas-dev/pandas/pull/72205) | Open |
 | [excalidraw](https://github.com/excalidraw/excalidraw) | [fix(app): show recovery instructions when the editor cannot load · #12668](https://github.com/excalidraw/excalidraw/pull/12668) | Open |
@@ -125,13 +125,13 @@ Historical landings, manually verified against upstream commits. These receipts 
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=4917d8d6">
-  <img alt="language and repository stats" src="out/stats-light.svg?v=c9c1ace4">
+  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=4c71351a">
+  <img alt="language and repository stats" src="out/stats-light.svg?v=dedb4d28">
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=4cf88ee0">
-  <img alt="152 active days in the last year" src="out/heatmap-light.svg?v=884ade48">
+  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=64373b82">
+  <img alt="153 active days in the last year" src="out/heatmap-light.svg?v=6b9f24e5">
 </picture>
 
 <picture>
