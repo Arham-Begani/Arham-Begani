@@ -10,8 +10,8 @@
 </div>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=00f153f7">
-  <img alt="3590 contributions in the last year" src="out/hero-light.svg?v=57774b9d">
+  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=f14db5a4">
+  <img alt="3590 contributions in the last year" src="out/hero-light.svg?v=54e63bfb">
 </picture>
 
 <p align="center"><a href="https://forze.in">forze.in</a> &nbsp;·&nbsp; <a href="https://linkedin.com/in/arhambegani">linkedin</a></p>
@@ -82,10 +82,10 @@ Historical landings, manually verified against upstream commits. These receipts 
 
 | Project | Contribution | Status |
 | --- | --- | --- |
+| [iggy](https://github.com/apache/iggy) | [feat(node): expose client lifecycle events through on and once · #4552](https://github.com/apache/iggy/pull/4552) | Open |
 | [mne-python](https://github.com/mne-tools/mne-python) | [Align complex Welch coefficient scaling with multitaper · #14574](https://github.com/mne-tools/mne-python/pull/14574) | Open |
 | [oxc](https://github.com/oxc-project/oxc) | [feat(linter): add \`node/require-child-process-timeout\` rule · #28926](https://github.com/oxc-project/oxc/pull/28926) | Open |
 | [bokeh](https://github.com/bokeh/bokeh) | [Accept categorical coordinates in glyph type hints · #15810](https://github.com/bokeh/bokeh/pull/15810) | Open |
-| [iggy](https://github.com/apache/iggy) | [feat(node): expose client lifecycle events through on and once · #4552](https://github.com/apache/iggy/pull/4552) | Open |
 | [pygments](https://github.com/pygments/pygments) | [Recognize regular expression literals in the Vala lexer · #3497](https://github.com/pygments/pygments/pull/3497) | Open |
 | [xarray](https://github.com/pydata/xarray) | [Document map\_over\_datasets callback outputs · #11931](https://github.com/pydata/xarray/pull/11931) | Open |
 | [github-mcp-server](https://github.com/github/github-mcp-server) | [feat: Support choosing the merge commit author email · #3852](https://github.com/github/github-mcp-server/pull/3852) | Open |
@@ -130,8 +130,8 @@ Historical landings, manually verified against upstream commits. These receipts 
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=64373b82">
-  <img alt="153 active days in the last year" src="out/heatmap-light.svg?v=6b9f24e5">
+  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=19493e69">
+  <img alt="153 active days in the last year" src="out/heatmap-light.svg?v=3f31cbb3">
 </picture>
 
 <picture>
