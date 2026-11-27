@@ -10,8 +10,8 @@
 </div>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=4fef72e2">
-  <img alt="3591 contributions in the last year" src="out/hero-light.svg?v=dec6385b">
+  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=21ec02b6">
+  <img alt="3597 contributions in the last year" src="out/hero-light.svg?v=7e60804f">
 </picture>
 
 <p align="center"><a href="https://forze.in">forze.in</a> &nbsp;·&nbsp; <a href="https://linkedin.com/in/arhambegani">linkedin</a></p>
@@ -82,10 +82,11 @@ Historical landings, manually verified against upstream commits. These receipts 
 
 | Project | Contribution | Status |
 | --- | --- | --- |
+| [mne-python](https://github.com/mne-tools/mne-python) | [Align complex Welch coefficient scaling with multitaper · #14574](https://github.com/mne-tools/mne-python/pull/14574) | Open |
+| [agent-control-standard](https://github.com/GenAI-Security-Project/agent-control-standard) | [refimpl: add first-stage Rust AGT Guardian · #187](https://github.com/GenAI-Security-Project/agent-control-standard/pull/187) | Open |
+| [iggy](https://github.com/apache/iggy) | [feat(node): expose client lifecycle events through on and once · #4552](https://github.com/apache/iggy/pull/4552) | Open |
 | [pandas](https://github.com/pandas-dev/pandas) | [BUG: support percent-style float formats for nullable floats in to\_st… · #72205](https://github.com/pandas-dev/pandas/pull/72205) | Open |
 | [oxc](https://github.com/oxc-project/oxc) | [feat(linter): add \`node/require-child-process-timeout\` rule · #28926](https://github.com/oxc-project/oxc/pull/28926) | Open |
-| [iggy](https://github.com/apache/iggy) | [feat(node): expose client lifecycle events through on and once · #4552](https://github.com/apache/iggy/pull/4552) | Open |
-| [mne-python](https://github.com/mne-tools/mne-python) | [Align complex Welch coefficient scaling with multitaper · #14574](https://github.com/mne-tools/mne-python/pull/14574) | Open |
 | [bokeh](https://github.com/bokeh/bokeh) | [Accept categorical coordinates in glyph type hints · #15810](https://github.com/bokeh/bokeh/pull/15810) | Open |
 | [pygments](https://github.com/pygments/pygments) | [Recognize regular expression literals in the Vala lexer · #3497](https://github.com/pygments/pygments/pull/3497) | Open |
 | [xarray](https://github.com/pydata/xarray) | [Document map\_over\_datasets callback outputs · #11931](https://github.com/pydata/xarray/pull/11931) | Open |
@@ -98,7 +99,6 @@ Historical landings, manually verified against upstream commits. These receipts 
 | [excalidraw](https://github.com/excalidraw/excalidraw) | [fix(app): show recovery instructions when the editor cannot load · #12668](https://github.com/excalidraw/excalidraw/pull/12668) | Open |
 | [awesome-ai-apps](https://github.com/Arindam200/awesome-ai-apps) | [feat: add A2A collaboration example with Agno and LangGraph · #368](https://github.com/Arindam200/awesome-ai-apps/pull/368) | Open |
 | [prettier](https://github.com/prettier/prettier) | [Fix unstable comments before generic function type parameters · #20374](https://github.com/prettier/prettier/pull/20374) | Open |
-| [agent-control-standard](https://github.com/GenAI-Security-Project/agent-control-standard) | [refimpl: add first-stage Rust AGT Guardian · #187](https://github.com/GenAI-Security-Project/agent-control-standard/pull/187) | Open |
 
 <details>
 <summary>Closed without merging · 9</summary>
@@ -125,13 +125,13 @@ Historical landings, manually verified against upstream commits. These receipts 
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=63e8c761">
-  <img alt="language and repository stats" src="out/stats-light.svg?v=2ce82a76">
+  <source media="(prefers-color-scheme: dark)" srcset="out/stats-dark.svg?v=6adf60b3">
+  <img alt="language and repository stats" src="out/stats-light.svg?v=49d05161">
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=16df1a7d">
-  <img alt="154 active days in the last year" src="out/heatmap-light.svg?v=96053796">
+  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=12f2d947">
+  <img alt="155 active days in the last year" src="out/heatmap-light.svg?v=8d5a265d">
 </picture>
 
 <picture>
