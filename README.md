@@ -10,8 +10,8 @@
 </div>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=21ec02b6">
-  <img alt="3597 contributions in the last year" src="out/hero-light.svg?v=7e60804f">
+  <source media="(prefers-color-scheme: dark)" srcset="out/hero-dark.svg?v=4fc8ead7">
+  <img alt="3599 contributions in the last year" src="out/hero-light.svg?v=5d3f69a1">
 </picture>
 
 <p align="center"><a href="https://forze.in">forze.in</a> &nbsp;·&nbsp; <a href="https://linkedin.com/in/arhambegani">linkedin</a></p>
@@ -59,6 +59,7 @@ Contributions to public projects outside my own account, refreshed daily from Gi
 
 | Project | Contribution | Status |
 | --- | --- | --- |
+| [recharts](https://github.com/recharts/recharts) | [refactor(types): remove non-null assertions from matchBy.ts · #8255](https://github.com/recharts/recharts/pull/8255) | Merged · 2026-11-27 |
 | [petl](https://github.com/petl-developers/petl) | [Allow configuring the temporary directory for sorts and fromdicts · #838](https://github.com/petl-developers/petl/pull/838) | Merged · 2026-11-23 |
 | [xarray](https://github.com/pydata/xarray) | [Preserve Matplotlib grid settings in pcolormesh · #11923](https://github.com/pydata/xarray/pull/11923) | Merged · 2026-11-21 |
 | [tldr](https://github.com/tldr-pages/tldr) | [flatpak-ps: add page · #25327](https://github.com/tldr-pages/tldr/pull/25327) | Merged · 2026-11-20 |
@@ -82,23 +83,23 @@ Historical landings, manually verified against upstream commits. These receipts 
 
 | Project | Contribution | Status |
 | --- | --- | --- |
-| [mne-python](https://github.com/mne-tools/mne-python) | [Align complex Welch coefficient scaling with multitaper · #14574](https://github.com/mne-tools/mne-python/pull/14574) | Open |
-| [agent-control-standard](https://github.com/GenAI-Security-Project/agent-control-standard) | [refimpl: add first-stage Rust AGT Guardian · #187](https://github.com/GenAI-Security-Project/agent-control-standard/pull/187) | Open |
-| [iggy](https://github.com/apache/iggy) | [feat(node): expose client lifecycle events through on and once · #4552](https://github.com/apache/iggy/pull/4552) | Open |
-| [pandas](https://github.com/pandas-dev/pandas) | [BUG: support percent-style float formats for nullable floats in to\_st… · #72205](https://github.com/pandas-dev/pandas/pull/72205) | Open |
-| [oxc](https://github.com/oxc-project/oxc) | [feat(linter): add \`node/require-child-process-timeout\` rule · #28926](https://github.com/oxc-project/oxc/pull/28926) | Open |
+| [napari](https://github.com/napari/napari) | [Display channel-first RGB images as a single layer · #9945](https://github.com/napari/napari/pull/9945) | Open |
+| [prettier](https://github.com/prettier/prettier) | [Fix unstable comments before generic function type parameters · #20374](https://github.com/prettier/prettier/pull/20374) | Open |
 | [bokeh](https://github.com/bokeh/bokeh) | [Accept categorical coordinates in glyph type hints · #15810](https://github.com/bokeh/bokeh/pull/15810) | Open |
+| [mne-python](https://github.com/mne-tools/mne-python) | [Align complex Welch coefficient scaling with multitaper · #14574](https://github.com/mne-tools/mne-python/pull/14574) | Open |
+| [pyrefly](https://github.com/pyrefly-org/pyrefly) | [Semantic tokens quoted annotations · #5801](https://github.com/pyrefly-org/pyrefly/pull/5801) | Open |
+| [oxc](https://github.com/oxc-project/oxc) | [feat(linter): add \`node/require-child-process-timeout\` rule · #28926](https://github.com/oxc-project/oxc/pull/28926) | Open |
+| [github-mcp-server](https://github.com/github/github-mcp-server) | [feat: Support choosing the merge commit author email · #3852](https://github.com/github/github-mcp-server/pull/3852) | Open |
+| [deno](https://github.com/denoland/deno) | [fix(ext/http): honor Connection: close in HTTP/1 responses · #37067](https://github.com/denoland/deno/pull/37067) | Open |
+| [awesome-ai-apps](https://github.com/Arindam200/awesome-ai-apps) | [feat: add A2A collaboration example with Agno and LangGraph · #368](https://github.com/Arindam200/awesome-ai-apps/pull/368) | Open |
+| [excalidraw](https://github.com/excalidraw/excalidraw) | [fix(app): show recovery instructions when the editor cannot load · #12668](https://github.com/excalidraw/excalidraw/pull/12668) | Open |
 | [pygments](https://github.com/pygments/pygments) | [Recognize regular expression literals in the Vala lexer · #3497](https://github.com/pygments/pygments/pull/3497) | Open |
 | [xarray](https://github.com/pydata/xarray) | [Document map\_over\_datasets callback outputs · #11931](https://github.com/pydata/xarray/pull/11931) | Open |
-| [github-mcp-server](https://github.com/github/github-mcp-server) | [feat: Support choosing the merge commit author email · #3852](https://github.com/github/github-mcp-server/pull/3852) | Open |
+| [iggy](https://github.com/apache/iggy) | [feat(node): expose client lifecycle events through on and once · #4552](https://github.com/apache/iggy/pull/4552) | Open |
+| [agent-control-standard](https://github.com/GenAI-Security-Project/agent-control-standard) | [refimpl: add first-stage Rust AGT Guardian · #187](https://github.com/GenAI-Security-Project/agent-control-standard/pull/187) | Open |
+| [pandas](https://github.com/pandas-dev/pandas) | [BUG: support percent-style float formats for nullable floats in to\_st… · #72205](https://github.com/pandas-dev/pandas/pull/72205) | Open |
 | [llama_index](https://github.com/run-llama/llama_index) | [fix(core): repair streamed partial JSON inside arrays and escaped strings · #23470](https://github.com/run-llama/llama_index/pull/23470) | Open |
 | [vite](https://github.com/vitejs/vite) | [fix(optimizer): preserve explicit asset queries in dependencies (fix #20285) · #23962](https://github.com/vitejs/vite/pull/23962) | Open |
-| [deno](https://github.com/denoland/deno) | [fix(ext/http): honor Connection: close in HTTP/1 responses · #37067](https://github.com/denoland/deno/pull/37067) | Open |
-| [napari](https://github.com/napari/napari) | [Display channel-first RGB images as a single layer · #9945](https://github.com/napari/napari/pull/9945) | Open |
-| [recharts](https://github.com/recharts/recharts) | [refactor(types): remove non-null assertions from matchBy.ts · #8255](https://github.com/recharts/recharts/pull/8255) | Open |
-| [excalidraw](https://github.com/excalidraw/excalidraw) | [fix(app): show recovery instructions when the editor cannot load · #12668](https://github.com/excalidraw/excalidraw/pull/12668) | Open |
-| [awesome-ai-apps](https://github.com/Arindam200/awesome-ai-apps) | [feat: add A2A collaboration example with Agno and LangGraph · #368](https://github.com/Arindam200/awesome-ai-apps/pull/368) | Open |
-| [prettier](https://github.com/prettier/prettier) | [Fix unstable comments before generic function type parameters · #20374](https://github.com/prettier/prettier/pull/20374) | Open |
 
 <details>
 <summary>Closed without merging · 9</summary>
@@ -130,8 +131,8 @@ Historical landings, manually verified against upstream commits. These receipts 
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=12f2d947">
-  <img alt="155 active days in the last year" src="out/heatmap-light.svg?v=8d5a265d">
+  <source media="(prefers-color-scheme: dark)" srcset="out/heatmap-dark.svg?v=c364c41c">
+  <img alt="155 active days in the last year" src="out/heatmap-light.svg?v=512db7e0">
 </picture>
 
 <picture>
